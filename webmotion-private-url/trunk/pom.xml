@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+      
+  <modelVersion>4.0.0</modelVersion>
+    <groupId>org.debux.webmotion</groupId>
+    <artifactId>webmotion-private-url</artifactId>
+  
+    <packaging>jar</packaging>
+    <name>WebMotion Private URL</name>
+    <url>www.webmotion-framework.org</url>
+    
+    <parent>
+        <groupId>org.debux</groupId>
+        <artifactId>webmotion-project</artifactId>
+        <version>2.1-SNAPSHOT</version>
+    </parent>
+    
+    <dependencies>
+        <dependency>
+            <groupId>org.debux.webmotion</groupId>
+            <artifactId>webmotion</artifactId>
+            <version>2.1-SNAPSHOT</version>
+        </dependency>
+        
+        <!-- Servlet -->
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        
+        <!-- Logger -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        
+    </dependencies>
+
+</project>
