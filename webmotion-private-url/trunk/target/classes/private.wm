@@ -1,5 +1,0 @@
-[config]
-package.base=org.debux.webmotion
-
-[filters]
-*                      /*              PrivateUrl.filter
