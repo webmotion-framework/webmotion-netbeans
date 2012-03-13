@@ -22,11 +22,8 @@
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-package org.debux.webmotion;
+package org.debux.webmotion.privateurl;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.http.HttpServletRequest;
-import org.debux.webmotion.server.WebMotionFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,16 +31,10 @@ import org.slf4j.LoggerFactory;
  *
  * @author julien
  */
-public class PrivateUrl extends WebMotionFilter {
+public class PrivateUrlException extends Exception {
+    private static final Logger log = LoggerFactory.getLogger(PrivateUrlException.class);
 
-    private static final Logger log = LoggerFactory.getLogger(PrivateUrl.class);
-    
-    public void filter(HttpServletRequest request) throws PrivateUrlException {
-        DispatcherType dispatcherType = request.getDispatcherType();
-        if (dispatcherType != DispatcherType.INCLUDE) {
-            throw new PrivateUrlException();
-        } else {
-            doProcess();
-        }
+    public PrivateUrlException() {
+        super();
     }
 }

@@ -23,7 +23,7 @@
 # #L%
 ###
 [config]
-package.base=org.debux.webmotion
+package.base=org.debux.webmotion.privateurl
 
 [filters]
 *                      /*              PrivateUrl.filter
