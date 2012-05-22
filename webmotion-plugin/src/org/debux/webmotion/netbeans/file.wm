@@ -1,0 +1,6 @@
+[config]
+package.base=
+package.view=WEB-INF/
+
+[actions]
+# do action
