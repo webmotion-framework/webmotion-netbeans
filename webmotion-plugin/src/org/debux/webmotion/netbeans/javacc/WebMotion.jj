@@ -5,13 +5,13 @@ options {
     ERROR_REPORTING = false;
 }
 
-PARSER_BEGIN(WebMotion)
+PARSER_BEGIN(WebMotionParser)
 package org.debux.webmotion.netbeans.javacc;
 
-public class WebMotion {
+public class WebMotionParser {
 }
 
-PARSER_END(WebMotion)
+PARSER_END(WebMotionParser)
 
 TOKEN: {
     <SECTION_CONFIG: "[config]">
@@ -49,7 +49,9 @@ TOKEN: {
 |   <METHODS_HTTP: "\n" <METHOD_HTTP> ("," <METHOD_HTTP>)*>
 |   <METHOD_HTTP: ("*" | "GET" | "POST" | "PUT" | "DELETE" | "HEAD")>
 
-|   <WHITESPACE: " " | "\t" | "\n" | "\r" | "\f">
+|   <EQUALS: "=">
+|   <NEW_LINE: ("\n" | "\r" | "\r\n")>
+|   <WHITESPACE: " " | "\t" | "\f">
 |   <DIGIT: ["0"-"9"]>
 |   <LETTER:
         [
@@ -71,3 +73,18 @@ TOKEN: {
 }
 
 MORE : { < ~[] > }
+
+void Mapping() : {}
+{
+	(Sections() | <COMMENT>)*
+}
+
+void Sections() : {}
+{
+	<SECTION_CONFIG> (SectionConfigLine())* <NEW_LINE>
+}
+
+void SectionConfigLine() : {}
+{
+	<CONFIG_NAME> <EQUALS> < ~[] >
+}
