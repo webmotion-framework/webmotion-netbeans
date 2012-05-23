@@ -30,9 +30,11 @@ public class WebMotionLanguageHierarchy extends LanguageHierarchy<WebMotionToken
             new WebMotionTokenId("COMMENT", "comment", 11),
             new WebMotionTokenId("METHODS_HTTP", "keyword", 12),
             new WebMotionTokenId("METHOD_HTTP", "character", 13),
-            new WebMotionTokenId("WHITESPACE", "character", 14),
-            new WebMotionTokenId("DIGIT", "character", 15),
-            new WebMotionTokenId("LETTER", "character", 16)
+            new WebMotionTokenId("EQUALS", "character", 14),
+            new WebMotionTokenId("NEW_LINE", "character", 15),
+            new WebMotionTokenId("WHITESPACE", "character", 16),
+            new WebMotionTokenId("DIGIT", "character", 17),
+            new WebMotionTokenId("LETTER", "character", 18)
         });
         idToToken = new HashMap<Integer, WebMotionTokenId>();
         for (WebMotionTokenId token : tokens) {
