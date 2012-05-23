@@ -17,16 +17,22 @@ public class WebMotionLanguageHierarchy extends LanguageHierarchy<WebMotionToken
     private static void init() {
         tokens = Arrays.<WebMotionTokenId>asList(new WebMotionTokenId[]{
             new WebMotionTokenId("EOF", "whitespace", 0),
-            new WebMotionTokenId("SECTION_CONFIG", "keyword", 1),
-            new WebMotionTokenId("SECTION_ACTIONS", "keyword", 2),
-            new WebMotionTokenId("SECTION_ERRORS", "keyword", 3),
-            new WebMotionTokenId("SECTION_FILTERS", "keyword", 4),
-            new WebMotionTokenId("SECTION_PROPERTIES", "keyword", 5),
-            new WebMotionTokenId("COMMENT", "comment", 6),
-            new WebMotionTokenId("METHOD_HTTP", "literal", 7),
-            new WebMotionTokenId("WHITESPACE", "whitespace", 8),
-            new WebMotionTokenId("DIGIT", "whitespace", 9),
-            new WebMotionTokenId("LETTER", "whitespace", 10)
+            new WebMotionTokenId("SECTION_CONFIG", "section", 1),
+            new WebMotionTokenId("SECTION_ACTIONS", "section", 2),
+            new WebMotionTokenId("SECTION_ERRORS", "section", 3),
+            new WebMotionTokenId("SECTION_FILTERS", "section", 4),
+            new WebMotionTokenId("SECTION_EXTENSIONS", "section", 5),
+            new WebMotionTokenId("SECTION_PROPERTIES", "section", 6),
+            new WebMotionTokenId("CONFIG_NAMES", "keyword", 7),
+            new WebMotionTokenId("ACTION_JAVA", "keyword", 8),
+            new WebMotionTokenId("ACTION_URL", "keyword", 9),
+            new WebMotionTokenId("ACTION_VIEW", "keyword", 10),
+            new WebMotionTokenId("COMMENT", "comment", 11),
+            new WebMotionTokenId("METHODS_HTTP", "keyword", 12),
+            new WebMotionTokenId("METHOD_HTTP", "character", 13),
+            new WebMotionTokenId("WHITESPACE", "character", 14),
+            new WebMotionTokenId("DIGIT", "character", 15),
+            new WebMotionTokenId("LETTER", "character", 16)
         });
         idToToken = new HashMap<Integer, WebMotionTokenId>();
         for (WebMotionTokenId token : tokens) {

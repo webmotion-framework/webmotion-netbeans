@@ -19,17 +19,29 @@ public interface WebMotionConstants {
   /** RegularExpression Id. */
   int SECTION_FILTERS = 4;
   /** RegularExpression Id. */
-  int SECTION_PROPERTIES = 5;
+  int SECTION_EXTENSIONS = 5;
   /** RegularExpression Id. */
-  int COMMENT = 6;
+  int SECTION_PROPERTIES = 6;
   /** RegularExpression Id. */
-  int METHOD_HTTP = 7;
+  int CONFIG_NAME = 7;
   /** RegularExpression Id. */
-  int WHITESPACE = 8;
+  int ACTION_JAVA = 8;
   /** RegularExpression Id. */
-  int DIGIT = 9;
+  int ACTION_URL = 9;
   /** RegularExpression Id. */
-  int LETTER = 10;
+  int ACTION_VIEW = 10;
+  /** RegularExpression Id. */
+  int COMMENT = 11;
+  /** RegularExpression Id. */
+  int METHODS_HTTP = 12;
+  /** RegularExpression Id. */
+  int METHOD_HTTP = 13;
+  /** RegularExpression Id. */
+  int WHITESPACE = 14;
+  /** RegularExpression Id. */
+  int DIGIT = 15;
+  /** RegularExpression Id. */
+  int LETTER = 16;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -41,13 +53,19 @@ public interface WebMotionConstants {
     "\"[actions]\"",
     "\"[errors]\"",
     "\"[filters]\"",
+    "\"[extensions]\"",
     "<SECTION_PROPERTIES>",
+    "<CONFIG_NAME>",
+    "<ACTION_JAVA>",
+    "<ACTION_URL>",
+    "\"view:\"",
     "<COMMENT>",
+    "<METHODS_HTTP>",
     "<METHOD_HTTP>",
     "<WHITESPACE>",
     "<DIGIT>",
     "<LETTER>",
-    "<token of kind 11>",
+    "<token of kind 17>",
   };
 
 }

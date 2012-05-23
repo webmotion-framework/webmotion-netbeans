@@ -3,8 +3,8 @@
     "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <fontcolor name="keyword" default="keyword" foreColor="red"/>
-    <fontcolor name="literal" default="literal" foreColor="blue"/>
+    <fontcolor name="section" foreColor="red"/>
+    <fontcolor name="keyword" foreColor="blue"/>
     <fontcolor name="comment" default="comment"/>
-    <fontcolor name="whitespace" default="whitespace"/>
+    <fontcolor name="character" foreColor="black"/>
 </fontscolors>

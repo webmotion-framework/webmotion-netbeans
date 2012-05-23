@@ -18,11 +18,36 @@ TOKEN: {
 |   <SECTION_ACTIONS: "[actions]">
 |   <SECTION_ERRORS: "[errors]">
 |   <SECTION_FILTERS: "[filters]">
+|   <SECTION_EXTENSIONS: "[extensions]">
 |   <SECTION_PROPERTIES: "[" (<LETTER> | <DIGIT> | "_" | "$" | "-")+ ".properties]">
+
+|   <CONFIG_NAME:
+        "\n" (
+            "package.views"
+            | "package.base"
+            | "package.filters"
+            | "package.actions"
+            | "package.errors"
+            | "javac.debug"
+            | "server.async"
+            | "server.encoding"
+            | "server.error.page"
+            | "server.controller.scope"
+            | "server.listener.class"
+            | "server.main.handler.class"
+            | "server.secret"
+            | "server.static.autodetect"
+        )
+    >
+
+|   <ACTION_JAVA: ("action:" | "sync:" | "async:")>
+|   <ACTION_URL: ("redirect:" | "forward:" | "url:")>
+|   <ACTION_VIEW: ("view:")>
 
 |   <COMMENT: "#" (~["\n","\r"])* ("\n" | "\r" | "\r\n")?>
 
-|   <METHOD_HTTP: "\n" ("*" | "GET" | "POST" | "PUT" | "DELETE" | "HEAD")>
+|   <METHODS_HTTP: "\n" <METHOD_HTTP> ("," <METHOD_HTTP>)*>
+|   <METHOD_HTTP: ("*" | "GET" | "POST" | "PUT" | "DELETE" | "HEAD")>
 
 |   <WHITESPACE: " " | "\t" | "\n" | "\r" | "\f">
 |   <DIGIT: ["0"-"9"]>
