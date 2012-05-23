@@ -1,5 +1,6 @@
-package org.debux.webmotion.netbeans.javacc;
+package org.debux.webmotion.netbeans.javacc.lexer.impl;
 
+import org.debux.webmotion.netbeans.javacc.lexer.impl.WebMotionLanguageHierarchy;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 

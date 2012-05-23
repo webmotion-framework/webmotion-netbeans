@@ -1,4 +1,4 @@
-package org.debux.webmotion.netbeans.javacc;
+package org.debux.webmotion.netbeans.javacc.lexer.impl;
 
 import java.util.*;
 import org.netbeans.spi.lexer.LanguageHierarchy;

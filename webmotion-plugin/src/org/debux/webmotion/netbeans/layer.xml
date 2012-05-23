@@ -86,6 +86,8 @@
         <folder name="text">
             <folder name="x-wm">
                 <attr name="displayName" bundlevalue="org.debux.webmotion.netbeans.Bundle#editor_name"/>
+                <file name="org-debux-webmotion-netbeans-javacc-parser-impl-SyntaxErrorHighlightingTaskFactory.instance"/>
+                <file name="org-debux-webmotion-netbeans-javacc-parser-impl-WebMotionParserFactory.instance"/>
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">

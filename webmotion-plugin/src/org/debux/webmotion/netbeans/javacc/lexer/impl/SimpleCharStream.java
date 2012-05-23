@@ -1,4 +1,4 @@
-package org.debux.webmotion.netbeans.javacc;
+package org.debux.webmotion.netbeans.javacc.lexer.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,7 +13,7 @@ import org.netbeans.spi.lexer.LexerInput;
 public class SimpleCharStream {
     private LexerInput input;
 
-    static boolean staticFlag;
+    public static boolean staticFlag;
 
     public SimpleCharStream(LexerInput input) {
         this.input = input;
@@ -27,11 +27,11 @@ public class SimpleCharStream {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    char BeginToken() throws IOException {
+    public char BeginToken() throws IOException {
         return readChar();
     }
 
-    String GetImage() {
+    public String GetImage() {
         return input.readText().toString();
     }
 
@@ -42,35 +42,35 @@ public class SimpleCharStream {
         return input.readText(input.readLength() - len, input.readLength()).toString().toCharArray();
     }
 
-    void ReInit(Reader stream, int i, int i0) {
+    public void ReInit(Reader stream, int i, int i0) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    void ReInit(InputStream stream, String encoding, int i, int i0) throws UnsupportedEncodingException {
+    public void ReInit(InputStream stream, String encoding, int i, int i0) throws UnsupportedEncodingException {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    void backup(int i) {
+    public void backup(int i) {
         input.backup(i);
     }
 
-    int getBeginColumn() {
+    public int getBeginColumn() {
         return 0;
     }
 
-    int getBeginLine() {
+    public int getBeginLine() {
         return 0;
     }
 
-    int getEndColumn() {
+    public int getEndColumn() {
         return 0;
     }
 
-    int getEndLine() {
+    public int getEndLine() {
         return 0;
     }
 
-    char readChar() throws IOException {
+    public char readChar() throws IOException {
         int result = input.read();
         if (result == LexerInput.EOF) {
             throw new IOException("LexerInput EOF");

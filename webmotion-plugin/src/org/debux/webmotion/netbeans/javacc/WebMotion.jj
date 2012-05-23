@@ -1,14 +1,26 @@
 options {
     LOOKAHEAD = 2;
-    BUILD_PARSER = false;
+    BUILD_PARSER = true;
     STATIC = false;
-    ERROR_REPORTING = false;
+    ERROR_REPORTING = true;
 }
 
 PARSER_BEGIN(WebMotionParser)
 package org.debux.webmotion.netbeans.javacc;
 
+import java.util.*;
+
 public class WebMotionParser {
+
+    public List<ParseException> syntaxErrors = new ArrayList<ParseException>();
+
+    void recover(ParseException ex, int recoveryPoint) {
+        syntaxErrors.add(ex);
+        Token t;
+        do {
+            t = getNextToken();
+        } while(t.kind != EOF && t.kind != recoveryPoint);
+    }
 }
 
 PARSER_END(WebMotionParser)
@@ -76,15 +88,19 @@ MORE : { < ~[] > }
 
 void Mapping() : {}
 {
-	(Sections() | <COMMENT>)*
+    try {
+        (Sections() | <COMMENT>)*
+    } catch (ParseException ex) {
+        recover(ex, NEW_LINE);
+    }
 }
 
 void Sections() : {}
 {
-	<SECTION_CONFIG> (SectionConfigLine())* <NEW_LINE>
+    <SECTION_CONFIG> (SectionConfigLine())* <NEW_LINE>
 }
 
 void SectionConfigLine() : {}
 {
-	<CONFIG_NAME> <EQUALS> < ~[] >
+    <CONFIG_NAME> <EQUALS>
 }

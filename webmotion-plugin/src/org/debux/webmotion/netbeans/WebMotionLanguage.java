@@ -1,6 +1,6 @@
 package org.debux.webmotion.netbeans;
 
-import org.debux.webmotion.netbeans.javacc.WebMotionTokenId;
+import org.debux.webmotion.netbeans.javacc.lexer.impl.WebMotionTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;

@@ -1,5 +1,9 @@
-package org.debux.webmotion.netbeans.javacc;
+package org.debux.webmotion.netbeans.javacc.lexer.impl;
 
+import org.debux.webmotion.netbeans.javacc.lexer.Token;
+import org.debux.webmotion.netbeans.javacc.lexer.WebMotionParserTokenManager;
+import org.debux.webmotion.netbeans.javacc.lexer.impl.WebMotionLanguageHierarchy;
+import org.debux.webmotion.netbeans.javacc.lexer.impl.SimpleCharStream;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
