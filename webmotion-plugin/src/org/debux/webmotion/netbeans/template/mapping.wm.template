@@ -1,0 +1,11 @@
+<#assign licenseFirst = "###">
+<#assign licensePrefix = "# ">
+<#assign licenseLast = "###">
+<#include "../Licenses/license-${project.license}.txt">
+
+[config]
+package.base=
+package.view=WEB-INF/
+
+[actions]
+# do action

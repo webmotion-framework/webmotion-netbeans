@@ -102,7 +102,7 @@
     <folder name="OptionsDialog">
         <folder name="PreviewExamples">
             <folder name="text">
-                <file name="x-wm" url="file.wm"/>
+                <file name="x-wm" url="template/example.wm"/>
             </folder>
         </folder>
     </folder>
