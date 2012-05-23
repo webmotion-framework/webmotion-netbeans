@@ -7,21 +7,24 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.debux.webmotion.netbeans.javacc.parser.ParseException;
 import org.debux.webmotion.netbeans.javacc.parser.Token;
 import org.debux.webmotion.netbeans.javacc.parser.WebMotionParser;
 import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.Severity;
+import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
 
 /**
@@ -81,6 +84,26 @@ public class WebMotionParserImpl extends Parser {
         @Override
         public List<? extends Error> getDiagnostics() {
             List<Error> errors = new ArrayList<Error>();
+            
+            List<ParseException> syntaxErrors = parser.syntaxErrors;
+            Source source = getSnapshot().getSource();
+            FileObject fileObject = source.getFileObject();
+            Document document = source.getDocument(false);
+            
+            for (ParseException syntaxError : syntaxErrors) {
+                Token token = syntaxError.currentToken;
+                
+                int start = NbDocument.findLineOffset((StyledDocument) document, token.beginLine - 1) + token.beginColumn - 1;
+                int end = NbDocument.findLineOffset((StyledDocument) document, token.endLine - 1) + token.endColumn;
+                
+                Error error = DefaultError.createDefaultError("webmotion",
+                        syntaxError.getMessage(), null,
+                        fileObject, start, end,
+                        true, Severity.ERROR);
+                
+                errors.add(error);
+            }
+            
             return errors;
         }
     }
