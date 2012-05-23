@@ -73,41 +73,32 @@
             </folder>
         </folder>
     </folder>
+    
     <folder name="Services">
         <folder name="MIMEResolver">
             <file name="WebMotionResolver.xml" url="WebMotionResolver.xml">
-                <attr name="displayName" bundlevalue="org.debux.webmotion.netbeans.Bundle#Services/MIMEResolver/WebMotionResolver.xml"/>
+                <attr name="displayName" bundlevalue="org.debux.webmotion.netbeans.Bundle#resolver_name"/>
             </file>
         </folder>
     </folder>
+    
     <folder name="Editors">
         <folder name="text">
             <folder name="x-wm">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.debux.webmotion.netbeans.Bundle"/>
+                <attr name="displayName" bundlevalue="org.debux.webmotion.netbeans.Bundle#editor_name"/>
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
                             <file name="FontAndColors.xml" url="FontAndColors.xml">
-                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.debux.webmotion.netbeans.Bundle"/>
+                                <attr name="displayName" bundlevalue="org.debux.webmotion.netbeans.Bundle#font_name"/>
                             </file>
                         </folder>
                     </folder>
                 </folder>
-                <folder name="MultiView">
-                    <file name="org-debux-webmotion-netbeans-WebMotionVisualElement.instance">
-                        <attr name="class" stringvalue="org.debux.webmotion.netbeans.WebMotionVisualElement"/>
-                        <attr name="iconBase" stringvalue="org/debux/webmotion/netbeans/icon.png"/>
-                        <attr name="instanceClass" stringvalue="org.netbeans.core.multiview.ContextAwareDescription"/>
-                        <attr name="instanceCreate" methodvalue="org.netbeans.core.spi.multiview.MultiViewFactory.createMultiViewDescription"/>
-                        <attr name="persistenceType" intvalue="2"/>
-                        <attr name="position" intvalue="2000"/>
-                        <attr name="preferredID" stringvalue="WebMotionVisual"/>
-                    </file>
-                    <file name="org-debux-webmotion-netbeans-WebMotionVisualElement.instance_hidden"/>
-                </folder>
             </folder>
         </folder>
     </folder>
+    
     <folder name="OptionsDialog">
         <folder name="PreviewExamples">
             <folder name="text">
@@ -115,4 +106,5 @@
             </folder>
         </folder>
     </folder>
+    
 </filesystem>
