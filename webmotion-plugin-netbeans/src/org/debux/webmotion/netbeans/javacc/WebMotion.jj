@@ -56,6 +56,14 @@ TOKEN: {
 |   <METHODS_HTTP: <METHOD_HTTP> ("," <METHOD_HTTP>)*>
 |   <METHOD_HTTP: ("*" | "GET" | "POST" | "PUT" | "DELETE" | "HEAD")>
 
+|   <ACTION_BASIC_JAVA: "action:">
+|   <ACTION_JAVA: "action:" | "async:" | "sync:">
+|   <ACTION_VIEW: "view:">
+|   <ACTION_LINK: "forward:" | "redirect:" | "url:">
+
+|   <IDENTIFIER: <LETTER> (<LETTER> | <DIGIT>)*>
+|   <QUALIFIED_IDENTIFIER: <IDENTIFIER> ("." <IDENTIFIER>)*>
+
 |   <NEW_LINE: ("\n" | "\r" | "\r\n")+>
 |   <WHITESPACE: (" " | "\t" | "\f")+>
 |   <DIGIT: ["0"-"9"]>
@@ -114,7 +122,15 @@ TOKEN: {
 
 |   <CODE: "code:" <DIGIT><DIGIT><DIGIT>>
 |   <ALL: "*">
-|   <ERROR_END: <NEW_LINE>>
+|   <EXCEPTION: <QUALIFIED_IDENTIFIER>>
+|   <ERROR_SEPARATOR: <WHITESPACE>> : SECTION_ERRORS_ACTIONS
+}
+
+<SECTION_ERRORS_ACTIONS> TOKEN: {
+    <ERROR_ACTION_JAVA: (<ACTION_BASIC_JAVA>)? <QUALIFIED_IDENTIFIER>>
+|   <ERROR_ACTION_VIEW: <ACTION_VIEW> (~["\n"])+>
+|   <ERROR_ACTION_LINK: <ACTION_LINK> (~["\n"])+>
+|   <ERROR_END: <NEW_LINE>> : SECTION_ERRORS
 }
 
 <SECTION_FILTERS> TOKEN: {
@@ -126,7 +142,21 @@ TOKEN: {
 |   <SECTION_FILTERS_NEXT_PROPERTIES: <SECTION_PROPERTIES_NAME>> : SECTION_PROPERTIES
 
 |   <FILTER_METHOD: <METHODS_HTTP>>
-|   <FILTER_END: <NEW_LINE>>
+|   <FILTER_PATH: ("/*" | ("/" (<LETTER> | <DIGIT> | "_" | "$" | "-" | ".")*))+>
+|   <FILTER_SEPARATOR: <WHITESPACE>>
+|   <FILTER_ACTION: (<ACTION_BASIC_JAVA>)? <QUALIFIED_IDENTIFIER>> : SECTION_FILTERS_PARAMETERS
+}
+
+<SECTION_FILTERS_PARAMETERS> TOKEN: {
+    <FILTER_PARAMETER_SEPARATOR: ",">
+|   <FILTER_PARAMETER_NAME: (<LETTER> | <DIGIT> | "_" | "$" | "-" | ".")+>
+|   <FILTER_PARAMETER_EQUALS: "="> : SECTION_FILTERS_PARAMETER_VALUE
+|   <FILTER_PARAMETERS_SEPARATOR: <WHITESPACE>>
+|   <FILTER_END: <NEW_LINE>> : SECTION_FILTERS
+}
+
+<SECTION_FILTERS_PARAMETER_VALUE> TOKEN: {
+    <FILTER_PARAMETER_VALUE: (<LETTER> | <DIGIT> | "_" | "$" | "-" | "." | "%" | "/")+> : SECTION_FILTERS_PARAMETERS
 }
 
 <SECTION_EXTENSIONS> TOKEN: {
@@ -241,7 +271,10 @@ void SectionErrorsName() : {}
 
 void SectionErrorsLine() : {}
 {
-    <CODE> <ERROR_END>
+    (<ALL> | <CODE> | <EXCEPTION>) 
+    <ERROR_SEPARATOR>
+    (<ERROR_ACTION_JAVA> | <ERROR_ACTION_VIEW> | <ERROR_ACTION_LINK>)
+    <ERROR_END>
 }
 
 void SectionFilters() : {}
@@ -264,7 +297,19 @@ void SectionFiltersName() : {}
 
 void SectionFiltersLine() : {}
 {
-    <FILTER_METHOD> <FILTER_END>
+    <FILTER_METHOD>
+    <FILTER_SEPARATOR> <FILTER_PATH> 
+    <FILTER_SEPARATOR> <FILTER_ACTION>
+    (
+        <FILTER_PARAMETERS_SEPARATOR>
+        SectionFiltersParameter() (<FILTER_PARAMETER_SEPARATOR> SectionFiltersParameter())*
+    )?
+    <FILTER_END>
+}
+
+void SectionFiltersParameter() : {}
+{
+    <FILTER_PARAMETER_NAME> <FILTER_PARAMETER_EQUALS> (<FILTER_PARAMETER_VALUE>)?
 }
 
 void SectionExtensions() : {}
