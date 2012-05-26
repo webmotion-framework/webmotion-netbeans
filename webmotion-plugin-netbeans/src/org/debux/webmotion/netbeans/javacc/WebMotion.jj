@@ -57,7 +57,7 @@ TOKEN: {
 |   <METHOD_HTTP: ("*" | "GET" | "POST" | "PUT" | "DELETE" | "HEAD")>
 
 |   <NEW_LINE: ("\n" | "\r" | "\r\n")+>
-|   <WHITESPACE: " " | "\t" | "\f">
+|   <WHITESPACE: (" " | "\t" | "\f")+>
 |   <DIGIT: ["0"-"9"]>
 |   <LETTER: ["a"-"z", "A"-"Z"]>
 }
@@ -137,8 +137,13 @@ TOKEN: {
 |   <SECTION_EXTENSIONS_NEXT_EXTENSIONS: <SECTION_EXTENSIONS_NAME>> : SECTION_EXTENSIONS
 |   <SECTION_EXTENSIONS_NEXT_PROPERTIES: <SECTION_PROPERTIES_NAME>> : SECTION_PROPERTIES
 
-|   <MOUNT_PATH: "/">
-|   <EXTENSION_END: <NEW_LINE>>
+|   <MOUNT_PATH: ("/" (<LETTER> | <DIGIT> | "_" | "$" | "-" | ".")*)+ >
+|   <EXTENSION_SEPARATOR: <WHITESPACE>> : SECTION_EXTENSIONS_FILE
+}
+
+<SECTION_EXTENSIONS_FILE> TOKEN: {
+    <EXTENSION_FILE: (~["\n"])+>
+|   <EXTENSION_END: <NEW_LINE>> : SECTION_EXTENSIONS
 }
 
 <SECTION_PROPERTIES> TOKEN: {
@@ -282,7 +287,7 @@ void SectionExtensionsName() : {}
 
 void SectionExtensionsLine() : {}
 {
-    <MOUNT_PATH> <EXTENSION_END>
+    <MOUNT_PATH> <EXTENSION_SEPARATOR> <EXTENSION_FILE> <EXTENSION_END>
 }
 
 void SectionProperties() : {}
