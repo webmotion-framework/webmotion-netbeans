@@ -61,6 +61,9 @@ TOKEN: {
 |   <ACTION_VIEW: "view:">
 |   <ACTION_LINK: "forward:" | "redirect:" | "url:">
 
+|   <VARIABLE: "{" (<QUALIFIED_IDENTIFIER>)? (<PATTERN>)? "}">
+|   <PATTERN: ":" ((~["\n", "{", "}"]) | "\\{" | "\\}")+>
+
 |   <IDENTIFIER: <LETTER> (<LETTER> | <DIGIT>)*>
 |   <QUALIFIED_IDENTIFIER: <IDENTIFIER> ("." <IDENTIFIER>)*>
 
@@ -109,6 +112,12 @@ TOKEN: {
 |   <SECTION_ACTIONS_NEXT_PROPERTIES: <SECTION_PROPERTIES_NAME>> : SECTION_PROPERTIES
 
 |   <ACTION_METHOD: <METHODS_HTTP>>
+|   <ACTION_PATH: "/" (<LETTER> | <DIGIT> | "_" | "$" | "-" | ".")*>
+|   <ACTION_PATH_VARIABLE: "/" <VARIABLE>>
+
+|   <ACTION_PARAMETERS: "?"> 
+
+|   <ACTION_SEPARATOR: <WHITESPACE>>
 |   <ACTION_END: <NEW_LINE>>
 }
 
@@ -142,7 +151,8 @@ TOKEN: {
 |   <SECTION_FILTERS_NEXT_PROPERTIES: <SECTION_PROPERTIES_NAME>> : SECTION_PROPERTIES
 
 |   <FILTER_METHOD: <METHODS_HTTP>>
-|   <FILTER_PATH: ("/*" | ("/" (<LETTER> | <DIGIT> | "_" | "$" | "-" | ".")*))+>
+|   <FILTER_PATH: "/" (<LETTER> | <DIGIT> | "_" | "$" | "-" | ".")*>
+|   <FILTER_PATH_ALL: "/*">
 |   <FILTER_SEPARATOR: <WHITESPACE>>
 |   <FILTER_ACTION: (<ACTION_BASIC_JAVA>)? <QUALIFIED_IDENTIFIER>> : SECTION_FILTERS_PARAMETERS
 }
@@ -248,7 +258,10 @@ void SectionActionsName() : {}
 
 void SectionActionsLine() : {}
 {
-    <ACTION_METHOD> <ACTION_END>
+    <ACTION_METHOD>
+    <ACTION_SEPARATOR>
+    (<ACTION_PATH> | <ACTION_PATH_VARIABLE>)+
+    <ACTION_END>
 }
 
 void SectionErrors() : {}
@@ -298,8 +311,10 @@ void SectionFiltersName() : {}
 void SectionFiltersLine() : {}
 {
     <FILTER_METHOD>
-    <FILTER_SEPARATOR> <FILTER_PATH> 
-    <FILTER_SEPARATOR> <FILTER_ACTION>
+    <FILTER_SEPARATOR>
+    (<FILTER_PATH> | <FILTER_PATH_ALL>)+
+    <FILTER_SEPARATOR>
+    <FILTER_ACTION>
     (
         <FILTER_PARAMETERS_SEPARATOR>
         SectionFiltersParameter() (<FILTER_PARAMETER_SEPARATOR> SectionFiltersParameter())*
