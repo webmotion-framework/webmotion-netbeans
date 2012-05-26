@@ -1,5 +1,4 @@
 options {
-    LOOKAHEAD = 2;
     BUILD_PARSER = true;
     STATIC = false;
     ERROR_REPORTING = true;
@@ -12,95 +11,281 @@ import java.util.*;
 
 public class WebMotionParser {
 
-    public List<ParseException> syntaxErrors = new ArrayList<ParseException>();
+    // Run the parser
+    public static void main(String args[]) {
+        WebMotionParser parser;
 
-    void recover(ParseException ex, int recoveryPoint) {
-        syntaxErrors.add(ex);
-        Token t;
-        do {
-            t = getNextToken();
-        } while(t.kind != EOF && t.kind != recoveryPoint);
+        try {
+            parser = new WebMotionParser(new java.io.FileInputStream("test.wm"));
+        } catch (java.io.FileNotFoundException e) {
+            System.out.println("File not found.");
+            return;
+        }
+
+        try {
+            parser.Mapping();
+            System.out.println("Parser: successfully.");
+        } catch (ParseException e) {
+            System.out.println("Parser: errors.");
+            e.printStackTrace();
+        }
     }
 }
 
 PARSER_END(WebMotionParser)
 
+SKIP:
+{
+    <COMMENT: "#" (~["\n","\r"])* ("\n" | "\r" | "\r\n")*>
+}
+<SECTION_CONFIG> SKIP: {<COMMENT_IN_CONFIG: <COMMENT>>}
+<SECTION_ACTIONS> SKIP: {<COMMENT_IN_ACTIONS: <COMMENT>>}
+<SECTION_ERRORS> SKIP: {<COMMENT_IN_ERRORS: <COMMENT>>}
+<SECTION_FILTERS> SKIP: {<COMMENT_IN_FILTERS: <COMMENT>>}
+<SECTION_EXTENSIONS> SKIP: {<COMMENT_IN_EXTENSIONS: <COMMENT>>}
+<SECTION_PROPERTIES> SKIP: {<COMMENT_IN_PROPERTIES: <COMMENT>>}
+
 TOKEN: {
-    <SECTION_CONFIG: "[config]">
-|   <SECTION_ACTIONS: "[actions]">
-|   <SECTION_ERRORS: "[errors]">
-|   <SECTION_FILTERS: "[filters]">
-|   <SECTION_EXTENSIONS: "[extensions]">
-|   <SECTION_PROPERTIES: "[" (<LETTER> | <DIGIT> | "_" | "$" | "-")+ ".properties]">
-
-|   <CONFIG_NAME:
-        "\n" (
-            "package.views"
-            | "package.base"
-            | "package.filters"
-            | "package.actions"
-            | "package.errors"
-            | "javac.debug"
-            | "server.async"
-            | "server.encoding"
-            | "server.error.page"
-            | "server.controller.scope"
-            | "server.listener.class"
-            | "server.main.handler.class"
-            | "server.secret"
-            | "server.static.autodetect"
-        )
-    >
-
-|   <ACTION_JAVA: ("action:" | "sync:" | "async:")>
-|   <ACTION_URL: ("redirect:" | "forward:" | "url:")>
-|   <ACTION_VIEW: ("view:")>
-
-|   <COMMENT: "#" (~["\n","\r"])* ("\n" | "\r" | "\r\n")?>
+    <SECTION_CONFIG_NAME: "[config]" <NEW_LINE>> : SECTION_CONFIG
+|   <SECTION_ACTIONS_NAME: "[actions]" <NEW_LINE>> : SECTION_ACTIONS
+|   <SECTION_ERRORS_NAME: "[errors]" <NEW_LINE>> : SECTION_ERRORS
+|   <SECTION_FILTERS_NAME: "[filters]" <NEW_LINE>> : SECTION_FILTERS
+|   <SECTION_EXTENSIONS_NAME: "[extensions]" <NEW_LINE>> : SECTION_EXTENSIONS
+|   <SECTION_PROPERTIES_NAME: "[" (<LETTER> | <DIGIT> | "_" | "$" | "-")+ ".properties]" <NEW_LINE>> : SECTION_PROPERTIES
 
 |   <METHODS_HTTP: "\n" <METHOD_HTTP> ("," <METHOD_HTTP>)*>
 |   <METHOD_HTTP: ("*" | "GET" | "POST" | "PUT" | "DELETE" | "HEAD")>
 
-|   <EQUALS: "=">
-|   <NEW_LINE: ("\n" | "\r" | "\r\n")>
+|   <NEW_LINE: ("\n" | "\r" | "\r\n")+>
 |   <WHITESPACE: " " | "\t" | "\f">
 |   <DIGIT: ["0"-"9"]>
-|   <LETTER:
-        [
-            "\u0024",
-            "\u0041"-"\u005a",
-            "\u005f",
-            "\u0061"-"\u007a",
-            "\u00c0"-"\u00d6",
-            "\u00d8"-"\u00f6",
-            "\u00f8"-"\u00ff",
-            "\u0100"-"\u1fff",
-            "\u3040"-"\u318f",
-            "\u3300"-"\u337f",
-            "\u3400"-"\u3d2d",
-            "\u4e00"-"\u9fff",
-            "\uf900"-"\ufaff"
-        ]
-    >
+|   <LETTER: ["a"-"z", "A"-"Z"]>
 }
 
-MORE : { < ~[] > }
+<SECTION_CONFIG> TOKEN: {
+    <SECTION_CONFIG_NEXT_CONFIG: <SECTION_CONFIG_NAME>> : SECTION_CONFIG
+|   <SECTION_CONFIG_NEXT_ACTIONS: <SECTION_ACTIONS_NAME>> : SECTION_ACTIONS
+|   <SECTION_CONFIG_NEXT_ERRORS: <SECTION_ERRORS_NAME>> : SECTION_ERRORS
+|   <SECTION_CONFIG_NEXT_FILTERS: <SECTION_FILTERS_NAME>> : SECTION_FILTERS
+|   <SECTION_CONFIG_NEXT_EXTENSIONS: <SECTION_EXTENSIONS_NAME>> : SECTION_EXTENSIONS
+|   <SECTION_CONFIG_NEXT_PROPERTIES: <SECTION_PROPERTIES_NAME>> : SECTION_PROPERTIES
+
+|   <CONFIG_KEY : "package.base" | "package.view">
+|   <CONFIG_EQUALS : "="> : SECTION_CONFIG_VALUE
+}
+
+<SECTION_CONFIG_VALUE> TOKEN: {
+    <CONFIG_VALUE: (~["\n"])+>
+|   <CONFIG_END: <NEW_LINE>> : SECTION_CONFIG
+}
+
+<SECTION_ACTIONS> TOKEN: {
+    <SECTION_ACTIONS_NEXT_CONFIG: <SECTION_CONFIG_NAME>> : SECTION_CONFIG
+|   <SECTION_ACTIONS_NEXT_ACTIONS: <SECTION_ACTIONS_NAME>> : SECTION_ACTIONS
+|   <SECTION_ACTIONS_NEXT_ERRORS: <SECTION_ERRORS_NAME>> : SECTION_ERRORS
+|   <SECTION_ACTIONS_NEXT_FILTERS: <SECTION_FILTERS_NAME>> : SECTION_FILTERS
+|   <SECTION_ACTIONS_NEXT_EXTENSIONS: <SECTION_EXTENSIONS_NAME>> : SECTION_EXTENSIONS
+|   <SECTION_ACTIONS_NEXT_PROPERTIES: <SECTION_PROPERTIES_NAME>> : SECTION_PROPERTIES
+
+|   <ACTION_METHOD: "GET" | "POST">
+|   <ACTION_END: <NEW_LINE>>
+}
+
+<SECTION_ERRORS> TOKEN: {
+    <SECTION_ERRORS_NEXT_CONFIG: <SECTION_CONFIG_NAME>> : SECTION_CONFIG
+|   <SECTION_ERRORS_NEXT_ACTIONS: <SECTION_ACTIONS_NAME>> : SECTION_ACTIONS
+|   <SECTION_ERRORS_NEXT_ERRORS: <SECTION_ERRORS_NAME>> : SECTION_ERRORS
+|   <SECTION_ERRORS_NEXT_FILTERS: <SECTION_FILTERS_NAME>> : SECTION_FILTERS
+|   <SECTION_ERRORS_NEXT_EXTENSIONS: <SECTION_EXTENSIONS_NAME>> : SECTION_EXTENSIONS
+|   <SECTION_ERRORS_NEXT_PROPERTIES: <SECTION_PROPERTIES_NAME>> : SECTION_PROPERTIES
+
+|   <CODE: "code:" <DIGIT><DIGIT><DIGIT>>
+|   <ERROR_END: <NEW_LINE>>
+}
+
+<SECTION_FILTERS> TOKEN: {
+    <SECTION_FILTERS_NEXT_CONFIG: <SECTION_CONFIG_NAME>> : SECTION_CONFIG
+|   <SECTION_FILTERS_NEXT_ACTIONS: <SECTION_ACTIONS_NAME>> : SECTION_ACTIONS
+|   <SECTION_FILTERS_NEXT_ERRORS: <SECTION_ERRORS_NAME>> : SECTION_ERRORS
+|   <SECTION_FILTERS_NEXT_FILTERS: <SECTION_FILTERS_NAME>> : SECTION_FILTERS
+|   <SECTION_FILTERS_NEXT_EXTENSIONS: <SECTION_EXTENSIONS_NAME>> : SECTION_EXTENSIONS
+|   <SECTION_FILTERS_NEXT_PROPERTIES: <SECTION_PROPERTIES_NAME>> : SECTION_PROPERTIES
+
+|   <FILTER_METHOD: "GET" | "POST">
+|   <FILTER_END: <NEW_LINE>>
+}
+
+<SECTION_EXTENSIONS> TOKEN: {
+    <SECTION_EXTENSIONS_NEXT_CONFIG: <SECTION_CONFIG_NAME>> : SECTION_CONFIG
+|   <SECTION_EXTENSIONS_NEXT_ACTIONS: <SECTION_ACTIONS_NAME>> : SECTION_ACTIONS
+|   <SECTION_EXTENSIONS_NEXT_ERRORS: <SECTION_ERRORS_NAME>> : SECTION_ERRORS
+|   <SECTION_EXTENSIONS_NEXT_FILTERS: <SECTION_FILTERS_NAME>> : SECTION_FILTERS
+|   <SECTION_EXTENSIONS_NEXT_EXTENSIONS: <SECTION_EXTENSIONS_NAME>> : SECTION_EXTENSIONS
+|   <SECTION_EXTENSIONS_NEXT_PROPERTIES: <SECTION_PROPERTIES_NAME>> : SECTION_PROPERTIES
+
+|   <MOUNT_PATH: "/">
+|   <EXTENSION_END: <NEW_LINE>>
+}
+
+<SECTION_PROPERTIES> TOKEN: {
+    <SECTION_PROPERTIES_NEXT_CONFIG: <SECTION_CONFIG_NAME>> : SECTION_CONFIG
+|   <SECTION_PROPERTIES_NEXT_ACTIONS: <SECTION_ACTIONS_NAME>> : SECTION_ACTIONS
+|   <SECTION_PROPERTIES_NEXT_ERRORS: <SECTION_ERRORS_NAME>> : SECTION_ERRORS
+|   <SECTION_PROPERTIES_NEXT_FILTERS: <SECTION_FILTERS_NAME>> : SECTION_FILTERS
+|   <SECTION_PROPERTIES_NEXT_EXTENSIONS: <SECTION_EXTENSIONS_NAME>> : SECTION_EXTENSIONS
+|   <SECTION_PROPERTIES_NEXT_PROPERTIES: <SECTION_PROPERTIES_NAME>> : SECTION_PROPERTIES
+
+|   <PROPERTIE_NAME : (~["\n", "="])+>
+|   <PROPERTIE_EQUALS : "=">
+|   <PROPERTIE_END: <NEW_LINE>>
+}
 
 void Mapping() : {}
 {
-    try {
-        (Sections() | <COMMENT>)*
-    } catch (ParseException ex) {
-        recover(ex, NEW_LINE);
-    }
+    (
+        SectionConfig() 
+      | SectionActions() 
+      | SectionErrors() 
+      | SectionFilters()
+      | SectionExtensions()
+      | SectionProperties()
+    )* <EOF>
 }
 
-void Sections() : {}
+void SectionConfig() : {}
 {
-    <SECTION_CONFIG> (SectionConfigLine())* <NEW_LINE>
+    SectionConfigName() (SectionConfigLine())*
+}
+
+void SectionConfigName() : {}
+{
+    (
+          <SECTION_CONFIG_NAME>
+        | <SECTION_CONFIG_NEXT_CONFIG>
+        | <SECTION_ACTIONS_NEXT_CONFIG>
+        | <SECTION_ERRORS_NEXT_CONFIG>
+        | <SECTION_FILTERS_NEXT_CONFIG>
+        | <SECTION_EXTENSIONS_NEXT_CONFIG>
+        | <SECTION_PROPERTIES_NEXT_CONFIG>
+    )
 }
 
 void SectionConfigLine() : {}
 {
-    <CONFIG_NAME> <EQUALS>
+    <CONFIG_KEY> <CONFIG_EQUALS> (<CONFIG_VALUE>)? <CONFIG_END>
+}
+
+void SectionActions() : {}
+{
+    SectionActionsName() (SectionActionsLine())*
+}
+
+void SectionActionsName() : {}
+{
+    (
+          <SECTION_ACTIONS_NAME>
+        | <SECTION_CONFIG_NEXT_ACTIONS>
+        | <SECTION_ACTIONS_NEXT_ACTIONS>
+        | <SECTION_ERRORS_NEXT_ACTIONS>
+        | <SECTION_FILTERS_NEXT_ACTIONS>
+        | <SECTION_EXTENSIONS_NEXT_ACTIONS>
+        | <SECTION_PROPERTIES_NEXT_ACTIONS>
+    )
+}
+
+void SectionActionsLine() : {}
+{
+    <ACTION_METHOD> <ACTION_END>
+}
+
+void SectionErrors() : {}
+{
+    SectionErrorsName() (SectionErrorsLine())*
+}
+
+void SectionErrorsName() : {}
+{
+    (
+          <SECTION_ERRORS_NAME>
+        | <SECTION_CONFIG_NEXT_ERRORS>
+        | <SECTION_ACTIONS_NEXT_ERRORS>
+        | <SECTION_ERRORS_NEXT_ERRORS>
+        | <SECTION_FILTERS_NEXT_ERRORS>
+        | <SECTION_EXTENSIONS_NEXT_ERRORS>
+        | <SECTION_PROPERTIES_NEXT_ERRORS>
+    )
+}
+
+void SectionErrorsLine() : {}
+{
+    <CODE> <ERROR_END>
+}
+
+void SectionFilters() : {}
+{
+    SectionFiltersName() (SectionFiltersLine())*
+}
+
+void SectionFiltersName() : {}
+{
+    (
+          <SECTION_FILTERS_NAME>
+        | <SECTION_CONFIG_NEXT_FILTERS>
+        | <SECTION_ACTIONS_NEXT_FILTERS>
+        | <SECTION_ERRORS_NEXT_FILTERS>
+        | <SECTION_FILTERS_NEXT_FILTERS>
+        | <SECTION_EXTENSIONS_NEXT_FILTERS>
+        | <SECTION_PROPERTIES_NEXT_FILTERS>
+    )
+}
+
+void SectionFiltersLine() : {}
+{
+    <FILTER_METHOD> <FILTER_END>
+}
+
+void SectionExtensions() : {}
+{
+    SectionExtensionsName() (SectionExtensionsLine())*
+}
+
+void SectionExtensionsName() : {}
+{
+    (
+          <SECTION_EXTENSIONS_NAME>
+        | <SECTION_CONFIG_NEXT_EXTENSIONS>
+        | <SECTION_ACTIONS_NEXT_EXTENSIONS>
+        | <SECTION_ERRORS_NEXT_EXTENSIONS>
+        | <SECTION_FILTERS_NEXT_EXTENSIONS>
+        | <SECTION_EXTENSIONS_NEXT_EXTENSIONS>
+        | <SECTION_PROPERTIES_NEXT_EXTENSIONS>
+    )
+}
+
+void SectionExtensionsLine() : {}
+{
+    <MOUNT_PATH> <EXTENSION_END>
+}
+
+void SectionProperties() : {}
+{
+    SectionPropertiesName() (SectionPropertiesLine())*
+}
+
+void SectionPropertiesName() : {}
+{
+    (
+          <SECTION_PROPERTIES_NAME>
+        | <SECTION_CONFIG_NEXT_PROPERTIES>
+        | <SECTION_ACTIONS_NEXT_PROPERTIES>
+        | <SECTION_ERRORS_NEXT_PROPERTIES>
+        | <SECTION_FILTERS_NEXT_PROPERTIES>
+        | <SECTION_EXTENSIONS_NEXT_PROPERTIES>
+        | <SECTION_PROPERTIES_NEXT_PROPERTIES>
+    )
+}
+
+void SectionPropertiesLine() : {}
+{
+    <PROPERTIE_NAME> <PROPERTIE_EQUALS> <PROPERTIE_END>
 }
