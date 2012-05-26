@@ -70,8 +70,21 @@ TOKEN: {
 |   <SECTION_CONFIG_NEXT_EXTENSIONS: <SECTION_EXTENSIONS_NAME>> : SECTION_EXTENSIONS
 |   <SECTION_CONFIG_NEXT_PROPERTIES: <SECTION_PROPERTIES_NAME>> : SECTION_PROPERTIES
 
-|   <CONFIG_KEY : "package.base" | "package.view">
-|   <CONFIG_EQUALS : "="> : SECTION_CONFIG_VALUE
+|   <CONFIG_KEY: "package.views"
+                  | "package.base"
+                  | "package.filters"
+                  | "package.actions"
+                  | "package.errors"
+                  | "javac.debug"
+                  | "server.async"
+                  | "server.encoding"
+                  | "server.error.page"
+                  | "server.controller.scope"
+                  | "server.listener.class"
+                  | "server.main.handler.class"
+                  | "server.secret"
+                  | "server.static.autodetect">
+|   <CONFIG_EQUALS: "="> : SECTION_CONFIG_VALUE
 }
 
 <SECTION_CONFIG_VALUE> TOKEN: {
@@ -100,6 +113,7 @@ TOKEN: {
 |   <SECTION_ERRORS_NEXT_PROPERTIES: <SECTION_PROPERTIES_NAME>> : SECTION_PROPERTIES
 
 |   <CODE: "code:" <DIGIT><DIGIT><DIGIT>>
+|   <ALL: "*">
 |   <ERROR_END: <NEW_LINE>>
 }
 
@@ -135,8 +149,8 @@ TOKEN: {
 |   <SECTION_PROPERTIES_NEXT_EXTENSIONS: <SECTION_EXTENSIONS_NAME>> : SECTION_EXTENSIONS
 |   <SECTION_PROPERTIES_NEXT_PROPERTIES: <SECTION_PROPERTIES_NAME>> : SECTION_PROPERTIES
 
-|   <PROPERTIE_NAME : ((~["\n", "="]) | "\\=")+>
-|   <PROPERTIE_EQUALS : "="> : SECTION_PROPERTIES_VALUE
+|   <PROPERTIE_NAME: ((~["\n", "="]) | "\\=")+>
+|   <PROPERTIE_EQUALS: "="> : SECTION_PROPERTIES_VALUE
 }
 
 <SECTION_PROPERTIES_VALUE> TOKEN: {
