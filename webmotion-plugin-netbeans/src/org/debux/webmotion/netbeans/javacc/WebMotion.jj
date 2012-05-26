@@ -12,8 +12,27 @@ import java.util.*;
 
 public class WebMotionParser {
 
+    public List<ParseException> syntaxErrors = new ArrayList<ParseException>();
+
+    void recover(ParseException ex, int ... recoveryPoints) {
+        syntaxErrors.add(ex);
+        Token t;
+        do {
+            t = getNextToken();
+        } while(t.kind != EOF && testRecoveryPoint(t.kind, recoveryPoints));
+    }
+    
+    boolean testRecoveryPoint(int recoveryPoint, int ... recoveryPoints) {
+        for (int test : recoveryPoints) {
+            if (test == recoveryPoint) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // Run the parser
-    public static void main(String args[]) {
+    public static void main(String args[]) throws ParseException {
         WebMotionParser parser;
 
         try {
@@ -23,12 +42,15 @@ public class WebMotionParser {
             return;
         }
 
-        try {
-            parser.Mapping();
-            System.out.println("Parser: successfully.");
-        } catch (ParseException e) {
+        parser.Mapping();
+
+        if (parser.syntaxErrors.isEmpty()) {
             System.out.println("Parser: errors.");
-            e.printStackTrace();
+            for(ParseException ex : parser.syntaxErrors) {
+                ex.printStackTrace();
+            }
+        } else {
+            System.out.println("Parser: successfully.");
         }
     }
 }
@@ -256,14 +278,19 @@ TOKEN: {
 
 void Mapping() : {}
 {
-    (
-        SectionConfig() 
-      | SectionActions() 
-      | SectionErrors() 
-      | SectionFilters()
-      | SectionExtensions()
-      | SectionProperties()
-    )* <EOF>
+    try {
+        (
+              SectionConfig() 
+            | SectionActions() 
+            | SectionErrors() 
+            | SectionFilters()
+            | SectionExtensions()
+            | SectionProperties()
+        )* <EOF>
+
+    } catch (ParseException ex) {
+        recover(ex, EOF);
+    }
 }
 
 void SectionConfig() : {}
@@ -286,7 +313,12 @@ void SectionConfigName() : {}
 
 void SectionConfigLine() : {}
 {
-    <CONFIG_KEY> <CONFIG_EQUALS> (<CONFIG_VALUE>)? <CONFIG_END>
+    try {
+        <CONFIG_KEY> <CONFIG_EQUALS> (<CONFIG_VALUE>)? <CONFIG_END>
+
+    } catch (ParseException ex) {
+        recover(ex, CONFIG_END);
+    }
 }
 
 void SectionActions() : {}
@@ -309,24 +341,29 @@ void SectionActionsName() : {}
 
 void SectionActionsLine() : {}
 {
-    <ACTION_METHOD>
-    <ACTION_SEPARATOR>
-    (<ACTION_PATH> | <ACTION_PATH_VARIABLE>)+
-    (
-         <ACTION_PARAMETERS_BEGIN> SectionActionsPathParameter()
-         ((<ACTION_PATH_PARAMETER_OTHER> | <ACTION_PATH_PARAMETER_VALUE_OTHER>) SectionActionsPathParameter())*
-    )?
-    (<ACTION_SEPARATOR> | <ACTION_PATH_PARAMETER_SEPARATOR> | <ACTION_PATH_PARAMETER_VALUE_SEPARATOR>)
-    (
-          (<ACTION_ACTION_JAVA> <ACTION_ACTION_JAVA_VALUE>)
-        | (<ACTION_ACTION_VIEW> <ACTION_ACTION_VIEW_VALUE>)
-        | (<ACTION_ACTION_LINK> <ACTION_ACTION_LINK_VALUE>)
-    )
-    (
-        (<ACTION_ACTION_JAVA_SEPARATOR> | <ACTION_ACTION_VIEW_SEPARATOR> | <ACTION_ACTION_LINK_SEPARATOR>)
-        SectionActionsParameter() ((<ACTION_PARAMETER_SEPARATOR> | <ACTION_PARAMETER_VALUE_SEPARATOR>) SectionActionsParameter())*
-    )?
-    (<ACTION_ACTION_JAVA_END> | <ACTION_ACTION_VIEW_END> | <ACTION_ACTION_LINK_END> | <ACTION_PARAMETER_VALUE_END> | <ACTION_END>)
+    try {
+        <ACTION_METHOD>
+        <ACTION_SEPARATOR>
+        (<ACTION_PATH> | <ACTION_PATH_VARIABLE>)+
+        (
+            <ACTION_PARAMETERS_BEGIN> SectionActionsPathParameter()
+            ((<ACTION_PATH_PARAMETER_OTHER> | <ACTION_PATH_PARAMETER_VALUE_OTHER>) SectionActionsPathParameter())*
+        )?
+        (<ACTION_SEPARATOR> | <ACTION_PATH_PARAMETER_SEPARATOR> | <ACTION_PATH_PARAMETER_VALUE_SEPARATOR>)
+        (
+            (<ACTION_ACTION_JAVA> <ACTION_ACTION_JAVA_VALUE>)
+            | (<ACTION_ACTION_VIEW> <ACTION_ACTION_VIEW_VALUE>)
+            | (<ACTION_ACTION_LINK> <ACTION_ACTION_LINK_VALUE>)
+        )
+        (
+            (<ACTION_ACTION_JAVA_SEPARATOR> | <ACTION_ACTION_VIEW_SEPARATOR> | <ACTION_ACTION_LINK_SEPARATOR>)
+            SectionActionsParameter() ((<ACTION_PARAMETER_SEPARATOR> | <ACTION_PARAMETER_VALUE_SEPARATOR>) SectionActionsParameter())*
+        )?
+        (<ACTION_ACTION_JAVA_END> | <ACTION_ACTION_VIEW_END> | <ACTION_ACTION_LINK_END> | <ACTION_PARAMETER_VALUE_END> | <ACTION_END>)
+
+    } catch (ParseException ex) {
+        recover(ex, ACTION_ACTION_JAVA_END, ACTION_ACTION_VIEW_END, ACTION_ACTION_LINK_END, ACTION_PARAMETER_VALUE_END, ACTION_END);
+    }
 }
 
 void SectionActionsPathParameter() : {}
@@ -359,10 +396,15 @@ void SectionErrorsName() : {}
 
 void SectionErrorsLine() : {}
 {
-    (<ALL> | <CODE> | <EXCEPTION>) 
-    <ERROR_SEPARATOR>
-    (<ERROR_ACTION_JAVA> | <ERROR_ACTION_VIEW> | <ERROR_ACTION_LINK>)
-    <ERROR_END>
+    try {
+        (<ALL> | <CODE> | <EXCEPTION>) 
+        <ERROR_SEPARATOR>
+        (<ERROR_ACTION_JAVA> | <ERROR_ACTION_VIEW> | <ERROR_ACTION_LINK>)
+        <ERROR_END>
+
+    } catch (ParseException ex) {
+        recover(ex, ERROR_END);
+    }
 }
 
 void SectionFilters() : {}
@@ -385,16 +427,21 @@ void SectionFiltersName() : {}
 
 void SectionFiltersLine() : {}
 {
-    <FILTER_METHOD>
-    <FILTER_SEPARATOR>
-    (<FILTER_PATH> | <FILTER_PATH_ALL>)+
-    <FILTER_SEPARATOR>
-    <FILTER_ACTION>
-    (
-        <FILTER_PARAMETERS_SEPARATOR>
-        SectionFiltersParameter() ((<FILTER_PARAMETER_SEPARATOR> | <FILTER_PARAMETER_VALUE_SEPARATOR>) SectionFiltersParameter())*
-    )?
-    (<FILTER_END> | <FILTER_PARAMETER_VALUE_END>)
+    try {
+        <FILTER_METHOD>
+        <FILTER_SEPARATOR>
+        (<FILTER_PATH> | <FILTER_PATH_ALL>)+
+        <FILTER_SEPARATOR>
+        <FILTER_ACTION>
+        (
+            <FILTER_PARAMETERS_SEPARATOR>
+            SectionFiltersParameter() ((<FILTER_PARAMETER_SEPARATOR> | <FILTER_PARAMETER_VALUE_SEPARATOR>) SectionFiltersParameter())*
+        )?
+        (<FILTER_END> | <FILTER_PARAMETER_VALUE_END>)
+
+    } catch (ParseException ex) {
+        recover(ex, FILTER_END, FILTER_PARAMETER_VALUE_END);
+    }
 }
 
 void SectionFiltersParameter() : {}
@@ -422,7 +469,12 @@ void SectionExtensionsName() : {}
 
 void SectionExtensionsLine() : {}
 {
-    (<EXTENSION_PATH>)+ <EXTENSION_SEPARATOR> <EXTENSION_FILE> <EXTENSION_END>
+    try {
+        (<EXTENSION_PATH>)+ <EXTENSION_SEPARATOR> <EXTENSION_FILE> <EXTENSION_END>
+
+    } catch (ParseException ex) {
+        recover(ex, EXTENSION_END);
+    }
 }
 
 void SectionProperties() : {}
@@ -445,5 +497,10 @@ void SectionPropertiesName() : {}
 
 void SectionPropertiesLine() : {}
 {
-    <PROPERTIE_NAME> <PROPERTIE_EQUALS> (<PROPERTIE_VALUE>)? <PROPERTIE_END>
+    try {
+        <PROPERTIE_NAME> <PROPERTIE_EQUALS> (<PROPERTIE_VALUE>)? <PROPERTIE_END>
+
+    } catch (ParseException ex) {
+        recover(ex, PROPERTIE_END);
+    }
 }
