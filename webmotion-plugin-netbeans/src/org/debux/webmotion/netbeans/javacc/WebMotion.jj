@@ -6,7 +6,7 @@ options {
 }
 
 PARSER_BEGIN(WebMotionParser)
-package org.debux.webmotion.netbeans.javacc;
+package parserjavacc;
 
 import java.util.*;
 
@@ -44,9 +44,9 @@ public class WebMotionParser {
 
         parser.Mapping();
 
-        if (parser.syntaxErrors.isEmpty()) {
+        if (!parser.syntaxErrors.isEmpty()) {
             System.out.println("Parser: errors.");
-            for(ParseException ex : parser.syntaxErrors) {
+            for (ParseException ex : parser.syntaxErrors) {
                 ex.printStackTrace();
             }
         } else {
@@ -57,16 +57,16 @@ public class WebMotionParser {
 
 PARSER_END(WebMotionParser)
 
-SKIP:
+TOKEN:
 {
     <COMMENT: "#" (~["\n","\r"])* ("\n" | "\r" | "\r\n")*>
 }
-<SECTION_CONFIG> SKIP: {<COMMENT_IN_CONFIG: <COMMENT>>}
-<SECTION_ACTIONS> SKIP: {<COMMENT_IN_ACTIONS: <COMMENT>>}
-<SECTION_ERRORS> SKIP: {<COMMENT_IN_ERRORS: <COMMENT>>}
-<SECTION_FILTERS> SKIP: {<COMMENT_IN_FILTERS: <COMMENT>>}
-<SECTION_EXTENSIONS> SKIP: {<COMMENT_IN_EXTENSIONS: <COMMENT>>}
-<SECTION_PROPERTIES> SKIP: {<COMMENT_IN_PROPERTIES: <COMMENT>>}
+<SECTION_CONFIG> TOKEN: {<COMMENT_IN_CONFIG: <COMMENT>>}
+<SECTION_ACTIONS> TOKEN: {<COMMENT_IN_ACTIONS: <COMMENT>>}
+<SECTION_ERRORS> TOKEN: {<COMMENT_IN_ERRORS: <COMMENT>>}
+<SECTION_FILTERS> TOKEN: {<COMMENT_IN_FILTERS: <COMMENT>>}
+<SECTION_EXTENSIONS> TOKEN: {<COMMENT_IN_EXTENSIONS: <COMMENT>>}
+<SECTION_PROPERTIES> TOKEN: {<COMMENT_IN_PROPERTIES: <COMMENT>>}
 
 TOKEN: {
     <SECTION_CONFIG_NAME: "[config]" <NEW_LINE>> : SECTION_CONFIG
@@ -139,9 +139,9 @@ TOKEN: {
 |   <ACTION_PATH_VARIABLE: "/" <VARIABLE>>
 
 |   <ACTION_PARAMETERS_BEGIN: "?"> : SECTION_ACTIONS_PATH_PARAMETERS
-|   <ACTION_ACTION_JAVA: (<ACTION_JAVA>)?> : SECTION_ACTIONS_ACTION_JAVA
-|   <ACTION_ACTION_VIEW: (<ACTION_VIEW>)?> : SECTION_ACTIONS_ACTION_VIEW
-|   <ACTION_ACTION_LINK: (<ACTION_LINK>)?> : SECTION_ACTIONS_ACTION_LINK
+|   <ACTION_ACTION_JAVA: (<ACTION_JAVA>)? (<VARIABLE> | <IDENTIFIER>)> : SECTION_ACTIONS_ACTION_JAVA
+|   <ACTION_ACTION_VIEW: <ACTION_VIEW>> : SECTION_ACTIONS_ACTION_VIEW
+|   <ACTION_ACTION_LINK: <ACTION_LINK>> : SECTION_ACTIONS_ACTION_LINK
 |   <ACTION_SEPARATOR: <WHITESPACE>>
 }
 
@@ -160,7 +160,7 @@ TOKEN: {
 }
 
 <SECTION_ACTIONS_ACTION_JAVA> TOKEN: {
-    <ACTION_ACTION_JAVA_VALUE:  <ACTION_ACTION_JAVA_IDENTIFIER> ("." <ACTION_ACTION_JAVA_IDENTIFIER>)*>
+    <ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER:  ("." <ACTION_ACTION_JAVA_IDENTIFIER>)+>
 |   <ACTION_ACTION_JAVA_IDENTIFIER: (<VARIABLE> | <IDENTIFIER>)+>
 |   <ACTION_ACTION_JAVA_SEPARATOR: <WHITESPACE>> : SECTION_ACTIONS_PARAMETERS
 |   <ACTION_ACTION_JAVA_END: <NEW_LINE>> : SECTION_ACTIONS
@@ -276,6 +276,28 @@ TOKEN: {
 |   <PROPERTIE_END: <NEW_LINE>> : SECTION_PROPERTIES
 }
 
+TOKEN:{<~[]>}
+<SECTION_CONFIG> TOKEN: {<~[]>}
+<SECTION_CONFIG_VALUE> TOKEN: {<~[]>}
+<SECTION_ACTIONS> TOKEN: {<~[]>}
+<SECTION_ACTIONS_PATH_PARAMETERS> TOKEN: {<~[]>}
+<SECTION_ACTIONS_PATH_PARAMETER_VALUE> TOKEN: {<~[]>}
+<SECTION_ACTIONS_ACTION_JAVA> TOKEN: {<~[]>}
+<SECTION_ACTIONS_ACTION_VIEW> TOKEN: {<~[]>}
+<SECTION_ACTIONS_ACTION_LINK> TOKEN: {<~[]>}
+<SECTION_ACTIONS_PARAMETERS> TOKEN: {<~[]>}
+<SECTION_ACTIONS_PARAMETER_VALUE> TOKEN: {<~[]>}
+<SECTION_ERRORS> TOKEN: {<~[]>}
+<SECTION_ERRORS_ACTIONS> TOKEN: {<~[]>}
+<SECTION_FILTERS> TOKEN: {<~[]>}
+<SECTION_FILTERS_PARAMETERS> TOKEN: {<~[]>}
+<SECTION_FILTERS_PARAMETER_VALUE> TOKEN: {<~[]>}
+<SECTION_EXTENSIONS> TOKEN: {<~[]>}
+<SECTION_EXTENSIONS_FILE> TOKEN: {<~[]>}
+<SECTION_PROPERTIES> TOKEN: {<~[]>}
+<SECTION_PROPERTIES_VALUE> TOKEN: {<~[]>}
+
+
 void Mapping() : {}
 {
     try {
@@ -286,6 +308,7 @@ void Mapping() : {}
             | SectionFilters()
             | SectionExtensions()
             | SectionProperties()
+            | <COMMENT>
         )* <EOF>
 
     } catch (ParseException ex) {
@@ -295,7 +318,7 @@ void Mapping() : {}
 
 void SectionConfig() : {}
 {
-    SectionConfigName() (SectionConfigLine())*
+    SectionConfigName() (SectionConfigLine() | <COMMENT_IN_CONFIG>)*
 }
 
 void SectionConfigName() : {}
@@ -323,7 +346,7 @@ void SectionConfigLine() : {}
 
 void SectionActions() : {}
 {
-    SectionActionsName() (SectionActionsLine())*
+    SectionActionsName() (SectionActionsLine() | <COMMENT_IN_ACTIONS>)*
 }
 
 void SectionActionsName() : {}
@@ -351,7 +374,7 @@ void SectionActionsLine() : {}
         )?
         (<ACTION_SEPARATOR> | <ACTION_PATH_PARAMETER_SEPARATOR> | <ACTION_PATH_PARAMETER_VALUE_SEPARATOR>)
         (
-            (<ACTION_ACTION_JAVA> <ACTION_ACTION_JAVA_VALUE>)
+            (<ACTION_ACTION_JAVA> <ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER>)
             | (<ACTION_ACTION_VIEW> <ACTION_ACTION_VIEW_VALUE>)
             | (<ACTION_ACTION_LINK> <ACTION_ACTION_LINK_VALUE>)
         )
@@ -378,7 +401,7 @@ void SectionActionsParameter() : {}
 
 void SectionErrors() : {}
 {
-    SectionErrorsName() (SectionErrorsLine())*
+    SectionErrorsName() (SectionErrorsLine() | <COMMENT_IN_ERRORS>)*
 }
 
 void SectionErrorsName() : {}
@@ -409,7 +432,7 @@ void SectionErrorsLine() : {}
 
 void SectionFilters() : {}
 {
-    SectionFiltersName() (SectionFiltersLine())*
+    SectionFiltersName() (SectionFiltersLine() | <COMMENT_IN_FILTERS>)*
 }
 
 void SectionFiltersName() : {}
@@ -451,7 +474,7 @@ void SectionFiltersParameter() : {}
 
 void SectionExtensions() : {}
 {
-    SectionExtensionsName() (SectionExtensionsLine())*
+    SectionExtensionsName() (SectionExtensionsLine() | <COMMENT_IN_EXTENSIONS>)*
 }
 
 void SectionExtensionsName() : {}
@@ -479,7 +502,7 @@ void SectionExtensionsLine() : {}
 
 void SectionProperties() : {}
 {
-    SectionPropertiesName() (SectionPropertiesLine())*
+    SectionPropertiesName() (SectionPropertiesLine() | <COMMENT_IN_PROPERTIES>)*
 }
 
 void SectionPropertiesName() : {}

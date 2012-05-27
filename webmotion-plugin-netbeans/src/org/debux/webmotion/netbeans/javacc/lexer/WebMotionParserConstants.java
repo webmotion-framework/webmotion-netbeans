@@ -11,68 +11,460 @@ public interface WebMotionParserConstants {
   /** End of File. */
   int EOF = 0;
   /** RegularExpression Id. */
-  int SECTION_CONFIG = 1;
+  int COMMENT = 1;
   /** RegularExpression Id. */
-  int SECTION_ACTIONS = 2;
+  int COMMENT_IN_CONFIG = 2;
   /** RegularExpression Id. */
-  int SECTION_ERRORS = 3;
+  int COMMENT_IN_ACTIONS = 3;
   /** RegularExpression Id. */
-  int SECTION_FILTERS = 4;
+  int COMMENT_IN_ERRORS = 4;
   /** RegularExpression Id. */
-  int SECTION_EXTENSIONS = 5;
+  int COMMENT_IN_FILTERS = 5;
   /** RegularExpression Id. */
-  int SECTION_PROPERTIES = 6;
+  int COMMENT_IN_EXTENSIONS = 6;
   /** RegularExpression Id. */
-  int CONFIG_NAME = 7;
+  int COMMENT_IN_PROPERTIES = 7;
   /** RegularExpression Id. */
-  int ACTION_JAVA = 8;
+  int SECTION_CONFIG_NAME = 8;
   /** RegularExpression Id. */
-  int ACTION_URL = 9;
+  int SECTION_ACTIONS_NAME = 9;
   /** RegularExpression Id. */
-  int ACTION_VIEW = 10;
+  int SECTION_ERRORS_NAME = 10;
   /** RegularExpression Id. */
-  int COMMENT = 11;
+  int SECTION_FILTERS_NAME = 11;
   /** RegularExpression Id. */
-  int METHODS_HTTP = 12;
+  int SECTION_EXTENSIONS_NAME = 12;
   /** RegularExpression Id. */
-  int METHOD_HTTP = 13;
+  int SECTION_PROPERTIES_NAME = 13;
   /** RegularExpression Id. */
-  int EQUALS = 14;
+  int METHODS_HTTP = 14;
   /** RegularExpression Id. */
-  int NEW_LINE = 15;
+  int METHOD_HTTP = 15;
   /** RegularExpression Id. */
-  int WHITESPACE = 16;
+  int ACTION_BASIC_JAVA = 16;
   /** RegularExpression Id. */
-  int DIGIT = 17;
+  int ACTION_JAVA = 17;
   /** RegularExpression Id. */
-  int LETTER = 18;
+  int ACTION_VIEW = 18;
+  /** RegularExpression Id. */
+  int ACTION_LINK = 19;
+  /** RegularExpression Id. */
+  int VARIABLE = 20;
+  /** RegularExpression Id. */
+  int PATTERN = 21;
+  /** RegularExpression Id. */
+  int IDENTIFIER = 22;
+  /** RegularExpression Id. */
+  int QUALIFIED_IDENTIFIER = 23;
+  /** RegularExpression Id. */
+  int NEW_LINE = 24;
+  /** RegularExpression Id. */
+  int WHITESPACE = 25;
+  /** RegularExpression Id. */
+  int DIGIT = 26;
+  /** RegularExpression Id. */
+  int LETTER = 27;
+  /** RegularExpression Id. */
+  int SECTION_CONFIG_NEXT_CONFIG = 28;
+  /** RegularExpression Id. */
+  int SECTION_CONFIG_NEXT_ACTIONS = 29;
+  /** RegularExpression Id. */
+  int SECTION_CONFIG_NEXT_ERRORS = 30;
+  /** RegularExpression Id. */
+  int SECTION_CONFIG_NEXT_FILTERS = 31;
+  /** RegularExpression Id. */
+  int SECTION_CONFIG_NEXT_EXTENSIONS = 32;
+  /** RegularExpression Id. */
+  int SECTION_CONFIG_NEXT_PROPERTIES = 33;
+  /** RegularExpression Id. */
+  int CONFIG_KEY = 34;
+  /** RegularExpression Id. */
+  int CONFIG_EQUALS = 35;
+  /** RegularExpression Id. */
+  int CONFIG_VALUE = 36;
+  /** RegularExpression Id. */
+  int CONFIG_END = 37;
+  /** RegularExpression Id. */
+  int SECTION_ACTIONS_NEXT_CONFIG = 38;
+  /** RegularExpression Id. */
+  int SECTION_ACTIONS_NEXT_ACTIONS = 39;
+  /** RegularExpression Id. */
+  int SECTION_ACTIONS_NEXT_ERRORS = 40;
+  /** RegularExpression Id. */
+  int SECTION_ACTIONS_NEXT_FILTERS = 41;
+  /** RegularExpression Id. */
+  int SECTION_ACTIONS_NEXT_EXTENSIONS = 42;
+  /** RegularExpression Id. */
+  int SECTION_ACTIONS_NEXT_PROPERTIES = 43;
+  /** RegularExpression Id. */
+  int ACTION_METHOD = 44;
+  /** RegularExpression Id. */
+  int ACTION_PATH = 45;
+  /** RegularExpression Id. */
+  int ACTION_PATH_VARIABLE = 46;
+  /** RegularExpression Id. */
+  int ACTION_PARAMETERS_BEGIN = 47;
+  /** RegularExpression Id. */
+  int ACTION_ACTION_JAVA = 48;
+  /** RegularExpression Id. */
+  int ACTION_ACTION_VIEW = 49;
+  /** RegularExpression Id. */
+  int ACTION_ACTION_LINK = 50;
+  /** RegularExpression Id. */
+  int ACTION_SEPARATOR = 51;
+  /** RegularExpression Id. */
+  int ACTION_PATH_PARAMETER_NAME = 52;
+  /** RegularExpression Id. */
+  int ACTION_PATH_PARAMETER_EQUALS = 53;
+  /** RegularExpression Id. */
+  int ACTION_PATH_PARAMETER_OTHER = 54;
+  /** RegularExpression Id. */
+  int ACTION_PATH_PARAMETER_SEPARATOR = 55;
+  /** RegularExpression Id. */
+  int ACTION_PATH_PARAMETER_VALUE = 56;
+  /** RegularExpression Id. */
+  int ACTION_PATH_PARAMETER_VALUE_VARIABLE = 57;
+  /** RegularExpression Id. */
+  int ACTION_PATH_PARAMETER_VALUE_OTHER = 58;
+  /** RegularExpression Id. */
+  int ACTION_PATH_PARAMETER_VALUE_SEPARATOR = 59;
+  /** RegularExpression Id. */
+  int ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER = 60;
+  /** RegularExpression Id. */
+  int ACTION_ACTION_JAVA_IDENTIFIER = 61;
+  /** RegularExpression Id. */
+  int ACTION_ACTION_JAVA_SEPARATOR = 62;
+  /** RegularExpression Id. */
+  int ACTION_ACTION_JAVA_END = 63;
+  /** RegularExpression Id. */
+  int ACTION_ACTION_VIEW_VALUE = 64;
+  /** RegularExpression Id. */
+  int ACTION_ACTION_VIEW_SEPARATOR = 65;
+  /** RegularExpression Id. */
+  int ACTION_ACTION_VIEW_END = 66;
+  /** RegularExpression Id. */
+  int ACTION_ACTION_LINK_VALUE = 67;
+  /** RegularExpression Id. */
+  int ACTION_ACTION_LINK_SEPARATOR = 68;
+  /** RegularExpression Id. */
+  int ACTION_ACTION_LINK_END = 69;
+  /** RegularExpression Id. */
+  int ACTION_PARAMETERS_SEPARATOR = 70;
+  /** RegularExpression Id. */
+  int ACTION_PARAMETER_NAME = 71;
+  /** RegularExpression Id. */
+  int ACTION_PARAMETER_EQUALS = 72;
+  /** RegularExpression Id. */
+  int ACTION_PARAMETER_SEPARATOR = 73;
+  /** RegularExpression Id. */
+  int ACTION_END = 74;
+  /** RegularExpression Id. */
+  int ACTION_PARAMETER_VALUE = 75;
+  /** RegularExpression Id. */
+  int ACTION_PARAMETER_VALUE_SEPARATOR = 76;
+  /** RegularExpression Id. */
+  int ACTION_PARAMETER_VALUE_END = 77;
+  /** RegularExpression Id. */
+  int SECTION_ERRORS_NEXT_CONFIG = 78;
+  /** RegularExpression Id. */
+  int SECTION_ERRORS_NEXT_ACTIONS = 79;
+  /** RegularExpression Id. */
+  int SECTION_ERRORS_NEXT_ERRORS = 80;
+  /** RegularExpression Id. */
+  int SECTION_ERRORS_NEXT_FILTERS = 81;
+  /** RegularExpression Id. */
+  int SECTION_ERRORS_NEXT_EXTENSIONS = 82;
+  /** RegularExpression Id. */
+  int SECTION_ERRORS_NEXT_PROPERTIES = 83;
+  /** RegularExpression Id. */
+  int CODE = 84;
+  /** RegularExpression Id. */
+  int ALL = 85;
+  /** RegularExpression Id. */
+  int EXCEPTION = 86;
+  /** RegularExpression Id. */
+  int ERROR_SEPARATOR = 87;
+  /** RegularExpression Id. */
+  int ERROR_ACTION_JAVA = 88;
+  /** RegularExpression Id. */
+  int ERROR_ACTION_VIEW = 89;
+  /** RegularExpression Id. */
+  int ERROR_ACTION_LINK = 90;
+  /** RegularExpression Id. */
+  int ERROR_END = 91;
+  /** RegularExpression Id. */
+  int SECTION_FILTERS_NEXT_CONFIG = 92;
+  /** RegularExpression Id. */
+  int SECTION_FILTERS_NEXT_ACTIONS = 93;
+  /** RegularExpression Id. */
+  int SECTION_FILTERS_NEXT_ERRORS = 94;
+  /** RegularExpression Id. */
+  int SECTION_FILTERS_NEXT_FILTERS = 95;
+  /** RegularExpression Id. */
+  int SECTION_FILTERS_NEXT_EXTENSIONS = 96;
+  /** RegularExpression Id. */
+  int SECTION_FILTERS_NEXT_PROPERTIES = 97;
+  /** RegularExpression Id. */
+  int FILTER_METHOD = 98;
+  /** RegularExpression Id. */
+  int FILTER_PATH = 99;
+  /** RegularExpression Id. */
+  int FILTER_PATH_ALL = 100;
+  /** RegularExpression Id. */
+  int FILTER_SEPARATOR = 101;
+  /** RegularExpression Id. */
+  int FILTER_ACTION = 102;
+  /** RegularExpression Id. */
+  int FILTER_PARAMETERS_SEPARATOR = 103;
+  /** RegularExpression Id. */
+  int FILTER_PARAMETER_NAME = 104;
+  /** RegularExpression Id. */
+  int FILTER_PARAMETER_EQUALS = 105;
+  /** RegularExpression Id. */
+  int FILTER_PARAMETER_SEPARATOR = 106;
+  /** RegularExpression Id. */
+  int FILTER_END = 107;
+  /** RegularExpression Id. */
+  int FILTER_PARAMETER_VALUE = 108;
+  /** RegularExpression Id. */
+  int FILTER_PARAMETER_VALUE_SEPARATOR = 109;
+  /** RegularExpression Id. */
+  int FILTER_PARAMETER_VALUE_END = 110;
+  /** RegularExpression Id. */
+  int SECTION_EXTENSIONS_NEXT_CONFIG = 111;
+  /** RegularExpression Id. */
+  int SECTION_EXTENSIONS_NEXT_ACTIONS = 112;
+  /** RegularExpression Id. */
+  int SECTION_EXTENSIONS_NEXT_ERRORS = 113;
+  /** RegularExpression Id. */
+  int SECTION_EXTENSIONS_NEXT_FILTERS = 114;
+  /** RegularExpression Id. */
+  int SECTION_EXTENSIONS_NEXT_EXTENSIONS = 115;
+  /** RegularExpression Id. */
+  int SECTION_EXTENSIONS_NEXT_PROPERTIES = 116;
+  /** RegularExpression Id. */
+  int EXTENSION_PATH = 117;
+  /** RegularExpression Id. */
+  int EXTENSION_SEPARATOR = 118;
+  /** RegularExpression Id. */
+  int EXTENSION_FILE = 119;
+  /** RegularExpression Id. */
+  int EXTENSION_END = 120;
+  /** RegularExpression Id. */
+  int SECTION_PROPERTIES_NEXT_CONFIG = 121;
+  /** RegularExpression Id. */
+  int SECTION_PROPERTIES_NEXT_ACTIONS = 122;
+  /** RegularExpression Id. */
+  int SECTION_PROPERTIES_NEXT_ERRORS = 123;
+  /** RegularExpression Id. */
+  int SECTION_PROPERTIES_NEXT_FILTERS = 124;
+  /** RegularExpression Id. */
+  int SECTION_PROPERTIES_NEXT_EXTENSIONS = 125;
+  /** RegularExpression Id. */
+  int SECTION_PROPERTIES_NEXT_PROPERTIES = 126;
+  /** RegularExpression Id. */
+  int PROPERTIE_NAME = 127;
+  /** RegularExpression Id. */
+  int PROPERTIE_EQUALS = 128;
+  /** RegularExpression Id. */
+  int PROPERTIE_VALUE = 129;
+  /** RegularExpression Id. */
+  int PROPERTIE_END = 130;
 
   /** Lexical state. */
   int DEFAULT = 0;
+  /** Lexical state. */
+  int SECTION_CONFIG = 1;
+  /** Lexical state. */
+  int SECTION_ACTIONS = 2;
+  /** Lexical state. */
+  int SECTION_ERRORS = 3;
+  /** Lexical state. */
+  int SECTION_FILTERS = 4;
+  /** Lexical state. */
+  int SECTION_EXTENSIONS = 5;
+  /** Lexical state. */
+  int SECTION_PROPERTIES = 6;
+  /** Lexical state. */
+  int SECTION_CONFIG_VALUE = 7;
+  /** Lexical state. */
+  int SECTION_ACTIONS_PATH_PARAMETERS = 8;
+  /** Lexical state. */
+  int SECTION_ACTIONS_PATH_PARAMETER_VALUE = 9;
+  /** Lexical state. */
+  int SECTION_ACTIONS_ACTION_JAVA = 10;
+  /** Lexical state. */
+  int SECTION_ACTIONS_ACTION_VIEW = 11;
+  /** Lexical state. */
+  int SECTION_ACTIONS_ACTION_LINK = 12;
+  /** Lexical state. */
+  int SECTION_ACTIONS_PARAMETERS = 13;
+  /** Lexical state. */
+  int SECTION_ACTIONS_PARAMETER_VALUE = 14;
+  /** Lexical state. */
+  int SECTION_ERRORS_ACTIONS = 15;
+  /** Lexical state. */
+  int SECTION_FILTERS_PARAMETERS = 16;
+  /** Lexical state. */
+  int SECTION_FILTERS_PARAMETER_VALUE = 17;
+  /** Lexical state. */
+  int SECTION_EXTENSIONS_FILE = 18;
+  /** Lexical state. */
+  int SECTION_PROPERTIES_VALUE = 19;
 
   /** Literal token values. */
   String[] tokenImage = {
     "<EOF>",
-    "\"[config]\"",
-    "\"[actions]\"",
-    "\"[errors]\"",
-    "\"[filters]\"",
-    "\"[extensions]\"",
-    "<SECTION_PROPERTIES>",
-    "<CONFIG_NAME>",
-    "<ACTION_JAVA>",
-    "<ACTION_URL>",
-    "\"view:\"",
     "<COMMENT>",
+    "<COMMENT_IN_CONFIG>",
+    "<COMMENT_IN_ACTIONS>",
+    "<COMMENT_IN_ERRORS>",
+    "<COMMENT_IN_FILTERS>",
+    "<COMMENT_IN_EXTENSIONS>",
+    "<COMMENT_IN_PROPERTIES>",
+    "<SECTION_CONFIG_NAME>",
+    "<SECTION_ACTIONS_NAME>",
+    "<SECTION_ERRORS_NAME>",
+    "<SECTION_FILTERS_NAME>",
+    "<SECTION_EXTENSIONS_NAME>",
+    "<SECTION_PROPERTIES_NAME>",
     "<METHODS_HTTP>",
     "<METHOD_HTTP>",
-    "\"=\"",
+    "\"action:\"",
+    "<ACTION_JAVA>",
+    "\"view:\"",
+    "<ACTION_LINK>",
+    "<VARIABLE>",
+    "<PATTERN>",
+    "<IDENTIFIER>",
+    "<QUALIFIED_IDENTIFIER>",
     "<NEW_LINE>",
     "<WHITESPACE>",
     "<DIGIT>",
     "<LETTER>",
-    "<token of kind 19>",
-    "<token of kind 20>",
+    "<SECTION_CONFIG_NEXT_CONFIG>",
+    "<SECTION_CONFIG_NEXT_ACTIONS>",
+    "<SECTION_CONFIG_NEXT_ERRORS>",
+    "<SECTION_CONFIG_NEXT_FILTERS>",
+    "<SECTION_CONFIG_NEXT_EXTENSIONS>",
+    "<SECTION_CONFIG_NEXT_PROPERTIES>",
+    "<CONFIG_KEY>",
+    "\"=\"",
+    "<CONFIG_VALUE>",
+    "<CONFIG_END>",
+    "<SECTION_ACTIONS_NEXT_CONFIG>",
+    "<SECTION_ACTIONS_NEXT_ACTIONS>",
+    "<SECTION_ACTIONS_NEXT_ERRORS>",
+    "<SECTION_ACTIONS_NEXT_FILTERS>",
+    "<SECTION_ACTIONS_NEXT_EXTENSIONS>",
+    "<SECTION_ACTIONS_NEXT_PROPERTIES>",
+    "<ACTION_METHOD>",
+    "<ACTION_PATH>",
+    "<ACTION_PATH_VARIABLE>",
+    "\"?\"",
+    "<ACTION_ACTION_JAVA>",
+    "<ACTION_ACTION_VIEW>",
+    "<ACTION_ACTION_LINK>",
+    "<ACTION_SEPARATOR>",
+    "<ACTION_PATH_PARAMETER_NAME>",
+    "\"=\"",
+    "\"&\"",
+    "<ACTION_PATH_PARAMETER_SEPARATOR>",
+    "<ACTION_PATH_PARAMETER_VALUE>",
+    "<ACTION_PATH_PARAMETER_VALUE_VARIABLE>",
+    "\"&\"",
+    "<ACTION_PATH_PARAMETER_VALUE_SEPARATOR>",
+    "<ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER>",
+    "<ACTION_ACTION_JAVA_IDENTIFIER>",
+    "<ACTION_ACTION_JAVA_SEPARATOR>",
+    "<ACTION_ACTION_JAVA_END>",
+    "<ACTION_ACTION_VIEW_VALUE>",
+    "<ACTION_ACTION_VIEW_SEPARATOR>",
+    "<ACTION_ACTION_VIEW_END>",
+    "<ACTION_ACTION_LINK_VALUE>",
+    "<ACTION_ACTION_LINK_SEPARATOR>",
+    "<ACTION_ACTION_LINK_END>",
+    "<ACTION_PARAMETERS_SEPARATOR>",
+    "<ACTION_PARAMETER_NAME>",
+    "\"=\"",
+    "\",\"",
+    "<ACTION_END>",
+    "<ACTION_PARAMETER_VALUE>",
+    "\",\"",
+    "<ACTION_PARAMETER_VALUE_END>",
+    "<SECTION_ERRORS_NEXT_CONFIG>",
+    "<SECTION_ERRORS_NEXT_ACTIONS>",
+    "<SECTION_ERRORS_NEXT_ERRORS>",
+    "<SECTION_ERRORS_NEXT_FILTERS>",
+    "<SECTION_ERRORS_NEXT_EXTENSIONS>",
+    "<SECTION_ERRORS_NEXT_PROPERTIES>",
+    "<CODE>",
+    "\"*\"",
+    "<EXCEPTION>",
+    "<ERROR_SEPARATOR>",
+    "<ERROR_ACTION_JAVA>",
+    "<ERROR_ACTION_VIEW>",
+    "<ERROR_ACTION_LINK>",
+    "<ERROR_END>",
+    "<SECTION_FILTERS_NEXT_CONFIG>",
+    "<SECTION_FILTERS_NEXT_ACTIONS>",
+    "<SECTION_FILTERS_NEXT_ERRORS>",
+    "<SECTION_FILTERS_NEXT_FILTERS>",
+    "<SECTION_FILTERS_NEXT_EXTENSIONS>",
+    "<SECTION_FILTERS_NEXT_PROPERTIES>",
+    "<FILTER_METHOD>",
+    "<FILTER_PATH>",
+    "\"/*\"",
+    "<FILTER_SEPARATOR>",
+    "<FILTER_ACTION>",
+    "<FILTER_PARAMETERS_SEPARATOR>",
+    "<FILTER_PARAMETER_NAME>",
+    "\"=\"",
+    "\",\"",
+    "<FILTER_END>",
+    "<FILTER_PARAMETER_VALUE>",
+    "\",\"",
+    "<FILTER_PARAMETER_VALUE_END>",
+    "<SECTION_EXTENSIONS_NEXT_CONFIG>",
+    "<SECTION_EXTENSIONS_NEXT_ACTIONS>",
+    "<SECTION_EXTENSIONS_NEXT_ERRORS>",
+    "<SECTION_EXTENSIONS_NEXT_FILTERS>",
+    "<SECTION_EXTENSIONS_NEXT_EXTENSIONS>",
+    "<SECTION_EXTENSIONS_NEXT_PROPERTIES>",
+    "<EXTENSION_PATH>",
+    "<EXTENSION_SEPARATOR>",
+    "<EXTENSION_FILE>",
+    "<EXTENSION_END>",
+    "<SECTION_PROPERTIES_NEXT_CONFIG>",
+    "<SECTION_PROPERTIES_NEXT_ACTIONS>",
+    "<SECTION_PROPERTIES_NEXT_ERRORS>",
+    "<SECTION_PROPERTIES_NEXT_FILTERS>",
+    "<SECTION_PROPERTIES_NEXT_EXTENSIONS>",
+    "<SECTION_PROPERTIES_NEXT_PROPERTIES>",
+    "<PROPERTIE_NAME>",
+    "\"=\"",
+    "<PROPERTIE_VALUE>",
+    "<PROPERTIE_END>",
+    "<token of kind 131>",
+    "<token of kind 132>",
+    "<token of kind 133>",
+    "<token of kind 134>",
+    "<token of kind 135>",
+    "<token of kind 136>",
+    "<token of kind 137>",
+    "<token of kind 138>",
+    "<token of kind 139>",
+    "<token of kind 140>",
+    "<token of kind 141>",
+    "<token of kind 142>",
+    "<token of kind 143>",
+    "<token of kind 144>",
+    "<token of kind 145>",
+    "<token of kind 146>",
+    "<token of kind 147>",
+    "<token of kind 148>",
+    "<token of kind 149>",
+    "<token of kind 150>",
   };
 
 }

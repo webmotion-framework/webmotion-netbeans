@@ -7,132 +7,904 @@ public class WebMotionParser implements WebMotionParserConstants {
 
     public List<ParseException> syntaxErrors = new ArrayList<ParseException>();
 
-    void recover(ParseException ex, int recoveryPoint) {
+    void recover(ParseException ex, int ... recoveryPoints) {
         syntaxErrors.add(ex);
         Token t;
         do {
             t = getNextToken();
-        } while(t.kind != EOF && t.kind != recoveryPoint);
+        } while(t.kind != EOF && testRecoveryPoint(t.kind, recoveryPoints));
+    }
+
+    boolean testRecoveryPoint(int recoveryPoint, int ... recoveryPoints) {
+        for (int test : recoveryPoints) {
+            if (test == recoveryPoint) {
+                return true;
+            }
+        }
+        return false;
     }
 
   final public void Mapping() throws ParseException {
     try {
       label_1:
       while (true) {
-        if (jj_2_1(2)) {
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case COMMENT:
+        case SECTION_CONFIG_NAME:
+        case SECTION_ACTIONS_NAME:
+        case SECTION_ERRORS_NAME:
+        case SECTION_FILTERS_NAME:
+        case SECTION_EXTENSIONS_NAME:
+        case SECTION_PROPERTIES_NAME:
+        case SECTION_CONFIG_NEXT_CONFIG:
+        case SECTION_CONFIG_NEXT_ACTIONS:
+        case SECTION_CONFIG_NEXT_ERRORS:
+        case SECTION_CONFIG_NEXT_FILTERS:
+        case SECTION_CONFIG_NEXT_EXTENSIONS:
+        case SECTION_CONFIG_NEXT_PROPERTIES:
+        case SECTION_ACTIONS_NEXT_CONFIG:
+        case SECTION_ACTIONS_NEXT_ACTIONS:
+        case SECTION_ACTIONS_NEXT_ERRORS:
+        case SECTION_ACTIONS_NEXT_FILTERS:
+        case SECTION_ACTIONS_NEXT_EXTENSIONS:
+        case SECTION_ACTIONS_NEXT_PROPERTIES:
+        case SECTION_ERRORS_NEXT_CONFIG:
+        case SECTION_ERRORS_NEXT_ACTIONS:
+        case SECTION_ERRORS_NEXT_ERRORS:
+        case SECTION_ERRORS_NEXT_FILTERS:
+        case SECTION_ERRORS_NEXT_EXTENSIONS:
+        case SECTION_ERRORS_NEXT_PROPERTIES:
+        case SECTION_FILTERS_NEXT_CONFIG:
+        case SECTION_FILTERS_NEXT_ACTIONS:
+        case SECTION_FILTERS_NEXT_ERRORS:
+        case SECTION_FILTERS_NEXT_FILTERS:
+        case SECTION_FILTERS_NEXT_EXTENSIONS:
+        case SECTION_FILTERS_NEXT_PROPERTIES:
+        case SECTION_EXTENSIONS_NEXT_CONFIG:
+        case SECTION_EXTENSIONS_NEXT_ACTIONS:
+        case SECTION_EXTENSIONS_NEXT_ERRORS:
+        case SECTION_EXTENSIONS_NEXT_FILTERS:
+        case SECTION_EXTENSIONS_NEXT_EXTENSIONS:
+        case SECTION_EXTENSIONS_NEXT_PROPERTIES:
+        case SECTION_PROPERTIES_NEXT_CONFIG:
+        case SECTION_PROPERTIES_NEXT_ACTIONS:
+        case SECTION_PROPERTIES_NEXT_ERRORS:
+        case SECTION_PROPERTIES_NEXT_FILTERS:
+        case SECTION_PROPERTIES_NEXT_EXTENSIONS:
+        case SECTION_PROPERTIES_NEXT_PROPERTIES:
           ;
-        } else {
+          break;
+        default:
+          jj_la1[0] = jj_gen;
           break label_1;
         }
-        if (jj_2_2(2)) {
-          Sections();
-        } else if (jj_2_3(2)) {
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case SECTION_CONFIG_NAME:
+        case SECTION_CONFIG_NEXT_CONFIG:
+        case SECTION_ACTIONS_NEXT_CONFIG:
+        case SECTION_ERRORS_NEXT_CONFIG:
+        case SECTION_FILTERS_NEXT_CONFIG:
+        case SECTION_EXTENSIONS_NEXT_CONFIG:
+        case SECTION_PROPERTIES_NEXT_CONFIG:
+          SectionConfig();
+          break;
+        case SECTION_ACTIONS_NAME:
+        case SECTION_CONFIG_NEXT_ACTIONS:
+        case SECTION_ACTIONS_NEXT_ACTIONS:
+        case SECTION_ERRORS_NEXT_ACTIONS:
+        case SECTION_FILTERS_NEXT_ACTIONS:
+        case SECTION_EXTENSIONS_NEXT_ACTIONS:
+        case SECTION_PROPERTIES_NEXT_ACTIONS:
+          SectionActions();
+          break;
+        case SECTION_ERRORS_NAME:
+        case SECTION_CONFIG_NEXT_ERRORS:
+        case SECTION_ACTIONS_NEXT_ERRORS:
+        case SECTION_ERRORS_NEXT_ERRORS:
+        case SECTION_FILTERS_NEXT_ERRORS:
+        case SECTION_EXTENSIONS_NEXT_ERRORS:
+        case SECTION_PROPERTIES_NEXT_ERRORS:
+          SectionErrors();
+          break;
+        case SECTION_FILTERS_NAME:
+        case SECTION_CONFIG_NEXT_FILTERS:
+        case SECTION_ACTIONS_NEXT_FILTERS:
+        case SECTION_ERRORS_NEXT_FILTERS:
+        case SECTION_FILTERS_NEXT_FILTERS:
+        case SECTION_EXTENSIONS_NEXT_FILTERS:
+        case SECTION_PROPERTIES_NEXT_FILTERS:
+          SectionFilters();
+          break;
+        case SECTION_EXTENSIONS_NAME:
+        case SECTION_CONFIG_NEXT_EXTENSIONS:
+        case SECTION_ACTIONS_NEXT_EXTENSIONS:
+        case SECTION_ERRORS_NEXT_EXTENSIONS:
+        case SECTION_FILTERS_NEXT_EXTENSIONS:
+        case SECTION_EXTENSIONS_NEXT_EXTENSIONS:
+        case SECTION_PROPERTIES_NEXT_EXTENSIONS:
+          SectionExtensions();
+          break;
+        case SECTION_PROPERTIES_NAME:
+        case SECTION_CONFIG_NEXT_PROPERTIES:
+        case SECTION_ACTIONS_NEXT_PROPERTIES:
+        case SECTION_ERRORS_NEXT_PROPERTIES:
+        case SECTION_FILTERS_NEXT_PROPERTIES:
+        case SECTION_EXTENSIONS_NEXT_PROPERTIES:
+        case SECTION_PROPERTIES_NEXT_PROPERTIES:
+          SectionProperties();
+          break;
+        case COMMENT:
           jj_consume_token(COMMENT);
-        } else {
+          break;
+        default:
+          jj_la1[1] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
       }
+      jj_consume_token(0);
     } catch (ParseException ex) {
-        recover (ex, NEW_LINE);
+        recover(ex, EOF);
     }
   }
 
-  final public void Sections() throws ParseException {
-    try {
-      jj_consume_token(SECTION_CONFIG);
-      label_2:
-      while (true) {
-        if (jj_2_4(2)) {
-          ;
-        } else {
-          break label_2;
-        }
-        SectionConfigLine();
+  final public void SectionConfig() throws ParseException {
+    SectionConfigName();
+    label_2:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case COMMENT_IN_CONFIG:
+      case CONFIG_KEY:
+        ;
+        break;
+      default:
+        jj_la1[2] = jj_gen;
+        break label_2;
       }
-      jj_consume_token(NEW_LINE);
-    } catch (ParseException ex) {
-        recover (ex, NEW_LINE);
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case CONFIG_KEY:
+        SectionConfigLine();
+        break;
+      case COMMENT_IN_CONFIG:
+        jj_consume_token(COMMENT_IN_CONFIG);
+        break;
+      default:
+        jj_la1[3] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+    }
+  }
+
+  final public void SectionConfigName() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case SECTION_CONFIG_NAME:
+      jj_consume_token(SECTION_CONFIG_NAME);
+      break;
+    case SECTION_CONFIG_NEXT_CONFIG:
+      jj_consume_token(SECTION_CONFIG_NEXT_CONFIG);
+      break;
+    case SECTION_ACTIONS_NEXT_CONFIG:
+      jj_consume_token(SECTION_ACTIONS_NEXT_CONFIG);
+      break;
+    case SECTION_ERRORS_NEXT_CONFIG:
+      jj_consume_token(SECTION_ERRORS_NEXT_CONFIG);
+      break;
+    case SECTION_FILTERS_NEXT_CONFIG:
+      jj_consume_token(SECTION_FILTERS_NEXT_CONFIG);
+      break;
+    case SECTION_EXTENSIONS_NEXT_CONFIG:
+      jj_consume_token(SECTION_EXTENSIONS_NEXT_CONFIG);
+      break;
+    case SECTION_PROPERTIES_NEXT_CONFIG:
+      jj_consume_token(SECTION_PROPERTIES_NEXT_CONFIG);
+      break;
+    default:
+      jj_la1[4] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
     }
   }
 
   final public void SectionConfigLine() throws ParseException {
     try {
-      jj_consume_token(CONFIG_NAME);
-      jj_consume_token(EQUALS);
+      jj_consume_token(CONFIG_KEY);
+      jj_consume_token(CONFIG_EQUALS);
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case CONFIG_VALUE:
+        jj_consume_token(CONFIG_VALUE);
+        break;
+      default:
+        jj_la1[5] = jj_gen;
+        ;
+      }
+      jj_consume_token(CONFIG_END);
     } catch (ParseException ex) {
-        recover (ex, NEW_LINE);
+        recover(ex, CONFIG_END);
     }
   }
 
-  private boolean jj_2_1(int xla) {
-    jj_la = xla; jj_lastpos = jj_scanpos = token;
-    try { return !jj_3_1(); }
-    catch(LookaheadSuccess ls) { return true; }
-    finally { jj_save(0, xla); }
-  }
-
-  private boolean jj_2_2(int xla) {
-    jj_la = xla; jj_lastpos = jj_scanpos = token;
-    try { return !jj_3_2(); }
-    catch(LookaheadSuccess ls) { return true; }
-    finally { jj_save(1, xla); }
-  }
-
-  private boolean jj_2_3(int xla) {
-    jj_la = xla; jj_lastpos = jj_scanpos = token;
-    try { return !jj_3_3(); }
-    catch(LookaheadSuccess ls) { return true; }
-    finally { jj_save(2, xla); }
-  }
-
-  private boolean jj_2_4(int xla) {
-    jj_la = xla; jj_lastpos = jj_scanpos = token;
-    try { return !jj_3_4(); }
-    catch(LookaheadSuccess ls) { return true; }
-    finally { jj_save(3, xla); }
-  }
-
-  private boolean jj_3_4() {
-    if (jj_3R_4()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_3() {
-    if (jj_scan_token(SECTION_CONFIG)) return true;
-    Token xsp;
+  final public void SectionActions() throws ParseException {
+    SectionActionsName();
+    label_3:
     while (true) {
-      xsp = jj_scanpos;
-      if (jj_3_4()) { jj_scanpos = xsp; break; }
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case COMMENT_IN_ACTIONS:
+      case ACTION_METHOD:
+        ;
+        break;
+      default:
+        jj_la1[6] = jj_gen;
+        break label_3;
+      }
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case ACTION_METHOD:
+        SectionActionsLine();
+        break;
+      case COMMENT_IN_ACTIONS:
+        jj_consume_token(COMMENT_IN_ACTIONS);
+        break;
+      default:
+        jj_la1[7] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
     }
-    if (jj_scan_token(NEW_LINE)) return true;
-    return false;
   }
 
-  private boolean jj_3_3() {
-    if (jj_scan_token(COMMENT)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_4() {
-    if (jj_scan_token(CONFIG_NAME)) return true;
-    if (jj_scan_token(EQUALS)) return true;
-    return false;
-  }
-
-  private boolean jj_3_2() {
-    if (jj_3R_3()) return true;
-    return false;
-  }
-
-  private boolean jj_3_1() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_2()) {
-    jj_scanpos = xsp;
-    if (jj_3_3()) return true;
+  final public void SectionActionsName() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case SECTION_ACTIONS_NAME:
+      jj_consume_token(SECTION_ACTIONS_NAME);
+      break;
+    case SECTION_CONFIG_NEXT_ACTIONS:
+      jj_consume_token(SECTION_CONFIG_NEXT_ACTIONS);
+      break;
+    case SECTION_ACTIONS_NEXT_ACTIONS:
+      jj_consume_token(SECTION_ACTIONS_NEXT_ACTIONS);
+      break;
+    case SECTION_ERRORS_NEXT_ACTIONS:
+      jj_consume_token(SECTION_ERRORS_NEXT_ACTIONS);
+      break;
+    case SECTION_FILTERS_NEXT_ACTIONS:
+      jj_consume_token(SECTION_FILTERS_NEXT_ACTIONS);
+      break;
+    case SECTION_EXTENSIONS_NEXT_ACTIONS:
+      jj_consume_token(SECTION_EXTENSIONS_NEXT_ACTIONS);
+      break;
+    case SECTION_PROPERTIES_NEXT_ACTIONS:
+      jj_consume_token(SECTION_PROPERTIES_NEXT_ACTIONS);
+      break;
+    default:
+      jj_la1[8] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
     }
-    return false;
+  }
+
+  final public void SectionActionsLine() throws ParseException {
+    try {
+      jj_consume_token(ACTION_METHOD);
+      jj_consume_token(ACTION_SEPARATOR);
+      label_4:
+      while (true) {
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case ACTION_PATH:
+          jj_consume_token(ACTION_PATH);
+          break;
+        case ACTION_PATH_VARIABLE:
+          jj_consume_token(ACTION_PATH_VARIABLE);
+          break;
+        default:
+          jj_la1[9] = jj_gen;
+          jj_consume_token(-1);
+          throw new ParseException();
+        }
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case ACTION_PATH:
+        case ACTION_PATH_VARIABLE:
+          ;
+          break;
+        default:
+          jj_la1[10] = jj_gen;
+          break label_4;
+        }
+      }
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case ACTION_PARAMETERS_BEGIN:
+        jj_consume_token(ACTION_PARAMETERS_BEGIN);
+        SectionActionsPathParameter();
+        label_5:
+        while (true) {
+          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+          case ACTION_PATH_PARAMETER_OTHER:
+          case ACTION_PATH_PARAMETER_VALUE_OTHER:
+            ;
+            break;
+          default:
+            jj_la1[11] = jj_gen;
+            break label_5;
+          }
+          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+          case ACTION_PATH_PARAMETER_OTHER:
+            jj_consume_token(ACTION_PATH_PARAMETER_OTHER);
+            break;
+          case ACTION_PATH_PARAMETER_VALUE_OTHER:
+            jj_consume_token(ACTION_PATH_PARAMETER_VALUE_OTHER);
+            break;
+          default:
+            jj_la1[12] = jj_gen;
+            jj_consume_token(-1);
+            throw new ParseException();
+          }
+          SectionActionsPathParameter();
+        }
+        break;
+      default:
+        jj_la1[13] = jj_gen;
+        ;
+      }
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case ACTION_SEPARATOR:
+        jj_consume_token(ACTION_SEPARATOR);
+        break;
+      case ACTION_PATH_PARAMETER_SEPARATOR:
+        jj_consume_token(ACTION_PATH_PARAMETER_SEPARATOR);
+        break;
+      case ACTION_PATH_PARAMETER_VALUE_SEPARATOR:
+        jj_consume_token(ACTION_PATH_PARAMETER_VALUE_SEPARATOR);
+        break;
+      default:
+        jj_la1[14] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case ACTION_ACTION_JAVA:
+        jj_consume_token(ACTION_ACTION_JAVA);
+        jj_consume_token(ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER);
+        break;
+      case ACTION_ACTION_VIEW:
+        jj_consume_token(ACTION_ACTION_VIEW);
+        jj_consume_token(ACTION_ACTION_VIEW_VALUE);
+        break;
+      case ACTION_ACTION_LINK:
+        jj_consume_token(ACTION_ACTION_LINK);
+        jj_consume_token(ACTION_ACTION_LINK_VALUE);
+        break;
+      default:
+        jj_la1[15] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case ACTION_ACTION_JAVA_SEPARATOR:
+      case ACTION_ACTION_VIEW_SEPARATOR:
+      case ACTION_ACTION_LINK_SEPARATOR:
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case ACTION_ACTION_JAVA_SEPARATOR:
+          jj_consume_token(ACTION_ACTION_JAVA_SEPARATOR);
+          break;
+        case ACTION_ACTION_VIEW_SEPARATOR:
+          jj_consume_token(ACTION_ACTION_VIEW_SEPARATOR);
+          break;
+        case ACTION_ACTION_LINK_SEPARATOR:
+          jj_consume_token(ACTION_ACTION_LINK_SEPARATOR);
+          break;
+        default:
+          jj_la1[16] = jj_gen;
+          jj_consume_token(-1);
+          throw new ParseException();
+        }
+        SectionActionsParameter();
+        label_6:
+        while (true) {
+          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+          case ACTION_PARAMETER_SEPARATOR:
+          case ACTION_PARAMETER_VALUE_SEPARATOR:
+            ;
+            break;
+          default:
+            jj_la1[17] = jj_gen;
+            break label_6;
+          }
+          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+          case ACTION_PARAMETER_SEPARATOR:
+            jj_consume_token(ACTION_PARAMETER_SEPARATOR);
+            break;
+          case ACTION_PARAMETER_VALUE_SEPARATOR:
+            jj_consume_token(ACTION_PARAMETER_VALUE_SEPARATOR);
+            break;
+          default:
+            jj_la1[18] = jj_gen;
+            jj_consume_token(-1);
+            throw new ParseException();
+          }
+          SectionActionsParameter();
+        }
+        break;
+      default:
+        jj_la1[19] = jj_gen;
+        ;
+      }
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case ACTION_ACTION_JAVA_END:
+        jj_consume_token(ACTION_ACTION_JAVA_END);
+        break;
+      case ACTION_ACTION_VIEW_END:
+        jj_consume_token(ACTION_ACTION_VIEW_END);
+        break;
+      case ACTION_ACTION_LINK_END:
+        jj_consume_token(ACTION_ACTION_LINK_END);
+        break;
+      case ACTION_PARAMETER_VALUE_END:
+        jj_consume_token(ACTION_PARAMETER_VALUE_END);
+        break;
+      case ACTION_END:
+        jj_consume_token(ACTION_END);
+        break;
+      default:
+        jj_la1[20] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+    } catch (ParseException ex) {
+        recover(ex, ACTION_ACTION_JAVA_END, ACTION_ACTION_VIEW_END, ACTION_ACTION_LINK_END, ACTION_PARAMETER_VALUE_END, ACTION_END);
+    }
+  }
+
+  final public void SectionActionsPathParameter() throws ParseException {
+    jj_consume_token(ACTION_PATH_PARAMETER_NAME);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case ACTION_PATH_PARAMETER_EQUALS:
+      jj_consume_token(ACTION_PATH_PARAMETER_EQUALS);
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case ACTION_PATH_PARAMETER_VALUE:
+      case ACTION_PATH_PARAMETER_VALUE_VARIABLE:
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case ACTION_PATH_PARAMETER_VALUE:
+          jj_consume_token(ACTION_PATH_PARAMETER_VALUE);
+          break;
+        case ACTION_PATH_PARAMETER_VALUE_VARIABLE:
+          jj_consume_token(ACTION_PATH_PARAMETER_VALUE_VARIABLE);
+          break;
+        default:
+          jj_la1[21] = jj_gen;
+          jj_consume_token(-1);
+          throw new ParseException();
+        }
+        break;
+      default:
+        jj_la1[22] = jj_gen;
+        ;
+      }
+      break;
+    default:
+      jj_la1[23] = jj_gen;
+      ;
+    }
+  }
+
+  final public void SectionActionsParameter() throws ParseException {
+    jj_consume_token(ACTION_PARAMETER_NAME);
+    jj_consume_token(ACTION_PARAMETER_EQUALS);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case ACTION_PARAMETER_VALUE:
+      jj_consume_token(ACTION_PARAMETER_VALUE);
+      break;
+    default:
+      jj_la1[24] = jj_gen;
+      ;
+    }
+  }
+
+  final public void SectionErrors() throws ParseException {
+    SectionErrorsName();
+    label_7:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case COMMENT_IN_ERRORS:
+      case CODE:
+      case ALL:
+      case EXCEPTION:
+        ;
+        break;
+      default:
+        jj_la1[25] = jj_gen;
+        break label_7;
+      }
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case CODE:
+      case ALL:
+      case EXCEPTION:
+        SectionErrorsLine();
+        break;
+      case COMMENT_IN_ERRORS:
+        jj_consume_token(COMMENT_IN_ERRORS);
+        break;
+      default:
+        jj_la1[26] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+    }
+  }
+
+  final public void SectionErrorsName() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case SECTION_ERRORS_NAME:
+      jj_consume_token(SECTION_ERRORS_NAME);
+      break;
+    case SECTION_CONFIG_NEXT_ERRORS:
+      jj_consume_token(SECTION_CONFIG_NEXT_ERRORS);
+      break;
+    case SECTION_ACTIONS_NEXT_ERRORS:
+      jj_consume_token(SECTION_ACTIONS_NEXT_ERRORS);
+      break;
+    case SECTION_ERRORS_NEXT_ERRORS:
+      jj_consume_token(SECTION_ERRORS_NEXT_ERRORS);
+      break;
+    case SECTION_FILTERS_NEXT_ERRORS:
+      jj_consume_token(SECTION_FILTERS_NEXT_ERRORS);
+      break;
+    case SECTION_EXTENSIONS_NEXT_ERRORS:
+      jj_consume_token(SECTION_EXTENSIONS_NEXT_ERRORS);
+      break;
+    case SECTION_PROPERTIES_NEXT_ERRORS:
+      jj_consume_token(SECTION_PROPERTIES_NEXT_ERRORS);
+      break;
+    default:
+      jj_la1[27] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+  }
+
+  final public void SectionErrorsLine() throws ParseException {
+    try {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case ALL:
+        jj_consume_token(ALL);
+        break;
+      case CODE:
+        jj_consume_token(CODE);
+        break;
+      case EXCEPTION:
+        jj_consume_token(EXCEPTION);
+        break;
+      default:
+        jj_la1[28] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+      jj_consume_token(ERROR_SEPARATOR);
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case ERROR_ACTION_JAVA:
+        jj_consume_token(ERROR_ACTION_JAVA);
+        break;
+      case ERROR_ACTION_VIEW:
+        jj_consume_token(ERROR_ACTION_VIEW);
+        break;
+      case ERROR_ACTION_LINK:
+        jj_consume_token(ERROR_ACTION_LINK);
+        break;
+      default:
+        jj_la1[29] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+      jj_consume_token(ERROR_END);
+    } catch (ParseException ex) {
+        recover(ex, ERROR_END);
+    }
+  }
+
+  final public void SectionFilters() throws ParseException {
+    SectionFiltersName();
+    label_8:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case COMMENT_IN_FILTERS:
+      case FILTER_METHOD:
+        ;
+        break;
+      default:
+        jj_la1[30] = jj_gen;
+        break label_8;
+      }
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case FILTER_METHOD:
+        SectionFiltersLine();
+        break;
+      case COMMENT_IN_FILTERS:
+        jj_consume_token(COMMENT_IN_FILTERS);
+        break;
+      default:
+        jj_la1[31] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+    }
+  }
+
+  final public void SectionFiltersName() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case SECTION_FILTERS_NAME:
+      jj_consume_token(SECTION_FILTERS_NAME);
+      break;
+    case SECTION_CONFIG_NEXT_FILTERS:
+      jj_consume_token(SECTION_CONFIG_NEXT_FILTERS);
+      break;
+    case SECTION_ACTIONS_NEXT_FILTERS:
+      jj_consume_token(SECTION_ACTIONS_NEXT_FILTERS);
+      break;
+    case SECTION_ERRORS_NEXT_FILTERS:
+      jj_consume_token(SECTION_ERRORS_NEXT_FILTERS);
+      break;
+    case SECTION_FILTERS_NEXT_FILTERS:
+      jj_consume_token(SECTION_FILTERS_NEXT_FILTERS);
+      break;
+    case SECTION_EXTENSIONS_NEXT_FILTERS:
+      jj_consume_token(SECTION_EXTENSIONS_NEXT_FILTERS);
+      break;
+    case SECTION_PROPERTIES_NEXT_FILTERS:
+      jj_consume_token(SECTION_PROPERTIES_NEXT_FILTERS);
+      break;
+    default:
+      jj_la1[32] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+  }
+
+  final public void SectionFiltersLine() throws ParseException {
+    try {
+      jj_consume_token(FILTER_METHOD);
+      jj_consume_token(FILTER_SEPARATOR);
+      label_9:
+      while (true) {
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case FILTER_PATH:
+          jj_consume_token(FILTER_PATH);
+          break;
+        case FILTER_PATH_ALL:
+          jj_consume_token(FILTER_PATH_ALL);
+          break;
+        default:
+          jj_la1[33] = jj_gen;
+          jj_consume_token(-1);
+          throw new ParseException();
+        }
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case FILTER_PATH:
+        case FILTER_PATH_ALL:
+          ;
+          break;
+        default:
+          jj_la1[34] = jj_gen;
+          break label_9;
+        }
+      }
+      jj_consume_token(FILTER_SEPARATOR);
+      jj_consume_token(FILTER_ACTION);
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case FILTER_PARAMETERS_SEPARATOR:
+        jj_consume_token(FILTER_PARAMETERS_SEPARATOR);
+        SectionFiltersParameter();
+        label_10:
+        while (true) {
+          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+          case FILTER_PARAMETER_SEPARATOR:
+          case FILTER_PARAMETER_VALUE_SEPARATOR:
+            ;
+            break;
+          default:
+            jj_la1[35] = jj_gen;
+            break label_10;
+          }
+          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+          case FILTER_PARAMETER_SEPARATOR:
+            jj_consume_token(FILTER_PARAMETER_SEPARATOR);
+            break;
+          case FILTER_PARAMETER_VALUE_SEPARATOR:
+            jj_consume_token(FILTER_PARAMETER_VALUE_SEPARATOR);
+            break;
+          default:
+            jj_la1[36] = jj_gen;
+            jj_consume_token(-1);
+            throw new ParseException();
+          }
+          SectionFiltersParameter();
+        }
+        break;
+      default:
+        jj_la1[37] = jj_gen;
+        ;
+      }
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case FILTER_END:
+        jj_consume_token(FILTER_END);
+        break;
+      case FILTER_PARAMETER_VALUE_END:
+        jj_consume_token(FILTER_PARAMETER_VALUE_END);
+        break;
+      default:
+        jj_la1[38] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+    } catch (ParseException ex) {
+        recover(ex, FILTER_END, FILTER_PARAMETER_VALUE_END);
+    }
+  }
+
+  final public void SectionFiltersParameter() throws ParseException {
+    jj_consume_token(FILTER_PARAMETER_NAME);
+    jj_consume_token(FILTER_PARAMETER_EQUALS);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case FILTER_PARAMETER_VALUE:
+      jj_consume_token(FILTER_PARAMETER_VALUE);
+      break;
+    default:
+      jj_la1[39] = jj_gen;
+      ;
+    }
+  }
+
+  final public void SectionExtensions() throws ParseException {
+    SectionExtensionsName();
+    label_11:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case COMMENT_IN_EXTENSIONS:
+      case EXTENSION_PATH:
+        ;
+        break;
+      default:
+        jj_la1[40] = jj_gen;
+        break label_11;
+      }
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case EXTENSION_PATH:
+        SectionExtensionsLine();
+        break;
+      case COMMENT_IN_EXTENSIONS:
+        jj_consume_token(COMMENT_IN_EXTENSIONS);
+        break;
+      default:
+        jj_la1[41] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+    }
+  }
+
+  final public void SectionExtensionsName() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case SECTION_EXTENSIONS_NAME:
+      jj_consume_token(SECTION_EXTENSIONS_NAME);
+      break;
+    case SECTION_CONFIG_NEXT_EXTENSIONS:
+      jj_consume_token(SECTION_CONFIG_NEXT_EXTENSIONS);
+      break;
+    case SECTION_ACTIONS_NEXT_EXTENSIONS:
+      jj_consume_token(SECTION_ACTIONS_NEXT_EXTENSIONS);
+      break;
+    case SECTION_ERRORS_NEXT_EXTENSIONS:
+      jj_consume_token(SECTION_ERRORS_NEXT_EXTENSIONS);
+      break;
+    case SECTION_FILTERS_NEXT_EXTENSIONS:
+      jj_consume_token(SECTION_FILTERS_NEXT_EXTENSIONS);
+      break;
+    case SECTION_EXTENSIONS_NEXT_EXTENSIONS:
+      jj_consume_token(SECTION_EXTENSIONS_NEXT_EXTENSIONS);
+      break;
+    case SECTION_PROPERTIES_NEXT_EXTENSIONS:
+      jj_consume_token(SECTION_PROPERTIES_NEXT_EXTENSIONS);
+      break;
+    default:
+      jj_la1[42] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+  }
+
+  final public void SectionExtensionsLine() throws ParseException {
+    try {
+      label_12:
+      while (true) {
+        jj_consume_token(EXTENSION_PATH);
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case EXTENSION_PATH:
+          ;
+          break;
+        default:
+          jj_la1[43] = jj_gen;
+          break label_12;
+        }
+      }
+      jj_consume_token(EXTENSION_SEPARATOR);
+      jj_consume_token(EXTENSION_FILE);
+      jj_consume_token(EXTENSION_END);
+    } catch (ParseException ex) {
+        recover(ex, EXTENSION_END);
+    }
+  }
+
+  final public void SectionProperties() throws ParseException {
+    SectionPropertiesName();
+    label_13:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case COMMENT_IN_PROPERTIES:
+      case PROPERTIE_NAME:
+        ;
+        break;
+      default:
+        jj_la1[44] = jj_gen;
+        break label_13;
+      }
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case PROPERTIE_NAME:
+        SectionPropertiesLine();
+        break;
+      case COMMENT_IN_PROPERTIES:
+        jj_consume_token(COMMENT_IN_PROPERTIES);
+        break;
+      default:
+        jj_la1[45] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+    }
+  }
+
+  final public void SectionPropertiesName() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case SECTION_PROPERTIES_NAME:
+      jj_consume_token(SECTION_PROPERTIES_NAME);
+      break;
+    case SECTION_CONFIG_NEXT_PROPERTIES:
+      jj_consume_token(SECTION_CONFIG_NEXT_PROPERTIES);
+      break;
+    case SECTION_ACTIONS_NEXT_PROPERTIES:
+      jj_consume_token(SECTION_ACTIONS_NEXT_PROPERTIES);
+      break;
+    case SECTION_ERRORS_NEXT_PROPERTIES:
+      jj_consume_token(SECTION_ERRORS_NEXT_PROPERTIES);
+      break;
+    case SECTION_FILTERS_NEXT_PROPERTIES:
+      jj_consume_token(SECTION_FILTERS_NEXT_PROPERTIES);
+      break;
+    case SECTION_EXTENSIONS_NEXT_PROPERTIES:
+      jj_consume_token(SECTION_EXTENSIONS_NEXT_PROPERTIES);
+      break;
+    case SECTION_PROPERTIES_NEXT_PROPERTIES:
+      jj_consume_token(SECTION_PROPERTIES_NEXT_PROPERTIES);
+      break;
+    default:
+      jj_la1[46] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+  }
+
+  final public void SectionPropertiesLine() throws ParseException {
+    try {
+      jj_consume_token(PROPERTIE_NAME);
+      jj_consume_token(PROPERTIE_EQUALS);
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case PROPERTIE_VALUE:
+        jj_consume_token(PROPERTIE_VALUE);
+        break;
+      default:
+        jj_la1[47] = jj_gen;
+        ;
+      }
+      jj_consume_token(PROPERTIE_END);
+    } catch (ParseException ex) {
+        recover(ex, PROPERTIE_END);
+    }
   }
 
   /** Generated Token Manager. */
@@ -143,20 +915,35 @@ public class WebMotionParser implements WebMotionParserConstants {
   /** Next token. */
   public Token jj_nt;
   private int jj_ntk;
-  private Token jj_scanpos, jj_lastpos;
-  private int jj_la;
   private int jj_gen;
-  final private int[] jj_la1 = new int[0];
+  final private int[] jj_la1 = new int[48];
   static private int[] jj_la1_0;
+  static private int[] jj_la1_1;
+  static private int[] jj_la1_2;
+  static private int[] jj_la1_3;
+  static private int[] jj_la1_4;
   static {
       jj_la1_init_0();
+      jj_la1_init_1();
+      jj_la1_init_2();
+      jj_la1_init_3();
+      jj_la1_init_4();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {};
+      jj_la1_0 = new int[] {0xf0003f02,0xf0003f02,0x4,0x4,0x10000100,0x0,0x8,0x8,0x20000200,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10,0x10,0x40000400,0x0,0x0,0x20,0x20,0x80000800,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40,0x40,0x1000,0x0,0x80,0x80,0x2000,0x0,};
    }
-  final private JJCalls[] jj_2_rtns = new JJCalls[4];
-  private boolean jj_rescan = false;
-  private int jj_gc = 0;
+   private static void jj_la1_init_1() {
+      jj_la1_1 = new int[] {0xfc3,0xfc3,0x4,0x4,0x40,0x10,0x1000,0x1000,0x80,0x6000,0x6000,0x4400000,0x4400000,0x8000,0x8880000,0x70000,0x40000000,0x0,0x0,0x40000000,0x80000000,0x3000000,0x3000000,0x200000,0x0,0x0,0x0,0x100,0x0,0x0,0x0,0x0,0x200,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x401,0x0,0x0,0x0,0x802,0x0,};
+   }
+   private static void jj_la1_init_2() {
+      jj_la1_2 = new int[] {0xf00fc000,0xf00fc000,0x0,0x0,0x10004000,0x0,0x0,0x0,0x20008000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x12,0x1200,0x1200,0x12,0x2424,0x0,0x0,0x0,0x800,0x700000,0x700000,0x40010000,0x700000,0x7000000,0x0,0x0,0x80020000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40000,0x0,0x0,0x0,0x80000,0x0,};
+   }
+   private static void jj_la1_init_3() {
+      jj_la1_3 = new int[] {0x7e1f8003,0x7e1f8003,0x0,0x0,0x2008000,0x0,0x0,0x0,0x4010000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8020000,0x0,0x0,0x4,0x4,0x10040000,0x18,0x18,0x2400,0x2400,0x80,0x4800,0x1000,0x200000,0x200000,0x20080001,0x200000,0x80000000,0x80000000,0x40100002,0x0,};
+   }
+   private static void jj_la1_init_4() {
+      jj_la1_4 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x2,};
+   }
 
   /** Constructor with InputStream. */
   public WebMotionParser(java.io.InputStream stream) {
@@ -169,8 +956,7 @@ public class WebMotionParser implements WebMotionParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 0; i++) jj_la1[i] = -1;
-    for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
+    for (int i = 0; i < 48; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -184,8 +970,7 @@ public class WebMotionParser implements WebMotionParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 0; i++) jj_la1[i] = -1;
-    for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
+    for (int i = 0; i < 48; i++) jj_la1[i] = -1;
   }
 
   /** Constructor. */
@@ -195,8 +980,7 @@ public class WebMotionParser implements WebMotionParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 0; i++) jj_la1[i] = -1;
-    for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
+    for (int i = 0; i < 48; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -206,8 +990,7 @@ public class WebMotionParser implements WebMotionParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 0; i++) jj_la1[i] = -1;
-    for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
+    for (int i = 0; i < 48; i++) jj_la1[i] = -1;
   }
 
   /** Constructor with generated Token Manager. */
@@ -216,8 +999,7 @@ public class WebMotionParser implements WebMotionParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 0; i++) jj_la1[i] = -1;
-    for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
+    for (int i = 0; i < 48; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -226,8 +1008,7 @@ public class WebMotionParser implements WebMotionParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 0; i++) jj_la1[i] = -1;
-    for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
+    for (int i = 0; i < 48; i++) jj_la1[i] = -1;
   }
 
   private Token jj_consume_token(int kind) throws ParseException {
@@ -237,44 +1018,11 @@ public class WebMotionParser implements WebMotionParserConstants {
     jj_ntk = -1;
     if (token.kind == kind) {
       jj_gen++;
-      if (++jj_gc > 100) {
-        jj_gc = 0;
-        for (int i = 0; i < jj_2_rtns.length; i++) {
-          JJCalls c = jj_2_rtns[i];
-          while (c != null) {
-            if (c.gen < jj_gen) c.first = null;
-            c = c.next;
-          }
-        }
-      }
       return token;
     }
     token = oldToken;
     jj_kind = kind;
     throw generateParseException();
-  }
-
-  static private final class LookaheadSuccess extends java.lang.Error { }
-  final private LookaheadSuccess jj_ls = new LookaheadSuccess();
-  private boolean jj_scan_token(int kind) {
-    if (jj_scanpos == jj_lastpos) {
-      jj_la--;
-      if (jj_scanpos.next == null) {
-        jj_lastpos = jj_scanpos = jj_scanpos.next = token_source.getNextToken();
-      } else {
-        jj_lastpos = jj_scanpos = jj_scanpos.next;
-      }
-    } else {
-      jj_scanpos = jj_scanpos.next;
-    }
-    if (jj_rescan) {
-      int i = 0; Token tok = token;
-      while (tok != null && tok != jj_scanpos) { i++; tok = tok.next; }
-      if (tok != null) jj_add_error_token(kind, i);
-    }
-    if (jj_scanpos.kind != kind) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) throw jj_ls;
-    return false;
   }
 
 
@@ -307,61 +1055,43 @@ public class WebMotionParser implements WebMotionParserConstants {
   private java.util.List<int[]> jj_expentries = new java.util.ArrayList<int[]>();
   private int[] jj_expentry;
   private int jj_kind = -1;
-  private int[] jj_lasttokens = new int[100];
-  private int jj_endpos;
-
-  private void jj_add_error_token(int kind, int pos) {
-    if (pos >= 100) return;
-    if (pos == jj_endpos + 1) {
-      jj_lasttokens[jj_endpos++] = kind;
-    } else if (jj_endpos != 0) {
-      jj_expentry = new int[jj_endpos];
-      for (int i = 0; i < jj_endpos; i++) {
-        jj_expentry[i] = jj_lasttokens[i];
-      }
-      jj_entries_loop: for (java.util.Iterator<?> it = jj_expentries.iterator(); it.hasNext();) {
-        int[] oldentry = (int[])(it.next());
-        if (oldentry.length == jj_expentry.length) {
-          for (int i = 0; i < jj_expentry.length; i++) {
-            if (oldentry[i] != jj_expentry[i]) {
-              continue jj_entries_loop;
-            }
-          }
-          jj_expentries.add(jj_expentry);
-          break jj_entries_loop;
-        }
-      }
-      if (pos != 0) jj_lasttokens[(jj_endpos = pos) - 1] = kind;
-    }
-  }
 
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[20];
+    boolean[] la1tokens = new boolean[151];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 0; i++) {
+    for (int i = 0; i < 48; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
             la1tokens[j] = true;
           }
+          if ((jj_la1_1[i] & (1<<j)) != 0) {
+            la1tokens[32+j] = true;
+          }
+          if ((jj_la1_2[i] & (1<<j)) != 0) {
+            la1tokens[64+j] = true;
+          }
+          if ((jj_la1_3[i] & (1<<j)) != 0) {
+            la1tokens[96+j] = true;
+          }
+          if ((jj_la1_4[i] & (1<<j)) != 0) {
+            la1tokens[128+j] = true;
+          }
         }
       }
     }
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < 151; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
         jj_expentries.add(jj_expentry);
       }
     }
-    jj_endpos = 0;
-    jj_rescan_token();
-    jj_add_error_token(0, 0);
     int[][] exptokseq = new int[jj_expentries.size()][];
     for (int i = 0; i < jj_expentries.size(); i++) {
       exptokseq[i] = jj_expentries.get(i);
@@ -375,44 +1105,6 @@ public class WebMotionParser implements WebMotionParserConstants {
 
   /** Disable tracing. */
   final public void disable_tracing() {
-  }
-
-  private void jj_rescan_token() {
-    jj_rescan = true;
-    for (int i = 0; i < 4; i++) {
-    try {
-      JJCalls p = jj_2_rtns[i];
-      do {
-        if (p.gen > jj_gen) {
-          jj_la = p.arg; jj_lastpos = jj_scanpos = p.first;
-          switch (i) {
-            case 0: jj_3_1(); break;
-            case 1: jj_3_2(); break;
-            case 2: jj_3_3(); break;
-            case 3: jj_3_4(); break;
-          }
-        }
-        p = p.next;
-      } while (p != null);
-      } catch(LookaheadSuccess ls) { }
-    }
-    jj_rescan = false;
-  }
-
-  private void jj_save(int index, int xla) {
-    JJCalls p = jj_2_rtns[index];
-    while (p.gen > jj_gen) {
-      if (p.next == null) { p = p.next = new JJCalls(); break; }
-      p = p.next;
-    }
-    p.gen = jj_gen + xla - jj_la; p.first = token; p.arg = xla;
-  }
-
-  static final class JJCalls {
-    int gen;
-    Token first;
-    int arg;
-    JJCalls next;
   }
 
 }
