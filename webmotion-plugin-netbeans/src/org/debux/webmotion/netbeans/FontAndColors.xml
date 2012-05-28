@@ -5,6 +5,8 @@
 <fontscolors>
     <fontcolor name="section" foreColor="red"/>
     <fontcolor name="keyword" foreColor="blue"/>
+    <fontcolor name="variable" foreColor="9933CC"/>
+    <fontcolor name="literal" foreColor="black"/>
     <fontcolor name="comment" default="comment"/>
     <fontcolor name="character" foreColor="black"/>
 </fontscolors>
