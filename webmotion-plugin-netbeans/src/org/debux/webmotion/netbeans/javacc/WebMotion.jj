@@ -389,7 +389,7 @@ void SectionActionsLine() : {}
     try {
         <ACTION_METHOD>
         <ACTION_SEPARATOR>
-        (<ACTION_PATH> (<ACTION_PATH_VALUE> | <ACTION_PATH_VARIABLE>))+
+        (<ACTION_PATH> ((<ACTION_PATH_VALUE> | <ACTION_PATH_VARIABLE>) (<ACTION_PATH>)?)*)
         (
             <ACTION_PARAMETERS_BEGIN> SectionActionsPathParameter()
             ((<ACTION_PATH_PARAMETER_OTHER> | <ACTION_PATH_PARAMETER_VALUE_OTHER>) SectionActionsPathParameter())*
