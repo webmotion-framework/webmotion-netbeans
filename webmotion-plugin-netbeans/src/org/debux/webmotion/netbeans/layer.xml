@@ -88,6 +88,11 @@
                 <attr name="displayName" bundlevalue="org.debux.webmotion.netbeans.Bundle#editor_name"/>
                 <file name="org-debux-webmotion-netbeans-javacc-parser-impl-SyntaxErrorHighlightingTaskFactory.instance"/>
                 <file name="org-debux-webmotion-netbeans-javacc-parser-impl-WebMotionParserFactory.instance"/>
+                <folder name="BracesMatchers">
+                    <file name="org-debux-webmotion-netbeans-WebMotionBracesMatcherFactory.instance">
+                        <attr name="position" intvalue="0"/>
+                    </file>
+                </folder>
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
