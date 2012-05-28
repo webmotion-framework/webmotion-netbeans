@@ -5,7 +5,7 @@
 
 [config]
 package.base=
-package.view=WEB-INF/
+package.views=WEB-INF/
 
 [actions]
 # do action
