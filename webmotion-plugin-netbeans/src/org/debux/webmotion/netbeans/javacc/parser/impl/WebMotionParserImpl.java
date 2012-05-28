@@ -22,8 +22,6 @@ import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
 

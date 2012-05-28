@@ -105,171 +105,223 @@ public interface WebMotionParserConstants {
   /** RegularExpression Id. */
   int ACTION_PARAMETERS_BEGIN = 47;
   /** RegularExpression Id. */
-  int ACTION_ACTION_JAVA = 48;
+  int ACTION_ACTION_JAVA_BEGIN = 48;
   /** RegularExpression Id. */
-  int ACTION_ACTION_VIEW = 49;
+  int ACTION_ACTION_JAVA = 49;
   /** RegularExpression Id. */
-  int ACTION_ACTION_LINK = 50;
+  int ACTION_ACTION_VIEW = 50;
   /** RegularExpression Id. */
-  int ACTION_SEPARATOR = 51;
+  int ACTION_ACTION_LINK = 51;
   /** RegularExpression Id. */
-  int ACTION_PATH_PARAMETER_NAME = 52;
+  int ACTION_SEPARATOR = 52;
   /** RegularExpression Id. */
-  int ACTION_PATH_PARAMETER_EQUALS = 53;
+  int ACTION_PATH_PARAMETER_NAME = 53;
   /** RegularExpression Id. */
-  int ACTION_PATH_PARAMETER_OTHER = 54;
+  int ACTION_PATH_PARAMETER_EQUALS = 54;
   /** RegularExpression Id. */
-  int ACTION_PATH_PARAMETER_SEPARATOR = 55;
+  int ACTION_PATH_PARAMETER_OTHER = 55;
   /** RegularExpression Id. */
-  int ACTION_PATH_PARAMETER_VALUE = 56;
+  int ACTION_PATH_PARAMETER_SEPARATOR = 56;
   /** RegularExpression Id. */
-  int ACTION_PATH_PARAMETER_VALUE_VARIABLE = 57;
+  int ACTION_PATH_PARAMETER_VALUE = 57;
   /** RegularExpression Id. */
-  int ACTION_PATH_PARAMETER_VALUE_OTHER = 58;
+  int ACTION_PATH_PARAMETER_VALUE_VARIABLE = 58;
   /** RegularExpression Id. */
-  int ACTION_PATH_PARAMETER_VALUE_SEPARATOR = 59;
+  int ACTION_PATH_PARAMETER_VALUE_OTHER = 59;
   /** RegularExpression Id. */
-  int ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER = 60;
+  int ACTION_PATH_PARAMETER_VALUE_SEPARATOR = 60;
   /** RegularExpression Id. */
-  int ACTION_ACTION_JAVA_IDENTIFIER = 61;
+  int ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER = 61;
   /** RegularExpression Id. */
-  int ACTION_ACTION_JAVA_SEPARATOR = 62;
+  int ACTION_ACTION_JAVA_IDENTIFIER = 62;
   /** RegularExpression Id. */
-  int ACTION_ACTION_JAVA_END = 63;
+  int ACTION_ACTION_JAVA_SEPARATOR = 63;
   /** RegularExpression Id. */
-  int ACTION_ACTION_VIEW_VALUE = 64;
+  int ACTION_ACTION_JAVA_END = 64;
   /** RegularExpression Id. */
-  int ACTION_ACTION_VIEW_SEPARATOR = 65;
+  int ACTION_ACTION_VIEW_VALUE = 65;
   /** RegularExpression Id. */
-  int ACTION_ACTION_VIEW_END = 66;
+  int ACTION_ACTION_VIEW_SEPARATOR = 66;
   /** RegularExpression Id. */
-  int ACTION_ACTION_LINK_VALUE = 67;
+  int ACTION_ACTION_VIEW_END = 67;
   /** RegularExpression Id. */
-  int ACTION_ACTION_LINK_SEPARATOR = 68;
+  int ACTION_ACTION_LINK_VALUE = 68;
   /** RegularExpression Id. */
-  int ACTION_ACTION_LINK_END = 69;
+  int ACTION_ACTION_LINK_SEPARATOR = 69;
   /** RegularExpression Id. */
-  int ACTION_PARAMETERS_SEPARATOR = 70;
+  int ACTION_ACTION_LINK_END = 70;
   /** RegularExpression Id. */
-  int ACTION_PARAMETER_NAME = 71;
+  int ACTION_PARAMETERS_SEPARATOR = 71;
   /** RegularExpression Id. */
-  int ACTION_PARAMETER_EQUALS = 72;
+  int ACTION_PARAMETER_NAME = 72;
   /** RegularExpression Id. */
-  int ACTION_PARAMETER_SEPARATOR = 73;
+  int ACTION_PARAMETER_EQUALS = 73;
   /** RegularExpression Id. */
-  int ACTION_END = 74;
+  int ACTION_PARAMETER_SEPARATOR = 74;
   /** RegularExpression Id. */
-  int ACTION_PARAMETER_VALUE = 75;
+  int ACTION_END = 75;
   /** RegularExpression Id. */
-  int ACTION_PARAMETER_VALUE_SEPARATOR = 76;
+  int ACTION_PARAMETER_VALUE = 76;
   /** RegularExpression Id. */
-  int ACTION_PARAMETER_VALUE_END = 77;
+  int ACTION_PARAMETER_VALUE_SEPARATOR = 77;
   /** RegularExpression Id. */
-  int SECTION_ERRORS_NEXT_CONFIG = 78;
+  int ACTION_PARAMETER_VALUE_END = 78;
   /** RegularExpression Id. */
-  int SECTION_ERRORS_NEXT_ACTIONS = 79;
+  int SECTION_ERRORS_NEXT_CONFIG = 79;
   /** RegularExpression Id. */
-  int SECTION_ERRORS_NEXT_ERRORS = 80;
+  int SECTION_ERRORS_NEXT_ACTIONS = 80;
   /** RegularExpression Id. */
-  int SECTION_ERRORS_NEXT_FILTERS = 81;
+  int SECTION_ERRORS_NEXT_ERRORS = 81;
   /** RegularExpression Id. */
-  int SECTION_ERRORS_NEXT_EXTENSIONS = 82;
+  int SECTION_ERRORS_NEXT_FILTERS = 82;
   /** RegularExpression Id. */
-  int SECTION_ERRORS_NEXT_PROPERTIES = 83;
+  int SECTION_ERRORS_NEXT_EXTENSIONS = 83;
   /** RegularExpression Id. */
-  int CODE = 84;
+  int SECTION_ERRORS_NEXT_PROPERTIES = 84;
   /** RegularExpression Id. */
-  int ALL = 85;
+  int CODE = 85;
   /** RegularExpression Id. */
-  int EXCEPTION = 86;
+  int ERROR_CODE = 86;
   /** RegularExpression Id. */
-  int ERROR_SEPARATOR = 87;
+  int ALL = 87;
   /** RegularExpression Id. */
-  int ERROR_ACTION_JAVA = 88;
+  int EXCEPTION = 88;
   /** RegularExpression Id. */
-  int ERROR_ACTION_VIEW = 89;
+  int ERROR_SEPARATOR = 89;
   /** RegularExpression Id. */
-  int ERROR_ACTION_LINK = 90;
+  int ERROR_ACTION_JAVA_BEGIN = 90;
   /** RegularExpression Id. */
-  int ERROR_END = 91;
+  int ERROR_ACTION_VIEW_BEGIN = 91;
   /** RegularExpression Id. */
-  int SECTION_FILTERS_NEXT_CONFIG = 92;
+  int ERROR_ACTION_LINK_BEGIN = 92;
   /** RegularExpression Id. */
-  int SECTION_FILTERS_NEXT_ACTIONS = 93;
+  int ERROR_ACTION_JAVA = 93;
   /** RegularExpression Id. */
-  int SECTION_FILTERS_NEXT_ERRORS = 94;
+  int ERROR_ACTION_VIEW = 94;
   /** RegularExpression Id. */
-  int SECTION_FILTERS_NEXT_FILTERS = 95;
+  int ERROR_ACTION_LINK = 95;
   /** RegularExpression Id. */
-  int SECTION_FILTERS_NEXT_EXTENSIONS = 96;
+  int ERROR_END = 96;
   /** RegularExpression Id. */
-  int SECTION_FILTERS_NEXT_PROPERTIES = 97;
+  int SECTION_FILTERS_NEXT_CONFIG = 97;
   /** RegularExpression Id. */
-  int FILTER_METHOD = 98;
+  int SECTION_FILTERS_NEXT_ACTIONS = 98;
   /** RegularExpression Id. */
-  int FILTER_PATH = 99;
+  int SECTION_FILTERS_NEXT_ERRORS = 99;
   /** RegularExpression Id. */
-  int FILTER_PATH_ALL = 100;
+  int SECTION_FILTERS_NEXT_FILTERS = 100;
   /** RegularExpression Id. */
-  int FILTER_SEPARATOR = 101;
+  int SECTION_FILTERS_NEXT_EXTENSIONS = 101;
   /** RegularExpression Id. */
-  int FILTER_ACTION = 102;
+  int SECTION_FILTERS_NEXT_PROPERTIES = 102;
   /** RegularExpression Id. */
-  int FILTER_PARAMETERS_SEPARATOR = 103;
+  int FILTER_METHOD = 103;
   /** RegularExpression Id. */
-  int FILTER_PARAMETER_NAME = 104;
+  int FILTER_PATH = 104;
   /** RegularExpression Id. */
-  int FILTER_PARAMETER_EQUALS = 105;
+  int FILTER_PATH_ALL = 105;
   /** RegularExpression Id. */
-  int FILTER_PARAMETER_SEPARATOR = 106;
+  int FILTER_SEPARATOR = 106;
   /** RegularExpression Id. */
-  int FILTER_END = 107;
+  int FILTER_ACTION_BEGIN = 107;
   /** RegularExpression Id. */
-  int FILTER_PARAMETER_VALUE = 108;
+  int FILTER_ACTION = 108;
   /** RegularExpression Id. */
-  int FILTER_PARAMETER_VALUE_SEPARATOR = 109;
+  int FILTER_PARAMETERS_SEPARATOR = 109;
   /** RegularExpression Id. */
-  int FILTER_PARAMETER_VALUE_END = 110;
+  int FILTER_PARAMETER_NAME = 110;
   /** RegularExpression Id. */
-  int SECTION_EXTENSIONS_NEXT_CONFIG = 111;
+  int FILTER_PARAMETER_EQUALS = 111;
   /** RegularExpression Id. */
-  int SECTION_EXTENSIONS_NEXT_ACTIONS = 112;
+  int FILTER_PARAMETER_SEPARATOR = 112;
   /** RegularExpression Id. */
-  int SECTION_EXTENSIONS_NEXT_ERRORS = 113;
+  int FILTER_END = 113;
   /** RegularExpression Id. */
-  int SECTION_EXTENSIONS_NEXT_FILTERS = 114;
+  int FILTER_PARAMETER_VALUE = 114;
   /** RegularExpression Id. */
-  int SECTION_EXTENSIONS_NEXT_EXTENSIONS = 115;
+  int FILTER_PARAMETER_VALUE_SEPARATOR = 115;
   /** RegularExpression Id. */
-  int SECTION_EXTENSIONS_NEXT_PROPERTIES = 116;
+  int FILTER_PARAMETER_VALUE_END = 116;
   /** RegularExpression Id. */
-  int EXTENSION_PATH = 117;
+  int SECTION_EXTENSIONS_NEXT_CONFIG = 117;
   /** RegularExpression Id. */
-  int EXTENSION_SEPARATOR = 118;
+  int SECTION_EXTENSIONS_NEXT_ACTIONS = 118;
   /** RegularExpression Id. */
-  int EXTENSION_FILE = 119;
+  int SECTION_EXTENSIONS_NEXT_ERRORS = 119;
   /** RegularExpression Id. */
-  int EXTENSION_END = 120;
+  int SECTION_EXTENSIONS_NEXT_FILTERS = 120;
   /** RegularExpression Id. */
-  int SECTION_PROPERTIES_NEXT_CONFIG = 121;
+  int SECTION_EXTENSIONS_NEXT_EXTENSIONS = 121;
   /** RegularExpression Id. */
-  int SECTION_PROPERTIES_NEXT_ACTIONS = 122;
+  int SECTION_EXTENSIONS_NEXT_PROPERTIES = 122;
   /** RegularExpression Id. */
-  int SECTION_PROPERTIES_NEXT_ERRORS = 123;
+  int EXTENSION_PATH = 123;
   /** RegularExpression Id. */
-  int SECTION_PROPERTIES_NEXT_FILTERS = 124;
+  int EXTENSION_SEPARATOR = 124;
   /** RegularExpression Id. */
-  int SECTION_PROPERTIES_NEXT_EXTENSIONS = 125;
+  int EXTENSION_FILE = 125;
   /** RegularExpression Id. */
-  int SECTION_PROPERTIES_NEXT_PROPERTIES = 126;
+  int EXTENSION_END = 126;
   /** RegularExpression Id. */
-  int PROPERTIE_NAME = 127;
+  int SECTION_PROPERTIES_NEXT_CONFIG = 127;
   /** RegularExpression Id. */
-  int PROPERTIE_EQUALS = 128;
+  int SECTION_PROPERTIES_NEXT_ACTIONS = 128;
   /** RegularExpression Id. */
-  int PROPERTIE_VALUE = 129;
+  int SECTION_PROPERTIES_NEXT_ERRORS = 129;
   /** RegularExpression Id. */
-  int PROPERTIE_END = 130;
+  int SECTION_PROPERTIES_NEXT_FILTERS = 130;
+  /** RegularExpression Id. */
+  int SECTION_PROPERTIES_NEXT_EXTENSIONS = 131;
+  /** RegularExpression Id. */
+  int SECTION_PROPERTIES_NEXT_PROPERTIES = 132;
+  /** RegularExpression Id. */
+  int PROPERTIE_NAME = 133;
+  /** RegularExpression Id. */
+  int PROPERTIE_EQUALS = 134;
+  /** RegularExpression Id. */
+  int PROPERTIE_VALUE = 135;
+  /** RegularExpression Id. */
+  int PROPERTIE_END = 136;
+  /** RegularExpression Id. */
+  int CHAR = 137;
+  /** RegularExpression Id. */
+  int CHAR_IN_CONFIG = 138;
+  /** RegularExpression Id. */
+  int CHAR_IN_CONFIG_VALUE = 139;
+  /** RegularExpression Id. */
+  int CHAR_IN_ACTIONS = 140;
+  /** RegularExpression Id. */
+  int CHAR_IN_ACTIONS_PATH_PARAMETERS = 141;
+  /** RegularExpression Id. */
+  int CHAR_IN_ACTIONS_PATH_PARAMETER_VALUE = 142;
+  /** RegularExpression Id. */
+  int CHAR_IN_ACTIONS_ACTION_JAVA = 143;
+  /** RegularExpression Id. */
+  int CHAR_IN_ACTIONS_ACTION_VIEW = 144;
+  /** RegularExpression Id. */
+  int CHAR_IN_ACTIONS_ACTION_LINK = 145;
+  /** RegularExpression Id. */
+  int CHAR_IN_ACTIONS_PARAMETERS = 146;
+  /** RegularExpression Id. */
+  int CHAR_IN_ACTIONS_PARAMETER_VALUE = 147;
+  /** RegularExpression Id. */
+  int CHAR_IN_ERRORS = 148;
+  /** RegularExpression Id. */
+  int CHAR_IN_ERRORS_ACTIONS = 149;
+  /** RegularExpression Id. */
+  int CHAR_IN_FILTERS = 150;
+  /** RegularExpression Id. */
+  int CHAR_IN_FILTERS_PARAMETERS = 151;
+  /** RegularExpression Id. */
+  int CHAR_IN_FILTERS_PARAMETER_VALUE = 152;
+  /** RegularExpression Id. */
+  int CHAR_IN_EXTENSIONS = 153;
+  /** RegularExpression Id. */
+  int CHAR_IN_EXTENSIONS_FILE = 154;
+  /** RegularExpression Id. */
+  int CHAR_IN_PROPERTIES = 155;
+  /** RegularExpression Id. */
+  int CHAR_IN_PROPERTIES_VALUE = 156;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -362,6 +414,7 @@ public interface WebMotionParserConstants {
     "<ACTION_PATH>",
     "<ACTION_PATH_VARIABLE>",
     "\"?\"",
+    "<ACTION_ACTION_JAVA_BEGIN>",
     "<ACTION_ACTION_JAVA>",
     "<ACTION_ACTION_VIEW>",
     "<ACTION_ACTION_LINK>",
@@ -398,10 +451,14 @@ public interface WebMotionParserConstants {
     "<SECTION_ERRORS_NEXT_FILTERS>",
     "<SECTION_ERRORS_NEXT_EXTENSIONS>",
     "<SECTION_ERRORS_NEXT_PROPERTIES>",
-    "<CODE>",
+    "\"code:\"",
+    "<ERROR_CODE>",
     "\"*\"",
     "<EXCEPTION>",
     "<ERROR_SEPARATOR>",
+    "<ERROR_ACTION_JAVA_BEGIN>",
+    "<ERROR_ACTION_VIEW_BEGIN>",
+    "<ERROR_ACTION_LINK_BEGIN>",
     "<ERROR_ACTION_JAVA>",
     "<ERROR_ACTION_VIEW>",
     "<ERROR_ACTION_LINK>",
@@ -416,6 +473,7 @@ public interface WebMotionParserConstants {
     "<FILTER_PATH>",
     "\"/*\"",
     "<FILTER_SEPARATOR>",
+    "<FILTER_ACTION_BEGIN>",
     "<FILTER_ACTION>",
     "<FILTER_PARAMETERS_SEPARATOR>",
     "<FILTER_PARAMETER_NAME>",
@@ -445,26 +503,26 @@ public interface WebMotionParserConstants {
     "\"=\"",
     "<PROPERTIE_VALUE>",
     "<PROPERTIE_END>",
-    "<token of kind 131>",
-    "<token of kind 132>",
-    "<token of kind 133>",
-    "<token of kind 134>",
-    "<token of kind 135>",
-    "<token of kind 136>",
-    "<token of kind 137>",
-    "<token of kind 138>",
-    "<token of kind 139>",
-    "<token of kind 140>",
-    "<token of kind 141>",
-    "<token of kind 142>",
-    "<token of kind 143>",
-    "<token of kind 144>",
-    "<token of kind 145>",
-    "<token of kind 146>",
-    "<token of kind 147>",
-    "<token of kind 148>",
-    "<token of kind 149>",
-    "<token of kind 150>",
+    "<CHAR>",
+    "<CHAR_IN_CONFIG>",
+    "<CHAR_IN_CONFIG_VALUE>",
+    "<CHAR_IN_ACTIONS>",
+    "<CHAR_IN_ACTIONS_PATH_PARAMETERS>",
+    "<CHAR_IN_ACTIONS_PATH_PARAMETER_VALUE>",
+    "<CHAR_IN_ACTIONS_ACTION_JAVA>",
+    "<CHAR_IN_ACTIONS_ACTION_VIEW>",
+    "<CHAR_IN_ACTIONS_ACTION_LINK>",
+    "<CHAR_IN_ACTIONS_PARAMETERS>",
+    "<CHAR_IN_ACTIONS_PARAMETER_VALUE>",
+    "<CHAR_IN_ERRORS>",
+    "<CHAR_IN_ERRORS_ACTIONS>",
+    "<CHAR_IN_FILTERS>",
+    "<CHAR_IN_FILTERS_PARAMETERS>",
+    "<CHAR_IN_FILTERS_PARAMETER_VALUE>",
+    "<CHAR_IN_EXTENSIONS>",
+    "<CHAR_IN_EXTENSIONS_FILE>",
+    "<CHAR_IN_PROPERTIES>",
+    "<CHAR_IN_PROPERTIES_VALUE>",
   };
 
 }
