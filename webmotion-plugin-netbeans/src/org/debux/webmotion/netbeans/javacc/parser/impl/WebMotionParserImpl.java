@@ -88,11 +88,12 @@ public class WebMotionParserImpl extends Parser {
             FileObject fileObject = source.getFileObject();
             Document document = source.getDocument(false);
             
-            for (ParseException syntaxError : syntaxErrors) {
+            if (!syntaxErrors.isEmpty()) {
+                ParseException syntaxError = syntaxErrors.get(0);
                 Token token = syntaxError.currentToken;
                 
-                int start = NbDocument.findLineOffset((StyledDocument) document, token.beginLine - 1) + token.beginColumn - 1;
-                int end = NbDocument.findLineOffset((StyledDocument) document, token.endLine - 1) + token.endColumn;
+                int start = NbDocument.findLineOffset((StyledDocument) document, token.next.beginLine - 1) + token.next.beginColumn - 1;
+                int end = NbDocument.findLineOffset((StyledDocument) document, token.next.endLine - 1) + token.next.endColumn;
                 
                 Error error = DefaultError.createDefaultError("webmotion",
                         syntaxError.getMessage(), null,

@@ -89,19 +89,28 @@ public class ParseException extends Exception {
                            int[][] expectedTokenSequences,
                            String[] tokenImage) {
     String eol = System.getProperty("line.separator", "\n");
-    StringBuffer expected = new StringBuffer();
+    StringBuilder expected = new StringBuilder();
     int maxSize = 0;
+    String all = "";
     for (int i = 0; i < expectedTokenSequences.length; i++) {
+      boolean added = false;
       if (maxSize < expectedTokenSequences[i].length) {
         maxSize = expectedTokenSequences[i].length;
       }
       for (int j = 0; j < expectedTokenSequences[i].length; j++) {
-        expected.append(tokenImage[expectedTokenSequences[i][j]]).append(' ');
+        String tokenImageValue = tokenImage[expectedTokenSequences[i][j]];
+        if (!all.contains(tokenImageValue)) {
+            all += tokenImageValue;
+            added = true;
+            expected.append(tokenImageValue).append(' ');
+        }
       }
-      if (expectedTokenSequences[i][expectedTokenSequences[i].length - 1] != 0) {
-        expected.append("...");
+      if (added) {
+        if (expectedTokenSequences[i][expectedTokenSequences[i].length - 1] != 0) {
+            expected.append("...");
+        }
+        expected.append(eol).append("    ");
       }
-      expected.append(eol).append("    ");
     }
     String retval = "Encountered ";
     Token tok = currentToken.next;
