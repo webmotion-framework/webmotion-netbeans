@@ -8532,8 +8532,8 @@ protected Token jjFillToken()
    return t;
 }
 
-int curLexState = 0;
-int defaultLexState = 0;
+public int curLexState = 0;
+public int defaultLexState = 0;
 int jjnewStateCnt;
 int jjround;
 int jjmatchedPos;

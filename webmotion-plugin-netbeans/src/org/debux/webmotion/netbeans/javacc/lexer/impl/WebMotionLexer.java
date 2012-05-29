@@ -2,8 +2,6 @@ package org.debux.webmotion.netbeans.javacc.lexer.impl;
 
 import org.debux.webmotion.netbeans.javacc.lexer.Token;
 import org.debux.webmotion.netbeans.javacc.lexer.WebMotionParserTokenManager;
-import org.debux.webmotion.netbeans.javacc.lexer.impl.WebMotionLanguageHierarchy;
-import org.debux.webmotion.netbeans.javacc.lexer.impl.SimpleCharStream;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
@@ -13,18 +11,24 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 public class WebMotionLexer implements Lexer<WebMotionTokenId> {
 
-    private LexerRestartInfo<WebMotionTokenId> info;
-    private WebMotionParserTokenManager tokenManager;
-
+    protected LexerRestartInfo<WebMotionTokenId> info;
+    protected WebMotionParserTokenManager tokenManager;
+    protected int lexerState;
+    
     WebMotionLexer(LexerRestartInfo<WebMotionTokenId> info) {
-        this.info = info;
         SimpleCharStream stream = new SimpleCharStream(info.input());
-        tokenManager = new WebMotionParserTokenManager(stream);
+        if (info.state() != null) {
+            tokenManager = new WebMotionParserTokenManager(stream, (Integer) info.state());
+        } else {
+            tokenManager = new WebMotionParserTokenManager(stream);
+        }
+        this.info = info;
     }
 
     @Override
     public org.netbeans.api.lexer.Token<WebMotionTokenId> nextToken() {
         Token token = tokenManager.getNextToken();
+        lexerState = tokenManager.curLexState;
         if (info.input().readLength() < 1) {
             return null;
         }
@@ -33,7 +37,7 @@ public class WebMotionLexer implements Lexer<WebMotionTokenId> {
 
     @Override
     public Object state() {
-        return null;
+        return lexerState;
     }
 
     @Override
