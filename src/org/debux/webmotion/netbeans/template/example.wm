@@ -1,0 +1,8 @@
+# It is not a comment
+
+[config]
+package.base=
+package.views=WEB-INF/
+
+[actions]
+GET          /path/{var}?param={param}     action:Action.index
