@@ -10,10 +10,12 @@ import org.netbeans.modules.parsing.spi.ParserFactory;
  * @author julien
  */
 public class WebMotionParserFactory extends ParserFactory {
+    
+    public static WebMotionParserImpl parser = new WebMotionParserImpl();
 
     @Override
     public Parser createParser (Collection<Snapshot> snapshots) {
-        return new WebMotionParserImpl();
+        return parser;
     }
 
 }

@@ -1,6 +1,5 @@
 package org.debux.webmotion.netbeans.javacc.lexer.impl;
 
-import org.debux.webmotion.netbeans.javacc.lexer.impl.WebMotionLanguageHierarchy;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 
@@ -10,12 +9,14 @@ import org.netbeans.api.lexer.TokenId;
  */
 public class WebMotionTokenId implements TokenId {
 
-    private final String name;
-    private final String primaryCategory;
-    private final int id;
+    protected final String name;
+    protected final String primaryCategory;
+    protected final int id;
 
+    public static Language<WebMotionTokenId> language = new WebMotionLanguageHierarchy().language();
+    
     public static Language<WebMotionTokenId> getLanguage() {
-        return new WebMotionLanguageHierarchy().language();
+        return language;
     }
     
     WebMotionTokenId(

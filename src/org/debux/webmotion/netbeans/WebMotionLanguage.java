@@ -13,7 +13,7 @@ import org.netbeans.modules.csl.spi.LanguageRegistration;
 public class WebMotionLanguage extends DefaultLanguageConfig {
 
     @Override
-    public Language getLexerLanguage() {
+    public Language<WebMotionTokenId> getLexerLanguage() {
         return WebMotionTokenId.getLanguage();
     }
 
