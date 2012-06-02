@@ -74,7 +74,7 @@ TOKEN: {
 |   <SECTION_ERRORS_NAME: "[errors]" <NEW_LINE>> : SECTION_ERRORS
 |   <SECTION_FILTERS_NAME: "[filters]" <NEW_LINE>> : SECTION_FILTERS
 |   <SECTION_EXTENSIONS_NAME: "[extensions]" <NEW_LINE>> : SECTION_EXTENSIONS
-|   <SECTION_PROPERTIES_NAME: "[" (<LETTER> | <DIGIT> | "_" | "$" | "-")+ ".properties]" <NEW_LINE>> : SECTION_PROPERTIES
+|   <SECTION_PROPERTIES_NAME: "[" ((<LETTER> | <DIGIT> | "_" | "$" | "-")+ ".")? "properties]" <NEW_LINE>> : SECTION_PROPERTIES
 
 |   <METHODS_HTTP: <METHOD_HTTP> ("," <METHOD_HTTP>)*>
 |   <METHOD_HTTP: ("*" | "GET" | "POST" | "PUT" | "DELETE" | "HEAD")>
