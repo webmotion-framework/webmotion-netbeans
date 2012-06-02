@@ -58,6 +58,10 @@ public class WebMotionParserImpl extends Parser {
     @Override
     public void removeChangeListener (ChangeListener changeListener) {
     }
+
+    public WebMotionParser getParser() {
+        return parser;
+    }
     
     public static class WebMotionParserResult extends ParserResult {
 
@@ -70,7 +74,9 @@ public class WebMotionParserImpl extends Parser {
         }
 
         public WebMotionParser getParser() throws org.netbeans.modules.parsing.spi.ParseException {
-            if (!valid) throw new org.netbeans.modules.parsing.spi.ParseException();
+            if (!valid) {
+                throw new org.netbeans.modules.parsing.spi.ParseException();
+            }
             return parser;
         }
 

@@ -12,6 +12,7 @@ import java.util.*;
 
 public class WebMotionParser {
 
+    public Map<String, String> configurations = new HashMap<String, String>();
     public List<ParseException> syntaxErrors = new ArrayList<ParseException>();
 
     void recover(ParseException ex, int ... recoveryPoints) {
@@ -358,9 +359,15 @@ void SectionConfigName() : {}
 
 void SectionConfigLine() : {}
 {
+    {
+        Token k = null;
+        Token v = null;
+    }
     try {
-        <CONFIG_KEY> <CONFIG_EQUALS> (<CONFIG_VALUE>)? <CONFIG_END>
-
+        k=<CONFIG_KEY> <CONFIG_EQUALS> (v=<CONFIG_VALUE>)? <CONFIG_END>
+        {
+            configurations.put(k.image, v.image);
+        }
     } catch (ParseException ex) {
         recover(ex, CONFIG_END);
     }

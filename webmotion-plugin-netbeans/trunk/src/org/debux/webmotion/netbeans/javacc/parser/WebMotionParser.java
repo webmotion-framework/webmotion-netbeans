@@ -5,6 +5,7 @@ import java.util.*;
 
 public class WebMotionParser implements WebMotionParserConstants {
 
+    public Map<String, String> configurations = new HashMap<String, String>();
     public List<ParseException> syntaxErrors = new ArrayList<ParseException>();
 
     void recover(ParseException ex, int ... recoveryPoints) {
@@ -207,18 +208,21 @@ public class WebMotionParser implements WebMotionParserConstants {
   }
 
   final public void SectionConfigLine() throws ParseException {
+        Token k = null;
+        Token v = null;
     try {
-      jj_consume_token(CONFIG_KEY);
+      k = jj_consume_token(CONFIG_KEY);
       jj_consume_token(CONFIG_EQUALS);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case CONFIG_VALUE:
-        jj_consume_token(CONFIG_VALUE);
+        v = jj_consume_token(CONFIG_VALUE);
         break;
       default:
         jj_la1[5] = jj_gen;
         ;
       }
       jj_consume_token(CONFIG_END);
+            configurations.put(k.image, v.image);
     } catch (ParseException ex) {
         recover(ex, CONFIG_END);
     }
