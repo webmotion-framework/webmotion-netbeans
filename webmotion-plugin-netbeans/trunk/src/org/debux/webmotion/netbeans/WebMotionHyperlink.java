@@ -26,7 +26,7 @@ import org.openide.text.NbDocument;
  * @author julien
  */
 @MimeRegistration(mimeType = "text/x-wm", service = HyperlinkProvider.class)
-public class WebMotionActionHyperlink implements HyperlinkProvider {
+public class WebMotionHyperlink implements HyperlinkProvider {
 
     @Override
     public boolean isHyperlinkPoint(Document document, int offset) {
@@ -93,6 +93,7 @@ public class WebMotionActionHyperlink implements HyperlinkProvider {
             // Get the package in configuration
             String packageBase = getPackageValue("package.base", null);
             String packageTarget = null;
+            boolean isJavaFile = true;
             
             Token<WebMotionTokenId> tokken = ts.token();
             WebMotionTokenId id = tokken.id();
@@ -109,6 +110,16 @@ public class WebMotionActionHyperlink implements HyperlinkProvider {
                 
             } else if ("ERROR_ACTION_JAVA".equals(name)) {
                 packageTarget = getPackageValue("package.errors", packageBase);
+                
+            } else if ("EXTENSION_FILE".equals(name)) {
+                packageTarget = "";
+                isJavaFile = false;
+                
+            } else if ("ACTION_ACTION_VIEW_VALUE".equals(name) ||
+                       "ACTION_ACTION_VIEW_VARIABLE".equals(name) ||
+                       "ERROR_ACTION_VALUE".equals(name)) {
+                packageTarget = getPackageValue("package.views", null);
+                isJavaFile = false;
                 
             } else if ("EXCEPTION".equals(name)) {
                 packageTarget = "";
@@ -136,18 +147,25 @@ public class WebMotionActionHyperlink implements HyperlinkProvider {
             // Open document
             if (!target.isEmpty()) {
                 try {
-                    target = target.replaceAll("\\.", "/");
-                    String className = StringUtils.substringBeforeLast(target, "/");
-                    String mark = StringUtils.substringAfterLast(target, "/");
-                    
                     GlobalPathRegistry registry = GlobalPathRegistry.getDefault();
-                    FileObject fo = registry.findResource(packageTarget + className + ".java");
-                    if (fo == null) {
-                        fo = registry.findResource(target + ".java");
+                    
+                    if (isJavaFile) {
+                        target = target.replaceAll("\\.", "/");
+                        String className = StringUtils.substringBeforeLast(target, "/");
+                        String mark = StringUtils.substringAfterLast(target, "/");
+
+                        FileObject fo = registry.findResource(packageTarget + className + ".java");
+                        if (fo == null) {
+                            fo = registry.findResource(target + ".java");
+                        }
+
+                        open(fo, mark);
+                        
+                    } else {
+                        FileObject fo = registry.findResource(packageTarget + target);
+                        open(fo, null);
                     }
                     
-                    open(fo, mark);
-
                 } catch (DataObjectNotFoundException e) {
                     NotifyDescriptor.Message msg = new NotifyDescriptor.Message(target);
                     DialogDisplayer.getDefault().notify(msg);
@@ -162,18 +180,20 @@ public class WebMotionActionHyperlink implements HyperlinkProvider {
             EditorCookie open = dob.getLookup().lookup(EditorCookie.class);
             open.open();
             
-            StyledDocument doc = open.getDocument();
-            TokenHierarchy<StyledDocument> hi = TokenHierarchy.get(doc);
-            TokenSequence<?> ts = hi.tokenSequence();
-            while (ts.moveNext()) {
-                Token<?> token = ts.token();
-                String matcherText = token.text().toString();
-                if (mark.equals(matcherText)) {
-                    
-                    int offset = ts.offset();
-                    int line = NbDocument.findLineNumber(doc, offset);
-                    open.getLineSet().getCurrent(line).show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
-                    break;
+            if (mark != null) {
+                StyledDocument doc = open.getDocument();
+                TokenHierarchy<StyledDocument> hi = TokenHierarchy.get(doc);
+                TokenSequence<?> ts = hi.tokenSequence();
+                while (ts.moveNext()) {
+                    Token<?> token = ts.token();
+                    String matcherText = token.text().toString();
+                    if (mark.equals(matcherText)) {
+
+                        int offset = ts.offset();
+                        int line = NbDocument.findLineNumber(doc, offset);
+                        open.getLineSet().getCurrent(line).show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+                        break;
+                    }
                 }
             }
         }
@@ -213,10 +233,16 @@ public class WebMotionActionHyperlink implements HyperlinkProvider {
                 "ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER".equals(name) ||
                 "ACTION_ACTION_JAVA_VARIABLE".equals(name) ||
                 
+                "ACTION_ACTION_VIEW_VALUE".equals(name) ||
+                "ACTION_ACTION_VIEW_VARIABLE".equals(name) ||
+                
                 "FILTER_ACTION".equals(name) ||
                 
+                "EXTENSION_FILE".equals(name) ||
+                
                 "ERROR_ACTION_JAVA".equals(name) ||
-                "EXCEPTION".equals(name);
+                "EXCEPTION".equals(name) ||
+                "ERROR_ACTION_VALUE".equals(name);
     }
 
 }
