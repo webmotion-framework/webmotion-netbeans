@@ -5,7 +5,7 @@ import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.apache.commons.lang.StringUtils;
 import org.debux.webmotion.netbeans.javacc.lexer.impl.WebMotionTokenId;
-import org.debux.webmotion.netbeans.javacc.parser.impl.WebMotionParserFactory;
+import org.debux.webmotion.netbeans.javacc.parser.WebMotionParser;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.lexer.Token;
@@ -37,7 +37,7 @@ public class WebMotionActionHyperlink implements HyperlinkProvider {
             ts.moveNext();
             
             Token<WebMotionTokenId> tok = ts.token();
-            return test(tok);
+            return verifyToken(tok);
         }
         
         return false;
@@ -55,7 +55,7 @@ public class WebMotionActionHyperlink implements HyperlinkProvider {
             ts.moveNext();
             Token<WebMotionTokenId> tok = ts.token();
 
-            while (test(tok)) {
+            while (verifyToken(tok)) {
                 ts.moveNext();
                 tok = ts.token();
                 
@@ -66,7 +66,7 @@ public class WebMotionActionHyperlink implements HyperlinkProvider {
             ts.movePrevious();
             tok = ts.token();
 
-            while (test(tok)) {
+            while (verifyToken(tok)) {
                 targetStart = ts.offset();
 
                 ts.movePrevious();
@@ -81,7 +81,6 @@ public class WebMotionActionHyperlink implements HyperlinkProvider {
     }
 
     @Override
-    // jru 20120605 : TODO create method to get package target
     public void performClickAction(Document document, int offset) {
         TokenHierarchy<Document> hi = TokenHierarchy.get(document);
         TokenSequence<WebMotionTokenId> ts = (TokenSequence<WebMotionTokenId>) hi.tokenSequence();
@@ -90,113 +89,64 @@ public class WebMotionActionHyperlink implements HyperlinkProvider {
             
             ts.move(offset);
             ts.moveNext();
-            Token<WebMotionTokenId> tok = ts.token();
 
-            // Get Configuration
-            // jru 20120605 : Fix NPE, Improve get parser
-            Map<String, String> configurations = WebMotionParserFactory.parser.getParser().configurations;
-            
-            String packageBase = configurations.get("package.base");
-            if (packageBase == null) {
-                packageBase = "";
-            }
-            
-            String packageActions = configurations.get("package.actions");
-            if (packageActions == null) {
-                packageActions = "";
-            }
-            
-            String packageFilters = configurations.get("package.filters");
-            if (packageFilters == null) {
-                packageFilters = "";
-            }
-            
-            String packageErrors = configurations.get("package.errors");
-            if (packageErrors == null) {
-                packageErrors = "";
-            }
-            
-            // Compute package
+            // Get the package in configuration
+            String packageBase = getPackageValue("package.base", null);
             String packageTarget = null;
             
-            WebMotionTokenId id = tok.id();
+            Token<WebMotionTokenId> tokken = ts.token();
+            WebMotionTokenId id = tokken.id();
             String name = id.name();
             if ("ACTION_ACTION_IDENTIFIER".equals(name) ||
                 "ACTION_ACTION_JAVA_IDENTIFIER".equals(name) ||
                 "ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER".equals(name) ||
                 "ACTION_ACTION_JAVA_VARIABLE".equals(name)) {
                 
-                if (!packageBase.isEmpty() && !packageActions.isEmpty()) {
-                    packageTarget = packageBase + "." + packageActions;
-                } else if (!packageActions.isEmpty()) {
-                    packageTarget = packageActions;
-                } else {
-                    packageTarget = packageBase;
-                }
+                packageTarget = getPackageValue("package.actions", packageBase);
                 
             } else if ("FILTER_ACTION".equals(name)) {
-                if (!packageBase.isEmpty() && !packageFilters.isEmpty()) {
-                    packageTarget = packageBase + "." + packageFilters;
-                } else if (!packageFilters.isEmpty()) {
-                    packageTarget = packageFilters;
-                } else {
-                    packageTarget = packageBase;
-                }
+                packageTarget = getPackageValue("package.filters", packageBase);
                 
             } else if ("ERROR_ACTION_JAVA".equals(name)) {
-                if (!packageBase.isEmpty() && !packageErrors.isEmpty()) {
-                    packageTarget = packageBase + "." + packageErrors;
-                } else if (!packageErrors.isEmpty()) {
-                    packageTarget = packageErrors;
-                } else {
-                    packageTarget = packageBase;
-                }
+                packageTarget = getPackageValue("package.errors", packageBase);
                 
             } else if ("EXCEPTION".equals(name)) {
                 packageTarget = "";
             }
             
             // Search target
-            while (test(tok)) {
-                target += tok.text().toString();
+            while (verifyToken(tokken)) {
+                target += tokken.text().toString();
                 
                 ts.moveNext();
-                tok = ts.token();
+                tokken = ts.token();
             }
 
             ts.move(offset);
             ts.movePrevious();
-            tok = ts.token();
+            tokken = ts.token();
 
-            while (test(tok)) {
-                target = tok.text().toString() + target;
+            while (verifyToken(tokken)) {
+                target = tokken.text().toString() + target;
 
                 ts.movePrevious();
-                tok = ts.token();
+                tokken = ts.token();
             }
 
             // Open document
             if (!target.isEmpty()) {
                 try {
                     target = target.replaceAll("\\.", "/");
-                    packageTarget = packageTarget.replaceAll("\\.", "/");
-                    if (!packageTarget.isEmpty()) {
-                        packageTarget += "/";
-                    }
-                        
                     String className = StringUtils.substringBeforeLast(target, "/");
-
+                    String mark = StringUtils.substringAfterLast(target, "/");
+                    
                     GlobalPathRegistry registry = GlobalPathRegistry.getDefault();
                     FileObject fo = registry.findResource(packageTarget + className + ".java");
-                    
-                    if (fo != null) {
-                        String methodName = StringUtils.substringAfterLast(target, "/");
-                        open(fo, methodName);
-                        
-                    } else {
+                    if (fo == null) {
                         fo = registry.findResource(target + ".java");
-                        open(fo, className);
                     }
+                    
+                    open(fo, mark);
 
                 } catch (DataObjectNotFoundException e) {
                     NotifyDescriptor.Message msg = new NotifyDescriptor.Message(target);
@@ -216,8 +166,8 @@ public class WebMotionActionHyperlink implements HyperlinkProvider {
             TokenHierarchy<StyledDocument> hi = TokenHierarchy.get(doc);
             TokenSequence<?> ts = hi.tokenSequence();
             while (ts.moveNext()) {
-                Token<?> tok = ts.token();
-                String matcherText = tok.text().toString();
+                Token<?> token = ts.token();
+                String matcherText = token.text().toString();
                 if (mark.equals(matcherText)) {
                     
                     int offset = ts.offset();
@@ -229,8 +179,33 @@ public class WebMotionActionHyperlink implements HyperlinkProvider {
         }
     }
     
-    public boolean test(Token<WebMotionTokenId> tok) {
-        WebMotionTokenId id = tok.id();
+    protected String getPackageValue(String name, String packageBase) {
+        Map<String, String> configurations = WebMotionParser.configurations;
+        String packageValue = configurations.get(name);
+        
+        String packageTarget = "";
+        
+        if (StringUtils.isNotEmpty(packageBase) && StringUtils.isNotEmpty(packageValue)) {
+            packageTarget = packageBase.replaceFirst("\\.$", "") + "." + packageValue.replaceFirst("^\\.", "");
+            
+        } else if (StringUtils.isNotEmpty(packageBase)) {
+            packageTarget = packageBase.replaceFirst("\\.$", "");
+            
+        } else if (StringUtils.isNotEmpty(packageValue)) {
+            packageTarget = packageValue.replaceFirst("\\.$", "");
+        }
+       
+        packageTarget = packageTarget.replaceAll("\\.", "/");
+        
+        if (!packageTarget.isEmpty()) {
+            packageTarget += "/";
+        }
+
+        return packageTarget;
+    }
+    
+    public boolean verifyToken(Token<WebMotionTokenId> token){
+        WebMotionTokenId id = token.id();
         String name = id.name();
             
         return "ACTION_ACTION_IDENTIFIER".equals(name) ||

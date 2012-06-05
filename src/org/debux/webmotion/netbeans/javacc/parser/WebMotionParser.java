@@ -5,7 +5,7 @@ import java.util.*;
 
 public class WebMotionParser implements WebMotionParserConstants {
 
-    public Map<String, String> configurations = new HashMap<String, String>();
+    public static Map<String, String> configurations = new HashMap<String, String>();
     public List<ParseException> syntaxErrors = new ArrayList<ParseException>();
 
     void recover(ParseException ex, int ... recoveryPoints) {
