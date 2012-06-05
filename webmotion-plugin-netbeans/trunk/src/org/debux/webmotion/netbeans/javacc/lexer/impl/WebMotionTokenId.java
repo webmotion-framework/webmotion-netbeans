@@ -13,10 +13,8 @@ public class WebMotionTokenId implements TokenId {
     protected final String primaryCategory;
     protected final int id;
 
-    public static Language<WebMotionTokenId> language = new WebMotionLanguageHierarchy().language();
-    
     public static Language<WebMotionTokenId> getLanguage() {
-        return language;
+        return new WebMotionLanguageHierarchy().language();
     }
     
     WebMotionTokenId(
