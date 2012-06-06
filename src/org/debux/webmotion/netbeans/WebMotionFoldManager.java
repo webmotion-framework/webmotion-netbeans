@@ -22,7 +22,8 @@ import org.openide.util.Exceptions;
  */
 public class WebMotionFoldManager implements FoldManager {
     
-    public static final FoldType CUSTOM_FOLD_TYPE = new FoldType("custom-fold"); // NOI18N
+    public static final FoldType COMMENT_FOLD_TYPE = new FoldType("# ...");
+    public static final FoldType SECTION_FOLD_TYPE = new FoldType("...");
 
     private FoldOperation operation;
     
@@ -44,36 +45,13 @@ public class WebMotionFoldManager implements FoldManager {
     
     @Override
     public void initFolds(FoldHierarchyTransaction transaction) {
-//        ((AbstractDocument) getDocument()).readLock();
-//
-//        try {
-//            FoldHierarchy fh = getOperation().getHierarchy();
-//            fh.lock();
-//
-//            try {
-//                FoldHierarchyTransaction fhTran =
-//                        getOperation().openTransaction();
-//                getOperation().addToHierarchy(CUSTOM_FOLD_TYPE, "MyFold", false, 0,
-//                        63, 0, 0, null, fhTran);
-//                fhTran.commit();
-//
-//            } catch (BadLocationException ble) {
-//                ErrorManager.getDefault().notify(ble);
-//            } finally {
-//                fh.unlock();
-//            }
-//
-//        } finally {
-//            ((AbstractDocument) getDocument()).readUnlock();
-//        }
         FoldHierarchy hierarchy = operation.getHierarchy();
         Document document = hierarchy.getComponent().getDocument();
         TokenHierarchy<Document> hi = TokenHierarchy.get(document);
         TokenSequence<WebMotionTokenId> ts = (TokenSequence<WebMotionTokenId>) hi.tokenSequence();
         
-        boolean firstSection = true;
+        FoldType type = null;
         int start = 0;
-        int end = 0;
         int offset = 0;
         while (ts.moveNext()) {
             offset = ts.offset();
@@ -83,26 +61,28 @@ public class WebMotionFoldManager implements FoldManager {
             
             WebMotionTokenId id = token.id();
             String name = id.name();
-            if (name.startsWith("SECTION")) {
-                if (!firstSection) {
+            if (name.equals("COMMENT") && type == null) {
+                type = COMMENT_FOLD_TYPE;
+                start = offset;
+                
+            } else if (name.startsWith("SECTION")) {
+                if (type != null) {
                     try {
-                        operation.addToHierarchy(CUSTOM_FOLD_TYPE, "...", true, start, end, 0, 0, hierarchy, transaction);
+                        operation.addToHierarchy(type, type.toString(), false, start, offset - 1, 0, 0, hierarchy, transaction);
                     } catch (BadLocationException ex) {
                         Exceptions.printStackTrace(ex);
                     }
                 }
                 
                 start = offset + matcherText.length() - 1;
-                firstSection = false;
+                type = SECTION_FOLD_TYPE;
                 
-            } else if (!"\n".equals(matcherText)) {
-                end = offset;
             }
         }
         
-        if (!firstSection) {
+        if (type != null) {
             try {
-                operation.addToHierarchy(CUSTOM_FOLD_TYPE, "...", true, start, end, 0, 0, hierarchy, transaction);
+                operation.addToHierarchy(type, type.toString(), false, start, offset + 1, 0, 0, hierarchy, transaction);
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
