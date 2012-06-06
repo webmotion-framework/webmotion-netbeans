@@ -93,6 +93,9 @@
                     </file>
                 </folder>
                 <file name="org-debux-webmotion-netbeans-javacc-parser-impl-WebMotionParserFactory.instance"/>
+                <folder name="FoldManager">
+                    <file name="org-debux-webmotion-netbeans-WebMotionFoldManager$Factory.instance"/>
+                </folder>
                 <folder name="BracesMatchers">
                     <file name="org-debux-webmotion-netbeans-WebMotionBracesMatcherFactory.instance">
                         <attr name="position" intvalue="0"/>
