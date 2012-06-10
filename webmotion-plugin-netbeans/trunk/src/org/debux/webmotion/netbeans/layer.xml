@@ -62,14 +62,7 @@
                         <attr name="position" intvalue="1200"/>
                     </file>
                 </folder>
-                <folder name="Factories">
-                    <file name="WebMotionDataLoader.instance">
-                        <attr name="dataObjectClass" stringvalue="org.debux.webmotion.netbeans.WebMotionDataObject"/>
-                        <attr name="iconBase" stringvalue="org/debux/webmotion/netbeans/icon.png"/>
-                        <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
-                        <attr name="mimeType" stringvalue="text/x-wm"/>
-                    </file>
-                </folder>
+                <folder name="Factories"/>
             </folder>
         </folder>
     </folder>
