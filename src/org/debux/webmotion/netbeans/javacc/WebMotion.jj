@@ -366,7 +366,9 @@ void SectionConfigLine() : {}
     try {
         k=<CONFIG_KEY> <CONFIG_EQUALS> (v=<CONFIG_VALUE>)? <CONFIG_END>
         {
-            configurations.put(k.image, v.image);
+            if (v != null) {
+                configurations.put(k.image, v.image);
+            }
         }
     } catch (ParseException ex) {
         recover(ex, CONFIG_END);

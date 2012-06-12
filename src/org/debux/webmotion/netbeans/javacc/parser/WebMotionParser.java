@@ -222,7 +222,9 @@ public class WebMotionParser implements WebMotionParserConstants {
         ;
       }
       jj_consume_token(CONFIG_END);
+        if (v != null) {
             configurations.put(k.image, v.image);
+        }
     } catch (ParseException ex) {
         recover(ex, CONFIG_END);
     }
