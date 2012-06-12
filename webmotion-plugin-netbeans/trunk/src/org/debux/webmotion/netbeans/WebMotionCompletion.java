@@ -61,17 +61,53 @@ import org.openide.util.ImageUtilities;
 @MimeRegistration(mimeType = "text/x-wm", service = CompletionProvider.class)
 public class WebMotionCompletion implements CompletionProvider {
 
-    public static final String[] keywords = {
-                                                "[config]", "[properties]", "[actions]", "[filters]", "[errors]", "[extensions]",
-                                                "/", "*", "GET", "POST", "PUT", "DELETE", "HEAD",
-                                                "action:", "async:", "sync:",
-                                                "view:", "url:", "redirect:", "forward:",
-                                                "package.views", "package.base", "package.filters", "package.actions",
-                                                "package.errors", "javac.debug", "server.async", "server.encoding", "server.error.page",
-                                                "server.controller.scope", "server.listener.class", "server.main.handler.class",
-                                                "server.secret", "server.static.autodetect"
-                                            };
-    
+    public static final String[] KEYWORDS_SECTIONS = {
+        "[config]", "[properties]", "[actions]", "[filters]", "[errors]", "[extensions]"
+    };
+            
+    public static final String[] KEYWORDS_CONFIG = {
+        "[config]", "[properties]", "[actions]", "[filters]", "[errors]", "[extensions]",
+        "package.views", "package.base", "package.filters", "package.actions",
+        "package.errors", "javac.debug", "server.async", "server.encoding", "server.error.page",
+        "server.controller.scope", "server.listener.class", "server.main.handler.class",
+        "server.secret", "server.static.autodetect"
+    };
+            
+    public static final String[] KEYWORDS_METHODS = {
+        "[config]", "[properties]", "[actions]", "[filters]", "[errors]", "[extensions]",
+        "*", "GET", "POST", "PUT", "DELETE", "HEAD"
+    };
+            
+    public static final String[] KEYWORDS_ACTION = {
+        "/"
+    };
+            
+    public static final String[] KEYWORDS_ACTION_ACTION = {
+        "action:", "async:", "sync:", "view:", "url:", "redirect:", "forward:"
+    };
+            
+    public static final String[] KEYWORDS_FILTER_ACTION = {
+        "action:"
+    };
+            
+    public static final String[] KEYWORDS_ERROR = {
+        "[config]", "[properties]", "[actions]", "[filters]", "[errors]", "[extensions]",
+        "code:400", "code:401", "code:403", "code:404", "code:408", "code:500", "*"
+    };
+            
+    public static final String[] KEYWORDS_EXTENSION = {
+        "[config]", "[properties]", "[actions]", "[filters]", "[errors]", "[extensions]",
+        "/"
+    };
+            
+    public static final String[] KEYWORDS_FILTER = {
+        "/", "/*"
+    };
+            
+    public static final String[] KEYWORDS_ERROR_ACTION = {
+        "action:", "view:", "url:", "redirect:", "forward:"
+    };
+            
     @Override
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if (queryType != CompletionProvider.COMPLETION_QUERY_TYPE) {
@@ -100,71 +136,113 @@ public class WebMotionCompletion implements CompletionProvider {
                     Exceptions.printStackTrace(ex);
                 }
         
-                // Keyword
-                // TODO: 20120611 jru keyword based on grammar
+                TokenHierarchy<Document> hi = TokenHierarchy.get(document);
+                TokenSequence<WebMotionTokenId> ts = (TokenSequence<WebMotionTokenId>) hi.tokenSequence();
+                
+                ts.move(caretOffset);
+                ts.moveNext();
+                
+                String sectionName = null;
+                int column = 0;
+                do {
+                    
+                    Token<WebMotionTokenId> tok = ts.token();
+                    WebMotionTokenId id = tok.id();
+                    String name = id.name();
+                    
+                    if (name.startsWith("SECTION_")) {
+                        sectionName = tok.text().toString();
+                    }
+                    
+                    if ("ACTION_SEPARATOR".equals(name)
+                            || "ACTION_PATH_END".equals(name)
+                            || "ACTION_PATH_PARAMETER_SEPARATOR".equals(name)
+                            || "ACTION_PATH_PARAMETER_VALUE_SEPARATOR".equals(name)
+                            || "ACTION_PARAMETERS_SEPARATOR".equals(name)
+                            
+                            || "ACTION_ACTION_JAVA_END".equals(name)
+                            || "ACTION_ACTION_VIEW_END".equals(name)
+                            || "ACTION_ACTION_LINK_END".equals(name)
+                            || "ACTION_PARAMETER_VALUE_END".equals(name)
+                            || "ACTION_END".equals(name)
+                            
+                            || "ERROR_SEPARATOR".equals(name)
+                            
+                            || "ERROR_END".equals(name)
+                            || "ERROR_VALUE_END".equals(name)
+                            
+                            || "FILTER_SEPARATOR".equals(name)
+                            || "FILTER_END".equals(name)
+                            || "FILTER_PARAMETER_VALUE_END".equals(name)
+                            
+                            || "EXTENSION_SEPARATOR".equals(name)
+                            || "EXTENSION_END".equals(name)) {
+                        
+                        column ++;
+                    }
+                } while(ts.movePrevious() && sectionName == null);
+                
+                // Get the package in configuration
+                String packageBase = getPackageValue("package.base", null);
+                String packageTarget = null;
+                String[] keywords = {};
+                if (sectionName != null) {
+                    
+                    if (sectionName.startsWith("[config]")) {
+                        keywords = KEYWORDS_CONFIG;
+                        
+                    } else if (sectionName.startsWith("[errors]") && column % 2 == 0) {
+                        keywords = KEYWORDS_ERROR;
+                        packageTarget = "";
+                        
+                    } else if (sectionName.startsWith("[errors]") && column % 2 == 1) {
+                        keywords = KEYWORDS_ERROR_ACTION;
+                        packageTarget = getPackageValue("package.errors", packageBase);
+                        
+                    } else if (sectionName.startsWith("[extensions]") && column % 2 == 1) {
+                        keywords = KEYWORDS_EXTENSION;
+                        
+                    } else if (sectionName.startsWith("[filters]") && column % 3 == 0) {
+                        keywords = KEYWORDS_METHODS;
+                        
+                    } else if (sectionName.startsWith("[filters]") && column % 3 == 1) {
+                        keywords = KEYWORDS_FILTER;
+                        
+                    } else if (sectionName.startsWith("[filters]") && column % 3 == 2) {
+                        keywords = KEYWORDS_FILTER_ACTION;
+                        packageTarget = getPackageValue("package.filters", packageBase);
+                        
+                    } else if (sectionName.startsWith("[actions]") && column % 3 == 0) {
+                        keywords = KEYWORDS_METHODS;
+                        
+                    } else if (sectionName.startsWith("[actions]") && column % 3 == 1) {
+                        keywords = KEYWORDS_ACTION;
+                        
+                    } else if (sectionName.startsWith("[actions]") && column % 3 == 2) {
+                        keywords = KEYWORDS_ACTION_ACTION;
+                        packageTarget = getPackageValue("package.actions", packageBase);
+                        
+                    } else if (sectionName.contains("properties]")) {
+                        keywords = KEYWORDS_SECTIONS;
+                    }
+                    
+                } else {
+                    keywords = KEYWORDS_SECTIONS;
+                }
+                
+                // Keywords
                 for (String keyword : keywords) {
                     if (keyword.startsWith(filter)) {
                         completionResultSet.addItem(new WebMotionCompletionItem(keyword, startOffset, caretOffset));
                     }
                 }
                 
-                // Class
-                TokenHierarchy<Document> hi = TokenHierarchy.get(document);
-                TokenSequence<WebMotionTokenId> ts = (TokenSequence<WebMotionTokenId>) hi.tokenSequence();
-                if (ts != null) {
-                    ts.move(caretOffset);
-                    ts.movePrevious();
-                    
-                    Token<WebMotionTokenId> tokken = ts.token();
-                    WebMotionTokenId id = tokken.id();
-                    String name = id.name();
-                    
-                    // Get the package in configuration
-                    String packageBase = getPackageValue("package.base", null);
-                    String packageTarget = null;
-
-                    if ("ACTION_PATH_END".equals(name)
-                            || "ACTION_PATH_PARAMETER_SEPARATOR".equals(name)
-                            || "ACTION_PATH_PARAMETER_VALUE_SEPARATOR".equals(name)
-                            || "ACTION_ACTION_JAVA_BEGIN".equals(name)
-                            || "ACTION_ACTION_IDENTIFIER".equals(name)
-                            || "ACTION_ACTION_JAVA_IDENTIFIER".equals(name)
-                            || "ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER".equals(name)
-                            || "ACTION_ACTION_JAVA_VARIABLE".equals(name)) {
-
-                        packageTarget = getPackageValue("package.actions", packageBase);
-
-                    } else if ("FILTER_ACTION".equals(name)
-                            || "FILTER_ACTION_BEGIN".equals(name)
-                            || "FILTER_SEPARATOR".equals(name)) {
-                        packageTarget = getPackageValue("package.filters", packageBase);
-
-                    } else if ("ERROR_ACTION_JAVA".equals(name)
-                            || "ERROR_SEPARATOR".equals(name)
-                            || "ERROR_ACTION_JAVA_BEGIN".equals(name)) {
-                        packageTarget = getPackageValue("package.errors", packageBase);
-
-                    } else if ("EXTENSION_FILE".equals(name)) {
-                        // TODO: 20120611 jru completion on file
-
-                    } else if ("ACTION_ACTION_VIEW_VALUE".equals(name)
-                            || "ACTION_ACTION_VIEW_VARIABLE".equals(name)
-                            || "ERROR_ACTION_VALUE".equals(name)) {
-                        // TODO: 20120611 jru completion on view
-
-                    } else if ("EXCEPTION".equals(name)
-                            || "ERROR_END".equals(name)
-                            || "SECTION_ERRORS_NAME".equals(name)
-                            || "SECTION_CONFIG_NEXT_ERRORS".equals(name)
-                            || "SECTION_ACTIONS_NEXT_ERRORS".equals(name)
-                            || "SECTION_ERRORS_NEXT_ERRORS".equals(name)
-                            || "SECTION_FILTERS_NEXT_ERRORS".equals(name)
-                            || "SECTION_EXTENSIONS_NEXT_ERRORS".equals(name)
-                            || "SECTION_PROPERTIES_NEXT_ERRORS".equals(name)) {
-                        packageTarget = "";
-                    }
-                
+                if (packageTarget != null) {
                     String filterClass = packageTarget + filter;
+                    if (filter.contains(":") && !filter.startsWith("code:")) {
+                        filterClass = packageTarget + StringUtils.substringAfter(":", filter);
+                        startOffset += StringUtils.substringBefore(":", filter).length() + 1;
+                    }
                     
                     // Class
                     FileObject fo = getFO(document);
@@ -187,7 +265,7 @@ public class WebMotionCompletion implements CompletionProvider {
                     }
                     
                     // Method
-                    String className = StringUtils.substringBeforeLast(packageTarget + filter, ".").replaceAll("\\.", "/");
+                    String className = StringUtils.substringBeforeLast(filterClass, ".").replaceAll("\\.", "/");
                     final String filterMethod = StringUtils.substringAfterLast(filter, ".");
 
                     JavaSource javaSource = null;
@@ -230,6 +308,7 @@ public class WebMotionCompletion implements CompletionProvider {
                     if (javaSource == null) {
                         completionResultSet.finish();
                     }
+                    
                 } else {
                     completionResultSet.finish();
                 }
@@ -275,7 +354,7 @@ public class WebMotionCompletion implements CompletionProvider {
         while (start + 1 < lineElement.getEndOffset()) {
             try {
                 char charAt = doc.getText(start, 1).charAt(0);
-                if (charAt != ' ' || charAt != ':') {
+                if (charAt != ' ') {
                     break;
                 }
             } catch (BadLocationException ex) {
@@ -292,7 +371,7 @@ public class WebMotionCompletion implements CompletionProvider {
         int i = line.length;
         while (--i > -1) {
             final char c = line[i];
-            if (Character.isWhitespace(c) || c == ':') {
+            if (Character.isWhitespace(c)) {
                 return i;
             }
         }
