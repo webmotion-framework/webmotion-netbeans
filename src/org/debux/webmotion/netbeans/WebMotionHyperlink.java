@@ -95,8 +95,8 @@ public class WebMotionHyperlink implements HyperlinkProvider {
             String packageTarget = null;
             boolean isJavaFile = true;
             
-            Token<WebMotionTokenId> tokken = ts.token();
-            WebMotionTokenId id = tokken.id();
+            Token<WebMotionTokenId> tok = ts.token();
+            WebMotionTokenId id = tok.id();
             String name = id.name();
             if ("ACTION_ACTION_IDENTIFIER".equals(name) ||
                 "ACTION_ACTION_JAVA_IDENTIFIER".equals(name) ||
@@ -126,22 +126,22 @@ public class WebMotionHyperlink implements HyperlinkProvider {
             }
             
             // Search target
-            while (verifyToken(tokken)) {
-                target += tokken.text().toString();
+            while (verifyToken(tok)) {
+                target += tok.text().toString();
                 
                 ts.moveNext();
-                tokken = ts.token();
+                tok = ts.token();
             }
 
             ts.move(offset);
             ts.movePrevious();
-            tokken = ts.token();
+            tok = ts.token();
 
-            while (verifyToken(tokken)) {
-                target = tokken.text().toString() + target;
+            while (verifyToken(tok)) {
+                target = tok.text().toString() + target;
 
                 ts.movePrevious();
-                tokken = ts.token();
+                tok = ts.token();
             }
 
             // Open document
