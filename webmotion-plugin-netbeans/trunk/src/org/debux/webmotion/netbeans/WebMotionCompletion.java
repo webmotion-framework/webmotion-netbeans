@@ -8,12 +8,14 @@ import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.net.URL;
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
@@ -50,6 +52,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -120,8 +123,10 @@ public class WebMotionCompletion implements CompletionProvider {
                 
                 String filter = null;
                 int startOffset = caretOffset - 1;
-
+                int column = 0;
+                
                 try {
+                    // Get filter
                     StyledDocument bDoc = (StyledDocument) document;
                     int lineStartOffset = getRowFirstNonWhite(bDoc, caretOffset);
                     char[] line = bDoc.getText(lineStartOffset, caretOffset - lineStartOffset).toCharArray();
@@ -132,10 +137,22 @@ public class WebMotionCompletion implements CompletionProvider {
                     } else {
                         startOffset = lineStartOffset;
                     }
+                    
+                    // Get position
+                    Element lineElement = bDoc.getParagraphElement(caretOffset);
+                    String lineValue = bDoc.getText(lineElement.getStartOffset(), caretOffset - lineElement.getStartOffset());
+                    
+                    Pattern pattern = Pattern.compile("\\s+");
+                    Matcher matcher = pattern.matcher(lineValue);
+                    while (matcher.find()) {
+                        column ++;
+                    }
+                    
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }
         
+                // Get section
                 TokenHierarchy<Document> hi = TokenHierarchy.get(document);
                 TokenSequence<WebMotionTokenId> ts = (TokenSequence<WebMotionTokenId>) hi.tokenSequence();
                 
@@ -143,48 +160,22 @@ public class WebMotionCompletion implements CompletionProvider {
                 ts.moveNext();
                 
                 String sectionName = null;
-                int column = 0;
+                
                 do {
                     
                     Token<WebMotionTokenId> tok = ts.token();
                     WebMotionTokenId id = tok.id();
                     String name = id.name();
-                    
+
                     if (name.startsWith("SECTION_")) {
                         sectionName = tok.text().toString();
-                    }
-                    
-                    if ("ACTION_SEPARATOR".equals(name)
-                            || "ACTION_PATH_END".equals(name)
-                            || "ACTION_PATH_PARAMETER_SEPARATOR".equals(name)
-                            || "ACTION_PATH_PARAMETER_VALUE_SEPARATOR".equals(name)
-                            || "ACTION_PARAMETERS_SEPARATOR".equals(name)
-                            
-                            || "ACTION_ACTION_JAVA_END".equals(name)
-                            || "ACTION_ACTION_VIEW_END".equals(name)
-                            || "ACTION_ACTION_LINK_END".equals(name)
-                            || "ACTION_PARAMETER_VALUE_END".equals(name)
-                            || "ACTION_END".equals(name)
-                            
-                            || "ERROR_SEPARATOR".equals(name)
-                            
-                            || "ERROR_END".equals(name)
-                            || "ERROR_VALUE_END".equals(name)
-                            
-                            || "FILTER_SEPARATOR".equals(name)
-                            || "FILTER_END".equals(name)
-                            || "FILTER_PARAMETER_VALUE_END".equals(name)
-                            
-                            || "EXTENSION_SEPARATOR".equals(name)
-                            || "EXTENSION_END".equals(name)) {
-                        
-                        column ++;
                     }
                 } while(ts.movePrevious() && sectionName == null);
                 
                 // Get the package in configuration
                 String packageBase = getPackageValue("package.base", null);
                 String packageTarget = null;
+                boolean packageTarget4View = false;
                 String[] keywords = {};
                 if (sectionName != null) {
                     
@@ -197,10 +188,21 @@ public class WebMotionCompletion implements CompletionProvider {
                         
                     } else if (sectionName.startsWith("[errors]") && column % 2 == 1) {
                         keywords = KEYWORDS_ERROR_ACTION;
-                        packageTarget = getPackageValue("package.errors", packageBase);
+                        
+                        if (filter.startsWith("view:")) {
+                            packageTarget = getPackageValue("package.views", null);
+                            packageTarget4View = true;
+                            
+                        } else if (filter.startsWith("action:") || !filter.contains(":")) {
+                            packageTarget = getPackageValue("package.errors", packageBase);
+                        }
+                        
+                    } else if (sectionName.startsWith("[extensions]") && column % 2 == 0) {
+                        keywords = KEYWORDS_EXTENSION;
                         
                     } else if (sectionName.startsWith("[extensions]") && column % 2 == 1) {
-                        keywords = KEYWORDS_EXTENSION;
+                        packageTarget = "";
+                        packageTarget4View = true;
                         
                     } else if (sectionName.startsWith("[filters]") && column % 3 == 0) {
                         keywords = KEYWORDS_METHODS;
@@ -220,7 +222,14 @@ public class WebMotionCompletion implements CompletionProvider {
                         
                     } else if (sectionName.startsWith("[actions]") && column % 3 == 2) {
                         keywords = KEYWORDS_ACTION_ACTION;
-                        packageTarget = getPackageValue("package.actions", packageBase);
+                        
+                        if (filter.startsWith("view:")) {
+                            packageTarget = getPackageValue("package.views", null);
+                            packageTarget4View = true;
+
+                        } else if (filter.startsWith("action:") || !filter.contains(":")) {
+                            packageTarget = getPackageValue("package.actions", packageBase);
+                        }
                         
                     } else if (sectionName.contains("properties]")) {
                         keywords = KEYWORDS_SECTIONS;
@@ -238,75 +247,124 @@ public class WebMotionCompletion implements CompletionProvider {
                 }
                 
                 if (packageTarget != null) {
-                    String filterClass = packageTarget + filter;
-                    if (filter.contains(":") && !filter.startsWith("code:")) {
-                        filterClass = packageTarget + StringUtils.substringAfter(":", filter);
-                        startOffset += StringUtils.substringBefore(":", filter).length() + 1;
-                    }
                     
-                    // Class
-                    FileObject fo = getFO(document);
-                    ClassPath bootCp = ClassPath.getClassPath(fo, ClassPath.BOOT);
-                    ClassPath compileCp = ClassPath.getClassPath(fo, ClassPath.COMPILE);
-                    ClassPath sourcePath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-                    ClasspathInfo info = ClasspathInfo.create(bootCp, compileCp, sourcePath);
-                    
-                    Set<ElementHandle<TypeElement>> result = info.getClassIndex()
-                            .getDeclaredTypes("", ClassIndex.NameKind.PREFIX,
-                                                EnumSet.of(ClassIndex.SearchScope.SOURCE, ClassIndex.SearchScope.DEPENDENCIES));
-                    
-                    for (ElementHandle<TypeElement> type : result) {
-                        String binaryName = type.getBinaryName();
-                        if (!binaryName.equals("") && binaryName.startsWith(filterClass)) {
+                    // File
+                    if (packageTarget4View) {
+                        String path = packageTarget.replaceAll("\\.", "/");
+                        String filterFile = filter;
+                        int startOffsetFile = startOffset;
 
-                            String value = binaryName.replaceFirst("^" + packageTarget, "");
-                            completionResultSet.addItem(new WebMotionCompletionItem(value, startOffset, caretOffset));
+                        if (filter.startsWith("view:")) {
+                            filterFile = filter.replaceFirst("view:", "");
+                            startOffsetFile += "view:".length();
                         }
-                    }
-                    
-                    // Method
-                    String className = StringUtils.substringBeforeLast(filterClass, ".").replaceAll("\\.", "/");
-                    final String filterMethod = StringUtils.substringAfterLast(filter, ".");
 
-                    JavaSource javaSource = null;
-                    final CompletionResultSet completionResultSetJavaSource = completionResultSet;
-                    final int startOffsetJavaSource = startOffset + StringUtils.substringBeforeLast(filter, ".").length() + 1;
-                    final int caretOffesetJavaSource = caretOffset;
-                        
-                    GlobalPathRegistry registry = GlobalPathRegistry.getDefault();
-                    FileObject file = registry.findResource(className + ".java");
-                    if (file != null) {
-                        try {
-                            javaSource = JavaSource.create(info, file);
-                            javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
-                                @Override
-                                public void cancel() {
-                                }
+                        if (filterFile.contains("/")) {
+                            path += StringUtils.substringBeforeLast(filterFile, "/");
+                            filterFile = StringUtils.substringAfterLast(filterFile, "/");
+                            startOffsetFile += path.length() + 1;
+                        }
 
-                                @Override
-                                public void run(CompilationController cu) throws Exception {
-                                    cu.toPhase(JavaSource.Phase.PARSED);
-                                    CompilationUnitTree tree = cu.getCompilationUnit();
+                        GlobalPathRegistry registry = GlobalPathRegistry.getDefault();
+                        List<ClassPath> paths = new ArrayList<ClassPath>();
+                        paths.addAll(registry.getPaths(ClassPath.BOOT));
+                        paths.addAll(registry.getPaths(ClassPath.COMPILE));
+                        paths.addAll(registry.getPaths(ClassPath.SOURCE));
 
-                                    List<String> methods = new ArrayList<String>();
-                                    JavaMethodVisitor visitor = new JavaMethodVisitor();
-                                    visitor.scan(tree, methods);
+                        for (ClassPath classPath : paths) {
+                            FileObject resource = classPath.findResource(path);
 
-                                    for (String name : methods) {
-                                        if (name.startsWith(filterMethod)) {
-                                            completionResultSetJavaSource.addItem(new WebMotionCompletionItem(name, startOffsetJavaSource, caretOffesetJavaSource));
-                                        }
+                            if (resource != null) {
+                                FileObject[] children = resource.getChildren();
+                                for (FileObject child : children) {
+                                    String nameExt = child.getNameExt();
+                                    if (child.isFolder()) {
+                                        nameExt += "/";
                                     }
-                                    completionResultSetJavaSource.finish();
+
+                                    if (nameExt.startsWith(filterFile)) {
+                                        completionResultSet.addItem(new WebMotionCompletionItem(nameExt, startOffsetFile, caretOffset));
+                                    }
                                 }
-                            }, false);
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
+                            }
                         }
-                    }
-                    
-                    if (javaSource == null) {
+                        
                         completionResultSet.finish();
+                        
+                    } else {
+                        
+                        // Class
+                        String filterClass = packageTarget + filter;
+                        int startOffsetClass = startOffset;
+
+                        if (filter.contains(":") && !filter.startsWith("code:")) {
+                            filterClass = packageTarget + StringUtils.substringAfter(filter, ":");
+                            startOffsetClass += StringUtils.substringBefore(filter, ":").length() + 1;
+                        }
+
+                        FileObject fo = getFO(document);
+                        ClassPath bootCp = ClassPath.getClassPath(fo, ClassPath.BOOT);
+                        ClassPath compileCp = ClassPath.getClassPath(fo, ClassPath.COMPILE);
+                        ClassPath sourcePath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                        ClasspathInfo info = ClasspathInfo.create(bootCp, compileCp, sourcePath);
+
+                        Set<ElementHandle<TypeElement>> result = info.getClassIndex()
+                                .getDeclaredTypes("", ClassIndex.NameKind.PREFIX,
+                                                    EnumSet.of(ClassIndex.SearchScope.SOURCE, ClassIndex.SearchScope.DEPENDENCIES));
+
+                        for (ElementHandle<TypeElement> type : result) {
+                            String binaryName = type.getBinaryName();
+                            if (!binaryName.equals("") && binaryName.startsWith(filterClass)) {
+
+                                String value = binaryName.replaceFirst("^" + packageTarget, "");
+                                completionResultSet.addItem(new WebMotionCompletionItem(value, startOffsetClass, caretOffset));
+                            }
+                        }
+
+                        // Method
+                        String className = StringUtils.substringBeforeLast(filterClass, ".").replaceAll("\\.", "/");
+                        final String filterMethod = StringUtils.substringAfterLast(filter, ".");
+
+                        JavaSource javaSource = null;
+                        final CompletionResultSet completionResultSetJavaSource = completionResultSet;
+                        final int startOffsetJavaSource = startOffsetClass + StringUtils.substringBeforeLast(filter, ".").length() + 1;
+                        final int caretOffesetJavaSource = caretOffset;
+
+                        GlobalPathRegistry registry = GlobalPathRegistry.getDefault();
+                        FileObject file = registry.findResource(className + ".java");
+                        if (file != null) {
+                            try {
+                                javaSource = JavaSource.create(info, file);
+                                javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
+                                    @Override
+                                    public void cancel() {
+                                    }
+
+                                    @Override
+                                    public void run(CompilationController cu) throws Exception {
+                                        cu.toPhase(JavaSource.Phase.PARSED);
+                                        CompilationUnitTree tree = cu.getCompilationUnit();
+
+                                        List<String> methods = new ArrayList<String>();
+                                        JavaMethodVisitor visitor = new JavaMethodVisitor();
+                                        visitor.scan(tree, methods);
+
+                                        for (String name : methods) {
+                                            if (name.startsWith(filterMethod)) {
+                                                completionResultSetJavaSource.addItem(new WebMotionCompletionItem(name, startOffsetJavaSource, caretOffesetJavaSource));
+                                            }
+                                        }
+                                        completionResultSetJavaSource.finish();
+                                    }
+                                }, false);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+
+                        if (javaSource == null) {
+                            completionResultSet.finish();
+                        }
                     }
                     
                 } else {
@@ -392,7 +450,7 @@ public class WebMotionCompletion implements CompletionProvider {
     
     @Override
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        return 1;
+        return 0;
     }
     
     public static class WebMotionCompletionItem implements CompletionItem {
