@@ -1,5 +1,6 @@
 package org.debux.webmotion.netbeans;
 
+import java.io.IOException;
 import java.util.Map;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
@@ -7,7 +8,12 @@ import org.apache.commons.lang.StringUtils;
 import org.debux.webmotion.netbeans.javacc.lexer.impl.WebMotionTokenId;
 import org.debux.webmotion.netbeans.javacc.parser.WebMotionParser;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -20,6 +26,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -48,12 +55,13 @@ public class WebMotionHyperlink implements HyperlinkProvider {
         TokenHierarchy<Document> hi = TokenHierarchy.get(document);
         TokenSequence<WebMotionTokenId> ts = (TokenSequence<WebMotionTokenId>) hi.tokenSequence();
         if (ts != null) {
-            int targetStart = 0;
-            int targetEnd = 0;
             
             ts.move(offset);
             ts.moveNext();
             Token<WebMotionTokenId> tok = ts.token();
+            
+            int targetEnd = ts.offset();
+            int targetStart = ts.offset();
 
             while (verifyToken(tok)) {
                 ts.moveNext();
@@ -160,15 +168,14 @@ public class WebMotionHyperlink implements HyperlinkProvider {
                         }
 
                         open(fo, mark);
-                        
+                            
                     } else {
                         FileObject fo = registry.findResource(packageTarget + target);
                         open(fo, null);
                     }
                     
-                } catch (DataObjectNotFoundException e) {
-                    NotifyDescriptor.Message msg = new NotifyDescriptor.Message(target);
-                    DialogDisplayer.getDefault().notify(msg);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
         }
@@ -184,6 +191,7 @@ public class WebMotionHyperlink implements HyperlinkProvider {
                 StyledDocument doc = open.getDocument();
                 TokenHierarchy<StyledDocument> hi = TokenHierarchy.get(doc);
                 TokenSequence<?> ts = hi.tokenSequence();
+                
                 while (ts.moveNext()) {
                     Token<?> token = ts.token();
                     String matcherText = token.text().toString();
@@ -227,7 +235,7 @@ public class WebMotionHyperlink implements HyperlinkProvider {
     public boolean verifyToken(Token<WebMotionTokenId> token){
         WebMotionTokenId id = token.id();
         String name = id.name();
-            
+        
         return "ACTION_ACTION_IDENTIFIER".equals(name) ||
                 "ACTION_ACTION_JAVA_IDENTIFIER".equals(name) ||
                 "ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER".equals(name) ||
