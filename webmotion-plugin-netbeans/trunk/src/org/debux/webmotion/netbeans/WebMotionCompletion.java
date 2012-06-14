@@ -80,6 +80,10 @@ public class WebMotionCompletion implements CompletionProvider {
         "*", "GET", "POST", "PUT", "DELETE", "HEAD"
     };
             
+    public static final String[] KEYWORDS_METHOD = {
+        "GET", "POST", "PUT", "DELETE", "HEAD"
+    };
+            
     public static final String[] KEYWORDS_ACTION = {
         "/"
     };
@@ -94,7 +98,11 @@ public class WebMotionCompletion implements CompletionProvider {
             
     public static final String[] KEYWORDS_ERROR = {
         "[config]", "[properties]", "[actions]", "[filters]", "[errors]", "[extensions]",
-        "code:400", "code:401", "code:403", "code:404", "code:408", "code:500", "*"
+        "*", "code:"
+    };
+            
+    public static final String[] KEYWORDS_ERROR_CODE = {
+        "400", "401", "403", "404", "408", "500"
     };
             
     public static final String[] KEYWORDS_EXTENSION = {
@@ -239,6 +247,18 @@ public class WebMotionCompletion implements CompletionProvider {
                 }
                 
                 // Keywords
+                if (keywords == KEYWORDS_METHODS && filter.contains(",")) {
+                    keywords = KEYWORDS_METHOD;
+                    startOffset += StringUtils.substringBeforeLast(filter, ",").length();
+                    filter = StringUtils.substringAfterLast(filter, ",");
+                    
+                } else if (keywords == KEYWORDS_ERROR && filter.contains("code:")) {
+                    keywords = KEYWORDS_ERROR_CODE;
+                    startOffset += "code:".length();
+                    filter = filter.substring("code:".length());
+                    packageTarget = null;
+                }
+                
                 for (String keyword : keywords) {
                     if (keyword.startsWith(filter)) {
                         completionResultSet.addItem(new WebMotionCompletionItem(keyword, startOffset, caretOffset));
