@@ -51,7 +51,6 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -66,7 +65,7 @@ public class WebMotionCompletion implements CompletionProvider {
     public static final String[] KEYWORDS_SECTIONS = {
         "[config]", "[properties]", "[actions]", "[filters]", "[errors]", "[extensions]"
     };
-            
+
     public static final String[] KEYWORDS_CONFIG = {
         "[config]", "[properties]", "[actions]", "[filters]", "[errors]", "[extensions]",
         "package.views", "package.base", "package.filters", "package.actions",
