@@ -4,14 +4,12 @@ import java.io.IOException;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject.Registration;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
-@Registration(displayName = "#editor_name", iconBase = "org/debux/webmotion/netbeans/icon.png", mimeType = "text/x-wm")
 public class WebMotionDataObject extends MultiDataObject {
 
     public WebMotionDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
