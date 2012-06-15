@@ -81,7 +81,7 @@ public class WebMotionHyperlink implements HyperlinkProvider {
                 tok = ts.token();
             }
 
-            if (targetStart != 0 && targetEnd != 0) {
+            if (targetStart != targetEnd) {
                 return new int[]{targetStart, targetEnd};
             }
         }
@@ -187,8 +187,8 @@ public class WebMotionHyperlink implements HyperlinkProvider {
             EditorCookie open = dob.getLookup().lookup(EditorCookie.class);
             open.open();
             
-            if (mark != null) {
-                StyledDocument doc = open.getDocument();
+            StyledDocument doc = open.getDocument();
+            if (mark != null && doc != null) {
                 TokenHierarchy<StyledDocument> hi = TokenHierarchy.get(doc);
                 TokenSequence<?> ts = hi.tokenSequence();
                 
