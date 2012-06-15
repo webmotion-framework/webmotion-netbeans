@@ -8,11 +8,7 @@ import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Name;
@@ -54,6 +50,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -570,7 +567,11 @@ public class WebMotionCompletion implements CompletionProvider {
 
         @Override
         public String getText() {
-            return "Information about " + item.text;
+            try {
+                return NbBundle.getMessage(KeywordCompletionDocumentation.class, "completion_" + item.text);
+            } catch (MissingResourceException ex) {
+                return "Information about " + item.text;
+            }
         }
 
         @Override
