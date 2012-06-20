@@ -113,11 +113,33 @@
             </folder>
         </folder>
     </folder>
-    
+
     <folder name="OptionsDialog">
+        <folder name="Editor">
+            <folder name="Hints">
+                <folder name="text">
+                    <folder name="x-wm">
+                        <file name="WebMotionHints.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.debux.webmotion.netbeans.hints.WebMotionHintsAdvancedOption.createStatic"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
         <folder name="PreviewExamples">
             <folder name="text">
                 <file name="x-wm" url="template/example.wm"/>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="csl-hints">
+        <folder name="text">
+            <folder name="x-wm">
+                <folder name="hints">
+                    <file name="org-debux-webmotion-netbeans-hints-WebMotionRule.instance"/>
+                </folder>
             </folder>
         </folder>
     </folder>
