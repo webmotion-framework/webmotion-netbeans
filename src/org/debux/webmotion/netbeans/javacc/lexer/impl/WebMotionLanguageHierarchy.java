@@ -4,6 +4,7 @@ import java.util.*;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
+import static org.debux.webmotion.netbeans.WebMotionLanguage.MIME_TYPE;
 
 /**
  *
@@ -210,7 +211,7 @@ public class WebMotionLanguageHierarchy extends LanguageHierarchy<WebMotionToken
 
     @Override
     protected String mimeType() {
-        return "text/x-wm";
+        return MIME_TYPE;
     }
 
 }

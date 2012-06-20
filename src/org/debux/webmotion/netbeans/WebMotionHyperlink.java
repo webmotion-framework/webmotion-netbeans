@@ -8,18 +8,11 @@ import org.apache.commons.lang.StringUtils;
 import org.debux.webmotion.netbeans.javacc.lexer.impl.WebMotionTokenId;
 import org.debux.webmotion.netbeans.javacc.parser.WebMotionParser;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -27,12 +20,13 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
+import static org.debux.webmotion.netbeans.WebMotionLanguage.MIME_TYPE;
 
 /**
  *
  * @author julien
  */
-@MimeRegistration(mimeType = "text/x-wm", service = HyperlinkProvider.class)
+@MimeRegistration(mimeType = MIME_TYPE, service = HyperlinkProvider.class)
 public class WebMotionHyperlink implements HyperlinkProvider {
 
     @Override
