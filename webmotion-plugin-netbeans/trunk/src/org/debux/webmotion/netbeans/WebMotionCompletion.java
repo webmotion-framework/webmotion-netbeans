@@ -51,12 +51,13 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import static org.debux.webmotion.netbeans.WebMotionLanguage.MIME_TYPE;
 
 /**
  *
  * @author julien
  */
-@MimeRegistration(mimeType = "text/x-wm", service = CompletionProvider.class)
+@MimeRegistration(mimeType = MIME_TYPE, service = CompletionProvider.class)
 public class WebMotionCompletion implements CompletionProvider {
 
     public static final String[] KEYWORDS_SECTIONS = {

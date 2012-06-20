@@ -9,12 +9,13 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
+import static org.debux.webmotion.netbeans.WebMotionLanguage.MIME_TYPE;
 
 public class WebMotionDataObject extends MultiDataObject {
 
     public WebMotionDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-        registerEditor("text/x-wm", true);
+        registerEditor(MIME_TYPE, true);
     }
 
     @Override
@@ -24,7 +25,7 @@ public class WebMotionDataObject extends MultiDataObject {
 
     @MultiViewElement.Registration(displayName = "#editor_view_name",
                                     iconBase = "org/debux/webmotion/netbeans/icon.png",
-                                    mimeType = "text/x-wm",
+                                    mimeType = MIME_TYPE,
                                     persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
                                     preferredID = "WebMotionDataObject",
                                     position = 1000)

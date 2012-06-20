@@ -1,9 +1,11 @@
 package org.debux.webmotion.netbeans.hints;
 
+import org.debux.webmotion.netbeans.WebMotionLanguage;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
+import static org.debux.webmotion.netbeans.WebMotionLanguage.MIME_TYPE;
 
 /**
  *
@@ -26,7 +28,7 @@ public class WebMotionHintsAdvancedOption extends AdvancedOption {
     @Override
     public OptionsPanelController create() {
         if ( panelController == null ) {
-            HintsManager manager = HintsProvider.HintsManager.getManagerForMimeType("text/x-wm");
+            HintsManager manager = HintsProvider.HintsManager.getManagerForMimeType(MIME_TYPE);
             assert manager != null;
             panelController = manager.getOptionsController();
         }
