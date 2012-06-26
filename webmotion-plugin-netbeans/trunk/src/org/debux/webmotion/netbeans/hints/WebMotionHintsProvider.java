@@ -34,11 +34,13 @@ public class WebMotionHintsProvider implements HintsProvider {
 
     @Override
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
+        WebMotionParserResult parserResult = (WebMotionParserResult) context.parserResult;
+        List<? extends Error> diagnostics = parserResult.getDiagnostics();
+        unhandled.addAll(diagnostics);
     }
 
     private void apply(RuleContext context, HintsManager manager, List<Hint> hints) {
         WebMotionParserResult parserResult = (WebMotionParserResult) context.parserResult;
-        FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
         
         List<PatternRule> rules = (List<PatternRule>) manager.getHints().get(PatternRule.Kinds.DEFAULT);
         for (PatternRule rule : rules) {
