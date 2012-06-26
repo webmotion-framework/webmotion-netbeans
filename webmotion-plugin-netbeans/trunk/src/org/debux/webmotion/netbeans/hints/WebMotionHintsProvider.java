@@ -6,7 +6,6 @@ import org.debux.webmotion.netbeans.javacc.parser.impl.WebMotionParserImpl.WebMo
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
-import org.netbeans.modules.csl.api.Rule.AstRule;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -15,7 +14,7 @@ import org.openide.filesystems.FileObject;
  */
 public class WebMotionHintsProvider implements HintsProvider {
 
-    private static final List<HintFix> NO_FIXES = Collections.<HintFix>emptyList();
+    public static final List<HintFix> NO_FIXES = Collections.<HintFix>emptyList();
 
     public WebMotionHintsProvider() {
     }
@@ -41,9 +40,9 @@ public class WebMotionHintsProvider implements HintsProvider {
         WebMotionParserResult parserResult = (WebMotionParserResult) context.parserResult;
         FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
         
-        List<? extends AstRule> rules = manager.getHints().get(WebMotionRule.Kinds.DEFAULT);
-        for (AstRule rule : rules) {
-            hints.add(new Hint(rule, "Test", fo, new OffsetRange(0, 10), NO_FIXES, 100));
+        List<PatternRule> rules = (List<PatternRule>) manager.getHints().get(PatternRule.Kinds.DEFAULT);
+        for (PatternRule rule : rules) {
+            rule.run(context, hints);
         }
     }
 
