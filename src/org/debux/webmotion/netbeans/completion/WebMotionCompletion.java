@@ -1,39 +1,23 @@
-package org.debux.webmotion.netbeans;
+package org.debux.webmotion.netbeans.completion;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
-import com.sun.source.util.Trees;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.net.URL;
 import java.util.*;
-import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Name;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementKindVisitor6;
-import javax.lang.model.util.ElementScanner6;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
-import javax.swing.Action;
-import javax.swing.ImageIcon;
-import javax.swing.JToolTip;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import org.apache.commons.lang.StringUtils;
+import org.debux.webmotion.netbeans.WebMotionLanguage;
 import org.debux.webmotion.netbeans.javacc.lexer.impl.WebMotionTokenId;
 import org.debux.webmotion.netbeans.javacc.parser.WebMotionParser;
-import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -43,26 +27,18 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.spi.editor.completion.CompletionDocumentation;
-import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
-import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
 import static org.debux.webmotion.netbeans.WebMotionLanguage.MIME_TYPE;
 import org.netbeans.api.java.source.*;
-import org.netbeans.api.java.source.ui.ElementJavadoc;
 
 /**
  *
@@ -190,7 +166,8 @@ public class WebMotionCompletion implements CompletionProvider {
                 // Get the package in configuration
                 String packageBase = getPackageValue("package.base", null);
                 String packageTarget = null;
-                boolean packageTarget4View = false;
+                String filterSuperClass = null;
+                
                 String[] keywords = {};
                 if (sectionName != null) {
                     
@@ -200,16 +177,17 @@ public class WebMotionCompletion implements CompletionProvider {
                     } else if (sectionName.startsWith("[errors]") && column % 2 == 0) {
                         keywords = KEYWORDS_ERROR;
                         packageTarget = "";
+                        filterSuperClass = "java.lang.Exception";
                         
                     } else if (sectionName.startsWith("[errors]") && column % 2 == 1) {
                         keywords = KEYWORDS_ERROR_ACTION;
                         
                         if (filter.startsWith("view:")) {
                             packageTarget = getPackageValue("package.views", null);
-                            packageTarget4View = true;
                             
                         } else if (filter.startsWith("action:") || !filter.contains(":")) {
                             packageTarget = getPackageValue("package.errors", packageBase);
+                            filterSuperClass = "org.debux.webmotion.server.WebMotionController";
                         }
                         
                     } else if (sectionName.startsWith("[extensions]") && column % 2 == 0) {
@@ -217,7 +195,6 @@ public class WebMotionCompletion implements CompletionProvider {
                         
                     } else if (sectionName.startsWith("[extensions]") && column % 2 == 1) {
                         packageTarget = "";
-                        packageTarget4View = true;
                         
                     } else if (sectionName.startsWith("[filters]") && column % 3 == 0) {
                         keywords = KEYWORDS_METHODS;
@@ -228,6 +205,7 @@ public class WebMotionCompletion implements CompletionProvider {
                     } else if (sectionName.startsWith("[filters]") && column % 3 == 2) {
                         keywords = KEYWORDS_FILTER_ACTION;
                         packageTarget = getPackageValue("package.filters", packageBase);
+                        filterSuperClass = "org.debux.webmotion.server.WebMotionFilter";
                         
                     } else if (sectionName.startsWith("[actions]") && column % 3 == 0) {
                         keywords = KEYWORDS_METHODS;
@@ -240,10 +218,10 @@ public class WebMotionCompletion implements CompletionProvider {
                         
                         if (filter.startsWith("view:")) {
                             packageTarget = getPackageValue("package.views", null);
-                            packageTarget4View = true;
 
                         } else if (filter.startsWith("action:") || !filter.contains(":")) {
                             packageTarget = getPackageValue("package.actions", packageBase);
+                            filterSuperClass = "org.debux.webmotion.server.WebMotionController";
                         }
                         
                     } else if (sectionName.contains("properties]")) {
@@ -276,7 +254,7 @@ public class WebMotionCompletion implements CompletionProvider {
                 if (packageTarget != null) {
                     
                     // File
-                    if (packageTarget4View) {
+                    if (filterSuperClass == null) {
                         String path = packageTarget.replaceAll("\\.", "/");
                         String filterFile = filter;
                         int startOffsetFile = startOffset;
@@ -298,24 +276,32 @@ public class WebMotionCompletion implements CompletionProvider {
                         paths.addAll(registry.getPaths(ClassPath.COMPILE));
                         paths.addAll(registry.getPaths(ClassPath.SOURCE));
 
+                        Set<String> filesNames = new HashSet<String>();
                         for (ClassPath classPath : paths) {
                             FileObject resource = classPath.findResource(path);
 
                             if (resource != null) {
                                 FileObject[] children = resource.getChildren();
                                 for (FileObject child : children) {
-                                    String nameExt = child.getNameExt();
+                                    String fileName = child.getNameExt();
                                     if (child.isFolder()) {
-                                        nameExt += "/";
+                                        fileName += "/";
                                     }
 
-                                    if (nameExt.startsWith(filterFile)) {
-                                        completionResultSet.addItem(new WebMotionCompletionItem(nameExt, startOffsetFile, caretOffset));
+                                    if (fileName.startsWith(filterFile) 
+                                            && !fileName.startsWith(".")
+                                            && (fileName.endsWith(".wm") 
+                                                    || fileName.endsWith(".mapping") 
+                                                    || fileName.endsWith("/"))) {
+                                        filesNames.add(fileName);
                                     }
                                 }
                             }
                         }
                         
+                        for (String fileName : filesNames) {
+                            completionResultSet.addItem(new WebMotionCompletionItem(fileName, startOffsetFile, caretOffset));
+                        }
                         completionResultSet.finish();
                         
                     } else {
@@ -329,13 +315,12 @@ public class WebMotionCompletion implements CompletionProvider {
                             startOffsetClass += StringUtils.substringBefore(filter, ":").length() + 1;
                         }
 
-                        FileObject fo = getFO(document);
+                        FileObject fo = WebMotionLanguage.getFO(document);
                         ClassPath bootCp = ClassPath.getClassPath(fo, ClassPath.BOOT);
                         ClassPath compileCp = ClassPath.getClassPath(fo, ClassPath.COMPILE);
                         ClassPath sourcePath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
                         ClasspathInfo info = ClasspathInfo.create(bootCp, compileCp, sourcePath);
                         JavaSource src = JavaSource.create(info);
-                        
                         
                         final Set<ElementHandle<TypeElement>> result = info.getClassIndex()
                                 .getDeclaredTypes("", ClassIndex.NameKind.PREFIX,
@@ -343,6 +328,7 @@ public class WebMotionCompletion implements CompletionProvider {
 
                         final String filterJavaClass = filterClass;
                         final String packageClass = packageTarget;
+                        final String filterSuperJavaClass = filterSuperClass;
                         final CompletionResultSet completionResultSetClass = completionResultSet;
                         final int startOffsetJavaClass = startOffsetClass;
                         final int caretOffsetClass = caretOffset;
@@ -355,17 +341,33 @@ public class WebMotionCompletion implements CompletionProvider {
 
                                 @Override
                                 public void run(CompilationController cu) throws Exception {
-                                    for (ElementHandle<TypeElement> type : result) {
-                                        String binaryName = type.getBinaryName();
-                                        if (!binaryName.equals("") && binaryName.startsWith(filterJavaClass)) {
+                                    TypeUtilities typeUtilities = cu.getTypeUtilities();
+                                    Elements elements = cu.getElements();
+                                    TypeElement controllerElement = elements.getTypeElement(filterSuperJavaClass);
+                                    if (controllerElement != null) {
+                                        TypeMirror controllerType = controllerElement.asType();
+                                        
+                                        for (ElementHandle<TypeElement> type : result) {
+                                            String binaryName = type.getBinaryName();
+                                            if (!binaryName.equals("") && binaryName.startsWith(filterJavaClass)) {
 
-                                            TypeElement resolve = type.resolve(cu);
-                                            JavaCompletionDoc javadoc = createJavaCompletionDoc(cu, resolve);
-                                            
-                                            String value = binaryName.replaceFirst("^" + packageClass, "");
-                                            WebMotionCompletionItem item = new WebMotionCompletionItem(value, javadoc, startOffsetJavaClass, caretOffsetClass);
-                                            
-                                            completionResultSetClass.addItem(item);
+                                                String value = binaryName.replaceFirst("^" + packageClass, "");
+                                                TypeElement resolve = type.resolve(cu);
+                                                if (resolve != null) {
+                                                    
+                                                    Set<Modifier> modifiers = resolve.getModifiers();
+                                                    ElementKind kind = resolve.getKind();
+                                                    TypeMirror resolveType = resolve.asType();
+
+                                                    if (kind == ElementKind.CLASS
+                                                        && modifiers.contains(Modifier.PUBLIC)
+                                                        && typeUtilities.isCastable(resolveType, controllerType)) {
+
+                                                        WebMotionCompletionItem item = new WebMotionCompletionItem(value, cu, resolve, startOffsetJavaClass, caretOffsetClass);
+                                                        completionResultSetClass.addItem(item);
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -401,12 +403,20 @@ public class WebMotionCompletion implements CompletionProvider {
                                         List<? extends javax.lang.model.element.Element> members = elements.getAllMembers(classElement);
                                         for (javax.lang.model.element.Element member : members) {
                                             if (member.getKind() == ElementKind.METHOD) {
+
+                                                Set<Modifier> modifiers = member.getModifiers();
                                                 String methodName = member.getSimpleName().toString();
-
-                                                if (methodName.startsWith(filterMethod)) {
-                                                    JavaCompletionDoc javadoc = createJavaCompletionDoc(cu, member);
-                                                    WebMotionCompletionItem item = new WebMotionCompletionItem(methodName, javadoc, startOffsetJavaSource, caretOffesetJavaSource);
-
+                                                String className = member.getEnclosingElement().getSimpleName().toString();
+                                                
+                                                if (!"Object".equals(className)
+                                                    && !"WebMotionController".equals(className)
+                                                    && !"WebMotionFilter".equals(className)
+                                                    &&  modifiers.contains(Modifier.PUBLIC)
+                                                    && !modifiers.contains(Modifier.ABSTRACT)
+                                                    && !modifiers.contains(Modifier.STATIC)
+                                                    && methodName.startsWith(filterMethod)) {
+                                                
+                                                    WebMotionCompletionItem item = new WebMotionCompletionItem(methodName, cu, member, startOffsetJavaSource, caretOffesetJavaSource);
                                                     completionResultSetJavaSource.addItem(item);
                                                 }
                                             }
@@ -480,194 +490,10 @@ public class WebMotionCompletion implements CompletionProvider {
         }
         return -1;
     }
-             
-    static FileObject getFO(Document doc) {
-        Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
-        if (sdp instanceof FileObject) {
-            return (FileObject) sdp;
-        }
-        if (sdp instanceof DataObject) {
-            DataObject dobj = (DataObject) sdp;
-            return dobj.getPrimaryFile();
-        }
-        return null;
-    }
     
     @Override
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         return 0;
     }
-    
-    public static class WebMotionCompletionItem implements CompletionItem {
 
-        private String text;
-        private CompletionDocumentation documentation;
-        private static ImageIcon fieldIcon = new ImageIcon(ImageUtilities.loadImage("org/debux/webmotion/netbeans/icon.png"));
-        private static Color fieldColor = Color.decode("0x0000B2");
-        private int caretOffset;
-        private int dotOffset;
-
-        public WebMotionCompletionItem(String text, int dotOffset, int caretOffset) {
-            this.text = text;
-            this.dotOffset = dotOffset;
-            this.caretOffset = caretOffset;
-        }
-
-        // TODO: jru 20120626 No pass CompletionDocumentation but the Element and compute the documentation in createDocumentationTask method
-        public WebMotionCompletionItem(String text, CompletionDocumentation documentation, int dotOffset, int caretOffset) {
-            this.text = text;
-            this.documentation = documentation;
-            this.dotOffset = dotOffset;
-            this.caretOffset = caretOffset;
-        }
-        
-        @Override
-        public void defaultAction(JTextComponent component) {
-            StyledDocument doc = (StyledDocument) component.getDocument();
-            try {
-                doc.remove(dotOffset, caretOffset - dotOffset);
-                doc.insertString(dotOffset, text, null);
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            //This statement will close the code completion box:
-            Completion.get().hideAll();
-        }
-
-        @Override
-        public void processKeyEvent(KeyEvent ke) {
-        }
-
-        @Override
-        public int getPreferredWidth(Graphics graphics, Font font) {
-            return CompletionUtilities.getPreferredWidth(text, null, graphics, font);
-        }
-
-        @Override
-        public void render(Graphics g, Font defaultFont, Color defaultColor,
-                Color backgroundColor, int width, int height, boolean selected) {
-            CompletionUtilities.renderHtml(fieldIcon, text, null, g, defaultFont,
-                    (selected ? Color.white : fieldColor), width, height, selected);
-        }
-
-        @Override
-        public CompletionTask createDocumentationTask() {
-            return new AsyncCompletionTask(new AsyncCompletionQuery() {
-                @Override
-                protected void query(CompletionResultSet completionResultSet, Document document, int i) {
-                    if (documentation == null) {
-                        documentation = new KeywordCompletionDocumentation(WebMotionCompletionItem.this);
-                    }
-                    completionResultSet.setDocumentation(documentation);
-                    completionResultSet.finish();
-                }
-            });
-        }
-
-        @Override
-        public CompletionTask createToolTipTask() {
-            return new AsyncCompletionTask(new AsyncCompletionQuery() {
-                @Override
-                protected void query(CompletionResultSet completionResultSet, Document document, int i) {
-                    JToolTip toolTip = new JToolTip();
-                    toolTip.setTipText("Press Enter to insert \"" + text + "\"");
-                    completionResultSet.setToolTip(toolTip);
-                    completionResultSet.finish();
-                }
-            });
-        }
-
-        @Override
-        public boolean instantSubstitution(JTextComponent jtc) {
-            return false;
-        }
-
-        @Override
-        public int getSortPriority() {
-            return 0;
-        }
-
-        @Override
-        public CharSequence getSortText() {
-            return text;
-        }
-
-        @Override
-        public CharSequence getInsertPrefix() {
-            return text;
-        }
-        
-    }
-    
-    public static class KeywordCompletionDocumentation implements CompletionDocumentation {
-
-        private WebMotionCompletionItem item;
-
-        public KeywordCompletionDocumentation(WebMotionCompletionItem item) {
-            this.item = item;
-        }
-
-        @Override
-        public String getText() {
-            try {
-                return NbBundle.getMessage(KeywordCompletionDocumentation.class, "completion_" + item.text);
-            } catch (MissingResourceException ex) {
-                return "No information about " + item.text;
-            }
-        }
-
-        @Override
-        public URL getURL() {
-            return null;
-        }
-
-        @Override
-        public CompletionDocumentation resolveLink(String string) {
-            return null;
-        }
-
-        @Override
-        public Action getGotoSourceAction() {
-            return null;
-        }
-    }
-    
-    public static class JavaCompletionDoc implements CompletionDocumentation {
-
-        private ElementJavadoc elementJavadoc;
-
-        public JavaCompletionDoc(ElementJavadoc elementJavadoc) {
-            this.elementJavadoc = elementJavadoc;
-        }
-
-        @Override
-        public JavaCompletionDoc resolveLink(String link) {
-            ElementJavadoc doc = elementJavadoc.resolveLink(link);
-            return doc != null ? new JavaCompletionDoc(doc) : null;
-        }
-
-        @Override
-        public URL getURL() {
-            return elementJavadoc.getURL();
-        }
-
-        @Override
-        public String getText() {
-            return elementJavadoc.getText();
-        }
-
-        public Future<String> getFutureText() {
-            return elementJavadoc.getTextAsync();
-        }
-
-        @Override
-        public Action getGotoSourceAction() {
-            return elementJavadoc.getGotoSourceAction();
-        }
-
-    }
-    
-    public static JavaCompletionDoc createJavaCompletionDoc(CompilationController controller, javax.lang.model.element.Element element) {
-        return new JavaCompletionDoc(ElementJavadoc.create(controller, element));
-    }
 }
