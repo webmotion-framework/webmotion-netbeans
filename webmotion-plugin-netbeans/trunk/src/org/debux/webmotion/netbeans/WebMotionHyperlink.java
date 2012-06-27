@@ -2,6 +2,8 @@ package org.debux.webmotion.netbeans;
 
 import java.io.IOException;
 import java.util.Map;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.apache.commons.lang.StringUtils;
@@ -21,6 +23,8 @@ import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import static org.debux.webmotion.netbeans.WebMotionLanguage.MIME_TYPE;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.*;
 
 /**
  *
@@ -152,17 +156,46 @@ public class WebMotionHyperlink implements HyperlinkProvider {
                     GlobalPathRegistry registry = GlobalPathRegistry.getDefault();
                     
                     if (isJavaFile) {
-                        target = target.replaceAll("\\.", "/");
-                        String className = StringUtils.substringBeforeLast(target, "/");
-                        String mark = StringUtils.substringAfterLast(target, "/");
+                        
+                        FileObject fo = WebMotionLanguage.getFO(document);
+                        ClassPath bootCp = ClassPath.getClassPath(fo, ClassPath.BOOT);
+                        ClassPath compileCp = ClassPath.getClassPath(fo, ClassPath.COMPILE);
+                        ClassPath sourcePath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                        final ClasspathInfo info = ClasspathInfo.create(bootCp, compileCp, sourcePath);
+                        JavaSource src = JavaSource.create(info);
+                        
+                        final String fullClassName = target.replaceAll("/+", ".");
+                        final String packageClassName = packageTarget.replaceAll("/+", ".");
+                        final String className = StringUtils.substringBeforeLast(target, ".");
+                        final String mark = StringUtils.substringAfterLast(target, ".");
 
-                        FileObject fo = registry.findResource(packageTarget + className + ".java");
-                        if (fo == null) {
-                            fo = registry.findResource(target + ".java");
+                        try {
+                            src.runUserActionTask(new CancellableTask<CompilationController>() {
+                                @Override
+                                public void cancel() {
+                                }
+
+                                @Override
+                                public void run(CompilationController cu) throws Exception {
+                                    Elements elements = cu.getElements();
+                                    
+                                    TypeElement classElement = elements.getTypeElement(packageClassName + className);
+                                    if (classElement == null) {
+                                        classElement = elements.getTypeElement(fullClassName);
+                                    }
+                                    
+                                    if (classElement != null) {
+                                        ElementHandle<TypeElement> create = ElementHandle.create(classElement);
+                                        FileObject fo = SourceUtils.getFile(create, info);
+                                        open(fo, mark);
+                                    }
+                                }
+                            }, false);
+
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
                         }
-
-                        open(fo, mark);
-                            
+                                                
                     } else {
                         FileObject fo = registry.findResource(packageTarget + target);
                         open(fo, null);
