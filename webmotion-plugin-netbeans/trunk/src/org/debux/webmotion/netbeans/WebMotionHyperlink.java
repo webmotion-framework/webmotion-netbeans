@@ -157,7 +157,7 @@ public class WebMotionHyperlink implements HyperlinkProvider {
                     
                     if (isJavaFile) {
                         
-                        FileObject fo = WebMotionLanguage.getFO(document);
+                        FileObject fo = Utils.getFO(document);
                         ClassPath bootCp = ClassPath.getClassPath(fo, ClassPath.BOOT);
                         ClassPath compileCp = ClassPath.getClassPath(fo, ClassPath.COMPILE);
                         ClassPath sourcePath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
