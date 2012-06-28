@@ -15,9 +15,8 @@ import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import org.apache.commons.lang.StringUtils;
-import org.debux.webmotion.netbeans.WebMotionLanguage;
+import org.debux.webmotion.netbeans.Utils;
 import org.debux.webmotion.netbeans.javacc.lexer.impl.WebMotionTokenId;
-import org.debux.webmotion.netbeans.javacc.parser.WebMotionParser;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -119,9 +118,9 @@ public class WebMotionCompletion implements CompletionProvider {
                 try {
                     // Get filter
                     StyledDocument bDoc = (StyledDocument) document;
-                    int lineStartOffset = getRowFirstNonWhite(bDoc, caretOffset);
+                    int lineStartOffset = Utils.getRowFirstNonWhite(bDoc, caretOffset);
                     char[] line = bDoc.getText(lineStartOffset, caretOffset - lineStartOffset).toCharArray();
-                    int whiteOffset = indexOfWhite(line);
+                    int whiteOffset = Utils.indexOfWhite(line);
                     filter = new String(line, whiteOffset + 1, line.length - whiteOffset - 1);
                     if (whiteOffset > 0) {
                         startOffset = lineStartOffset + whiteOffset + 1;
@@ -164,7 +163,7 @@ public class WebMotionCompletion implements CompletionProvider {
                 } while(ts.movePrevious() && sectionName == null);
                 
                 // Get the package in configuration
-                String packageBase = getPackageValue("package.base", null);
+                String packageBase = Utils.getPackageValue("package.base", null);
                 String packageTarget = null;
                 String filterSuperClass = null;
                 
@@ -183,10 +182,10 @@ public class WebMotionCompletion implements CompletionProvider {
                         keywords = KEYWORDS_ERROR_ACTION;
                         
                         if (filter.startsWith("view:")) {
-                            packageTarget = getPackageValue("package.views", null);
+                            packageTarget = Utils.getPackageValue("package.views", null);
                             
                         } else if (filter.startsWith("action:") || !filter.contains(":")) {
-                            packageTarget = getPackageValue("package.errors", packageBase);
+                            packageTarget = Utils.getPackageValue("package.errors", packageBase);
                             filterSuperClass = "org.debux.webmotion.server.WebMotionController";
                         }
                         
@@ -204,7 +203,7 @@ public class WebMotionCompletion implements CompletionProvider {
                         
                     } else if (sectionName.startsWith("[filters]") && column % 3 == 2) {
                         keywords = KEYWORDS_FILTER_ACTION;
-                        packageTarget = getPackageValue("package.filters", packageBase);
+                        packageTarget = Utils.getPackageValue("package.filters", packageBase);
                         filterSuperClass = "org.debux.webmotion.server.WebMotionFilter";
                         
                     } else if (sectionName.startsWith("[actions]") && column % 3 == 0) {
@@ -217,10 +216,10 @@ public class WebMotionCompletion implements CompletionProvider {
                         keywords = KEYWORDS_ACTION_ACTION;
                         
                         if (filter.startsWith("view:")) {
-                            packageTarget = getPackageValue("package.views", null);
+                            packageTarget = Utils.getPackageValue("package.views", null);
 
                         } else if (filter.startsWith("action:") || !filter.contains(":")) {
-                            packageTarget = getPackageValue("package.actions", packageBase);
+                            packageTarget = Utils.getPackageValue("package.actions", packageBase);
                             filterSuperClass = "org.debux.webmotion.server.WebMotionController";
                         }
                         
@@ -315,7 +314,7 @@ public class WebMotionCompletion implements CompletionProvider {
                             startOffsetClass += StringUtils.substringBefore(filter, ":").length() + 1;
                         }
 
-                        FileObject fo = WebMotionLanguage.getFO(document);
+                        FileObject fo = Utils.getFO(document);
                         ClassPath bootCp = ClassPath.getClassPath(fo, ClassPath.BOOT);
                         ClassPath compileCp = ClassPath.getClassPath(fo, ClassPath.COMPILE);
                         ClassPath sourcePath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
@@ -436,59 +435,6 @@ public class WebMotionCompletion implements CompletionProvider {
                 }
             }
         }, component);
-    }
-   
-    static String getPackageValue(String name, String packageBase) {
-        Map<String, String> configurations = WebMotionParser.configurations;
-        String packageValue = configurations.get(name);
-        
-        String packageTarget = "";
-        
-        if (StringUtils.isNotEmpty(packageBase) && StringUtils.isNotEmpty(packageValue)) {
-            packageTarget = packageBase.replaceFirst("\\.$", "") + "." + packageValue.replaceFirst("^\\.", "");
-            
-        } else if (StringUtils.isNotEmpty(packageBase)) {
-            packageTarget = packageBase.replaceFirst("\\.$", "");
-            
-        } else if (StringUtils.isNotEmpty(packageValue)) {
-            packageTarget = packageValue.replaceFirst("\\.$", "");
-        }
-       
-        if (!packageTarget.isEmpty()) {
-            packageTarget += ".";
-        }
-
-        return packageTarget;
-    }
-    
-    static int getRowFirstNonWhite(StyledDocument doc, int offset) throws BadLocationException {
-        Element lineElement = doc.getParagraphElement(offset);
-        int start = lineElement.getStartOffset();
-        while (start + 1 < lineElement.getEndOffset()) {
-            try {
-                char charAt = doc.getText(start, 1).charAt(0);
-                if (charAt != ' ') {
-                    break;
-                }
-            } catch (BadLocationException ex) {
-                throw (BadLocationException) new BadLocationException(
-                        "calling getText(" + start + ", " + (start + 1)
-                        + ") on doc of length: " + doc.getLength(), start).initCause(ex);
-            }
-            start++;
-        }
-        return start;
-    }
-
-    static int indexOfWhite(char[] line) {
-        int i = line.length;
-        while (--i > -1) {
-            final char c = line[i];
-            if (Character.isWhitespace(c)) {
-                return i;
-            }
-        }
-        return -1;
     }
     
     @Override
