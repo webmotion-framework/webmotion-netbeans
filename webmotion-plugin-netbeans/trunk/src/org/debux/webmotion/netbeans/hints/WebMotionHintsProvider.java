@@ -6,7 +6,6 @@ import org.debux.webmotion.netbeans.javacc.parser.impl.WebMotionParserImpl.WebMo
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -40,7 +39,7 @@ public class WebMotionHintsProvider implements HintsProvider {
     }
 
     private void apply(RuleContext context, HintsManager manager, List<Hint> hints) {
-        List<PatternRule> rules = (List<PatternRule>) manager.getHints().get(PatternRule.Kinds.DEFAULT);
+        List<PatternRule> rules = (List<PatternRule>) manager.getHints().get(AbstractRule.Kinds.DEFAULT);
         for (PatternRule rule : rules) {
             rule.run(context, hints);
         }

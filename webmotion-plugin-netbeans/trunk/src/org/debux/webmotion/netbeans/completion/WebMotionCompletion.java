@@ -16,7 +16,6 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import org.apache.commons.lang.StringUtils;
 import org.debux.webmotion.netbeans.Utils;
-import org.debux.webmotion.netbeans.javacc.lexer.impl.WebMotionTokenId;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -26,9 +25,6 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -37,6 +33,8 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import static org.debux.webmotion.netbeans.WebMotionLanguage.MIME_TYPE;
+import org.debux.webmotion.netbeans.javacc.lexer.impl.LexerUtils;
+import org.debux.webmotion.netbeans.javacc.lexer.impl.WebMotionTokenId.Section;
 import org.netbeans.api.java.source.*;
 
 /**
@@ -143,24 +141,7 @@ public class WebMotionCompletion implements CompletionProvider {
                 }
         
                 // Get section
-                TokenHierarchy<Document> hi = TokenHierarchy.get(document);
-                TokenSequence<WebMotionTokenId> ts = (TokenSequence<WebMotionTokenId>) hi.tokenSequence();
-                
-                ts.move(caretOffset);
-                ts.moveNext();
-                
-                String sectionName = null;
-                
-                do {
-                    
-                    Token<WebMotionTokenId> tok = ts.token();
-                    WebMotionTokenId id = tok.id();
-                    String name = id.name();
-
-                    if (name.startsWith("SECTION_")) {
-                        sectionName = tok.text().toString();
-                    }
-                } while(ts.movePrevious() && sectionName == null);
+                Section section = LexerUtils.getSection(document, caretOffset);
                 
                 // Get the package in configuration
                 String packageBase = Utils.getPackageValue("package.base", null);
@@ -168,17 +149,17 @@ public class WebMotionCompletion implements CompletionProvider {
                 String filterSuperClass = null;
                 
                 String[] keywords = {};
-                if (sectionName != null) {
+                if (section != null) {
                     
-                    if (sectionName.startsWith("[config]")) {
+                    if (section == Section.CONFIG) {
                         keywords = KEYWORDS_CONFIG;
                         
-                    } else if (sectionName.startsWith("[errors]") && column % 2 == 0) {
+                    } else if (section == Section.ERRORS && column % 2 == 0) {
                         keywords = KEYWORDS_ERROR;
                         packageTarget = "";
                         filterSuperClass = "java.lang.Exception";
                         
-                    } else if (sectionName.startsWith("[errors]") && column % 2 == 1) {
+                    } else if (section == Section.ERRORS && column % 2 == 1) {
                         keywords = KEYWORDS_ERROR_ACTION;
                         
                         if (filter.startsWith("view:")) {
@@ -189,30 +170,30 @@ public class WebMotionCompletion implements CompletionProvider {
                             filterSuperClass = "org.debux.webmotion.server.WebMotionController";
                         }
                         
-                    } else if (sectionName.startsWith("[extensions]") && column % 2 == 0) {
+                    } else if (section == Section.EXTENSIONS && column % 2 == 0) {
                         keywords = KEYWORDS_EXTENSION;
                         
-                    } else if (sectionName.startsWith("[extensions]") && column % 2 == 1) {
+                    } else if (section == Section.EXTENSIONS && column % 2 == 1) {
                         packageTarget = "";
                         
-                    } else if (sectionName.startsWith("[filters]") && column % 3 == 0) {
+                    } else if (section == Section.FILTERS && column % 3 == 0) {
                         keywords = KEYWORDS_METHODS;
                         
-                    } else if (sectionName.startsWith("[filters]") && column % 3 == 1) {
+                    } else if (section == Section.FILTERS && column % 3 == 1) {
                         keywords = KEYWORDS_FILTER;
                         
-                    } else if (sectionName.startsWith("[filters]") && column % 3 == 2) {
+                    } else if (section == Section.FILTERS && column % 3 == 2) {
                         keywords = KEYWORDS_FILTER_ACTION;
                         packageTarget = Utils.getPackageValue("package.filters", packageBase);
                         filterSuperClass = "org.debux.webmotion.server.WebMotionFilter";
                         
-                    } else if (sectionName.startsWith("[actions]") && column % 3 == 0) {
+                    } else if (section == Section.ACTIONS && column % 3 == 0) {
                         keywords = KEYWORDS_METHODS;
                         
-                    } else if (sectionName.startsWith("[actions]") && column % 3 == 1) {
+                    } else if (section == Section.ACTIONS && column % 3 == 1) {
                         keywords = KEYWORDS_ACTION;
                         
-                    } else if (sectionName.startsWith("[actions]") && column % 3 == 2) {
+                    } else if (section == Section.ACTIONS && column % 3 == 2) {
                         keywords = KEYWORDS_ACTION_ACTION;
                         
                         if (filter.startsWith("view:")) {
@@ -223,7 +204,7 @@ public class WebMotionCompletion implements CompletionProvider {
                             filterSuperClass = "org.debux.webmotion.server.WebMotionController";
                         }
                         
-                    } else if (sectionName.contains("properties]")) {
+                    } else if (section == Section.PROPERTIES) {
                         keywords = KEYWORDS_SECTIONS;
                     }
                     
@@ -287,11 +268,8 @@ public class WebMotionCompletion implements CompletionProvider {
                                         fileName += "/";
                                     }
 
-                                    if (fileName.startsWith(filterFile) 
-                                            && !fileName.startsWith(".")
-                                            && (fileName.endsWith(".wm") 
-                                                    || fileName.endsWith(".mapping") 
-                                                    || fileName.endsWith("/"))) {
+                                    if (fileName.startsWith(filterFile)
+                                            && !fileName.startsWith(".")) {
                                         filesNames.add(fileName);
                                     }
                                 }

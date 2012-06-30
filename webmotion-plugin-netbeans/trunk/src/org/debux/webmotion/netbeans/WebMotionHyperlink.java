@@ -1,14 +1,17 @@
 package org.debux.webmotion.netbeans;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.apache.commons.lang.StringUtils;
 import org.debux.webmotion.netbeans.javacc.lexer.impl.WebMotionTokenId;
-import org.debux.webmotion.netbeans.javacc.parser.WebMotionParser;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.lexer.Token;
@@ -23,8 +26,10 @@ import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import static org.debux.webmotion.netbeans.WebMotionLanguage.MIME_TYPE;
+import org.debux.webmotion.netbeans.javacc.lexer.impl.LexerUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
+import org.netbeans.modules.csl.api.OffsetRange;
 
 /**
  *
@@ -35,53 +40,17 @@ public class WebMotionHyperlink implements HyperlinkProvider {
 
     @Override
     public boolean isHyperlinkPoint(Document document, int offset) {
-        TokenHierarchy<Document> hi = TokenHierarchy.get(document);
-        TokenSequence<WebMotionTokenId> ts = (TokenSequence<WebMotionTokenId>) hi.tokenSequence();
-        if (ts != null) {
-            ts.move(offset);
-            ts.moveNext();
-            
-            Token<WebMotionTokenId> tok = ts.token();
-            return verifyToken(tok);
-        }
-        
-        return false;
+        OffsetRange range = LexerUtils.getTokens(document, offset, getVerifyToken());
+        return range != null;
     }
 
     @Override
     public int[] getHyperlinkSpan(Document document, int offset) {
-        TokenHierarchy<Document> hi = TokenHierarchy.get(document);
-        TokenSequence<WebMotionTokenId> ts = (TokenSequence<WebMotionTokenId>) hi.tokenSequence();
-        if (ts != null) {
-            
-            ts.move(offset);
-            ts.moveNext();
-            Token<WebMotionTokenId> tok = ts.token();
-            
-            int targetEnd = ts.offset();
-            int targetStart = ts.offset();
-
-            while (verifyToken(tok)) {
-                ts.moveNext();
-                tok = ts.token();
-                
-                targetEnd = ts.offset();
-            }
-
-            ts.move(offset);
-            ts.movePrevious();
-            tok = ts.token();
-
-            while (verifyToken(tok)) {
-                targetStart = ts.offset();
-
-                ts.movePrevious();
-                tok = ts.token();
-            }
-
-            if (targetStart != targetEnd) {
-                return new int[]{targetStart, targetEnd};
-            }
+        OffsetRange range = LexerUtils.getTokens(document, offset, getVerifyToken());
+        if (range != null) {
+            int start = range.getStart();
+            int end = range.getEnd();
+            return new int[]{start, end};
         }
         return null;
     }
@@ -91,13 +60,11 @@ public class WebMotionHyperlink implements HyperlinkProvider {
         TokenHierarchy<Document> hi = TokenHierarchy.get(document);
         TokenSequence<WebMotionTokenId> ts = (TokenSequence<WebMotionTokenId>) hi.tokenSequence();
         if (ts != null) {
-            String target = "";
-            
             ts.move(offset);
             ts.moveNext();
 
             // Get the package in configuration
-            String packageBase = getPackageValue("package.base", null);
+            String packageBase = Utils.getPackageValue("package.base", null);
             String packageTarget = null;
             boolean isJavaFile = true;
             
@@ -109,13 +76,13 @@ public class WebMotionHyperlink implements HyperlinkProvider {
                 "ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER".equals(name) ||
                 "ACTION_ACTION_JAVA_VARIABLE".equals(name)) {
                 
-                packageTarget = getPackageValue("package.actions", packageBase);
+                packageTarget = Utils.getPackageValue("package.actions", packageBase);
                 
             } else if ("FILTER_ACTION".equals(name)) {
-                packageTarget = getPackageValue("package.filters", packageBase);
+                packageTarget = Utils.getPackageValue("package.filters", packageBase);
                 
             } else if ("ERROR_ACTION_JAVA".equals(name)) {
-                packageTarget = getPackageValue("package.errors", packageBase);
+                packageTarget = Utils.getPackageValue("package.errors", packageBase);
                 
             } else if ("EXTENSION_FILE".equals(name)) {
                 packageTarget = "";
@@ -124,43 +91,26 @@ public class WebMotionHyperlink implements HyperlinkProvider {
             } else if ("ACTION_ACTION_VIEW_VALUE".equals(name) ||
                        "ACTION_ACTION_VIEW_VARIABLE".equals(name) ||
                        "ERROR_ACTION_VALUE".equals(name)) {
-                packageTarget = getPackageValue("package.views", null);
+                packageTarget = Utils.getPackageValue("package.views", null);
                 isJavaFile = false;
                 
             } else if ("EXCEPTION".equals(name)) {
                 packageTarget = "";
             }
             
-            // Search target
-            while (verifyToken(tok)) {
-                target += tok.text().toString();
-                
-                ts.moveNext();
-                tok = ts.token();
-            }
-
-            ts.move(offset);
-            ts.movePrevious();
-            tok = ts.token();
-
-            while (verifyToken(tok)) {
-                target = tok.text().toString() + target;
-
-                ts.movePrevious();
-                tok = ts.token();
-            }
-
             // Open document
-            if (!target.isEmpty()) {
+            OffsetRange range = LexerUtils.getTokens(document, offset, getVerifyToken());
+            if (range != null) {
                 try {
-                    GlobalPathRegistry registry = GlobalPathRegistry.getDefault();
-                    
+                    String target = LexerUtils.getText(document, range);
+
                     if (isJavaFile) {
                         
                         FileObject fo = Utils.getFO(document);
                         ClassPath bootCp = ClassPath.getClassPath(fo, ClassPath.BOOT);
                         ClassPath compileCp = ClassPath.getClassPath(fo, ClassPath.COMPILE);
                         ClassPath sourcePath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+
                         final ClasspathInfo info = ClasspathInfo.create(bootCp, compileCp, sourcePath);
                         JavaSource src = JavaSource.create(info);
                         
@@ -197,10 +147,14 @@ public class WebMotionHyperlink implements HyperlinkProvider {
                         }
                                                 
                     } else {
+                        packageTarget = packageTarget.replaceAll("\\.+", "/");
+                        GlobalPathRegistry registry = GlobalPathRegistry.getDefault();
                         FileObject fo = registry.findResource(packageTarget + target);
                         open(fo, null);
                     }
                     
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -234,50 +188,24 @@ public class WebMotionHyperlink implements HyperlinkProvider {
         }
     }
     
-    protected String getPackageValue(String name, String packageBase) {
-        Map<String, String> configurations = WebMotionParser.configurations;
-        String packageValue = configurations.get(name);
-        
-        String packageTarget = "";
-        
-        if (StringUtils.isNotEmpty(packageBase) && StringUtils.isNotEmpty(packageValue)) {
-            packageTarget = packageBase.replaceFirst("\\.$", "") + "." + packageValue.replaceFirst("^\\.", "");
-            
-        } else if (StringUtils.isNotEmpty(packageBase)) {
-            packageTarget = packageBase.replaceFirst("\\.$", "");
-            
-        } else if (StringUtils.isNotEmpty(packageValue)) {
-            packageTarget = packageValue.replaceFirst("\\.$", "");
-        }
-       
-        packageTarget = packageTarget.replaceAll("\\.", "/");
-        
-        if (!packageTarget.isEmpty()) {
-            packageTarget += "/";
-        }
-
-        return packageTarget;
-    }
-    
-    public boolean verifyToken(Token<WebMotionTokenId> token){
-        WebMotionTokenId id = token.id();
-        String name = id.name();
-        
-        return "ACTION_ACTION_IDENTIFIER".equals(name) ||
-                "ACTION_ACTION_JAVA_IDENTIFIER".equals(name) ||
-                "ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER".equals(name) ||
-                "ACTION_ACTION_JAVA_VARIABLE".equals(name) ||
+    public String[] getVerifyToken(){
+        return new String[] {
+                "ACTION_ACTION_IDENTIFIER",
+                "ACTION_ACTION_JAVA_IDENTIFIER",
+                "ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER",
+                "ACTION_ACTION_JAVA_VARIABLE",
                 
-                "ACTION_ACTION_VIEW_VALUE".equals(name) ||
-                "ACTION_ACTION_VIEW_VARIABLE".equals(name) ||
+                "ACTION_ACTION_VIEW_VALUE",
+                "ACTION_ACTION_VIEW_VARIABLE",
                 
-                "FILTER_ACTION".equals(name) ||
+                "FILTER_ACTION",
                 
-                "EXTENSION_FILE".equals(name) ||
+                "EXTENSION_FILE",
                 
-                "ERROR_ACTION_JAVA".equals(name) ||
-                "EXCEPTION".equals(name) ||
-                "ERROR_ACTION_VALUE".equals(name);
+                "ERROR_ACTION_JAVA",
+                "EXCEPTION",
+                "ERROR_ACTION_VALUE"
+        };
     }
 
 }
