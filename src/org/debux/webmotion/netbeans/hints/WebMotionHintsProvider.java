@@ -39,8 +39,8 @@ public class WebMotionHintsProvider implements HintsProvider {
     }
 
     private void apply(RuleContext context, HintsManager manager, List<Hint> hints) {
-        List<PatternRule> rules = (List<PatternRule>) manager.getHints().get(AbstractRule.Kinds.DEFAULT);
-        for (PatternRule rule : rules) {
+        List<AbstractRule> rules = (List<AbstractRule>) manager.getHints().get(AbstractRule.Kinds.DEFAULT);
+        for (AbstractRule rule : rules) {
             rule.run(context, hints);
         }
     }

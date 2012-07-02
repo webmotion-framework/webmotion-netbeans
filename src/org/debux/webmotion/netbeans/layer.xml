@@ -139,6 +139,7 @@
             <folder name="x-wm">
                 <folder name="hints">
                     <file name="org-debux-webmotion-netbeans-hints-PatternRule.instance"/>
+                    <file name="org-debux-webmotion-netbeans-hints-ViewRule.instance"/>
                 </folder>
             </folder>
         </folder>
