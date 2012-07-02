@@ -338,6 +338,7 @@ public class WebMotionCompletion implements CompletionProvider {
 
                                                     if (kind == ElementKind.CLASS
                                                         && modifiers.contains(Modifier.PUBLIC)
+                                                        && !modifiers.contains(Modifier.ABSTRACT)
                                                         && typeUtilities.isCastable(resolveType, controllerType)) {
 
                                                         WebMotionCompletionItem item = new WebMotionCompletionItem(value, cu, resolve, startOffsetJavaClass, caretOffsetClass);
@@ -389,7 +390,6 @@ public class WebMotionCompletion implements CompletionProvider {
                                                     && !"WebMotionController".equals(className)
                                                     && !"WebMotionFilter".equals(className)
                                                     &&  modifiers.contains(Modifier.PUBLIC)
-                                                    && !modifiers.contains(Modifier.ABSTRACT)
                                                     && !modifiers.contains(Modifier.STATIC)
                                                     && methodName.startsWith(filterMethod)) {
                                                 
