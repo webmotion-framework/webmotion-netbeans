@@ -1,6 +1,8 @@
 package org.debux.webmotion.netbeans;
 
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
@@ -15,6 +17,28 @@ import org.openide.loaders.DataObject;
  * @author julien
  */
 public class Utils {
+    
+    /** Pattern to get all variable like {var} in String */
+    public static Pattern VARIABLE_PATTERN = Pattern.compile("(^|[^\\\\])\\{((\\p{Alnum}|\\.)+)\\}");
+    
+    /**
+     * Test if the value not contains a variable like "{var"}.
+     * @param value value to test
+     * @return true if the string not contains a variable otherwise false
+     */
+    public static boolean isNotVariable(String value) {
+        return !isVariable(value);
+    }
+    
+    /**
+     * Test if the value contains a variable like "{var"}.
+     * @param value value to test
+     * @return true if the string contains a variable otherwise false
+     */
+    public static boolean isVariable(String value) {
+        Matcher matcher = VARIABLE_PATTERN.matcher(value);
+        return matcher.find();
+    }
     
     public static FileObject getFO(Document doc) {
         Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
