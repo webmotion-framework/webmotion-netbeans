@@ -115,7 +115,7 @@ public class ActionRule extends AbstractRule {
                                             hints.add(new Hint(ActionRule.this, "The class is abstract", fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
                                         }
                                         if (!typeUtilities.isCastable(resolveType, controllerType)) {
-                                            hints.add(new Hint(ActionRule.this, "Invalid type class", fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
+                                            hints.add(new Hint(ActionRule.this, "Requires super class " + superClass, fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
                                         }
                                     }
                                 }
