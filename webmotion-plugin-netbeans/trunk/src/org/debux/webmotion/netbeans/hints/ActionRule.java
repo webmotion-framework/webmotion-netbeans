@@ -95,64 +95,69 @@ public class ActionRule extends AbstractRule {
                             String className = StringUtils.substringBeforeLast(value, ".");
                             String methodName = StringUtils.substringAfterLast(value, ".");
                             
-                            TypeElement classElement = elements.getTypeElement(packageTarget + className);
-                            if (classElement != null) {
-                                
-                                // Check super class
-                                TypeElement controllerElement = elements.getTypeElement(superClass);
-                                if (controllerElement != null) {
-                                    TypeMirror controllerType = controllerElement.asType();
+                            if (Utils.isNotVariable(className)) {
+                                TypeElement classElement = elements.getTypeElement(packageTarget + className);
+                                if (classElement != null) {
 
-                                    Set<Modifier> modifiers = classElement.getModifiers();
-                                    ElementKind kind = classElement.getKind();
-                                    TypeMirror resolveType = classElement.asType();
+                                    // Check class
+                                    TypeElement controllerElement = elements.getTypeElement(superClass);
+                                    if (controllerElement != null) {
+                                        TypeMirror controllerType = controllerElement.asType();
 
-                                    if (kind == ElementKind.CLASS) {
-                                        if (!modifiers.contains(Modifier.PUBLIC)) {
-                                            hints.add(new Hint(ActionRule.this, "The class is not public", fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
-                                        }
-                                        if (modifiers.contains(Modifier.ABSTRACT)) {
-                                            hints.add(new Hint(ActionRule.this, "The class is abstract", fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
-                                        }
-                                        if (!typeUtilities.isCastable(resolveType, controllerType)) {
-                                            hints.add(new Hint(ActionRule.this, "Requires super class " + superClass, fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
-                                        }
-                                    }
-                                }
-                                
-                                List<? extends Element> members = elements.getAllMembers(classElement);
-                                Element method = null;
-                                for (Element member : members) {
-                                    ElementKind kind = member.getKind();
-                                    String name = member.getSimpleName().toString();
-                                    if (kind == ElementKind.METHOD && name.equals(methodName)) {
-                                        method = member;
-                                        break;
-                                    }
-                                }
-                                
-                                if (method != null) {
-                                    Set<Modifier> modifiers = method.getModifiers();
-                                    String currentClass = method.getEnclosingElement().getSimpleName().toString();
+                                        Set<Modifier> modifiers = classElement.getModifiers();
+                                        ElementKind kind = classElement.getKind();
+                                        TypeMirror resolveType = classElement.asType();
 
-                                    if ("Object".equals(currentClass)
-                                        || "WebMotionController".equals(currentClass)
-                                        || "WebMotionFilter".equals(currentClass)) {
-                                        hints.add(new Hint(ActionRule.this, "Invalid method", fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
+                                        if (kind == ElementKind.CLASS) {
+                                            if (!modifiers.contains(Modifier.PUBLIC)) {
+                                                hints.add(new Hint(ActionRule.this, "The class is not public", fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
+                                            }
+                                            if (modifiers.contains(Modifier.ABSTRACT)) {
+                                                hints.add(new Hint(ActionRule.this, "The class is abstract", fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
+                                            }
+                                            if (!typeUtilities.isCastable(resolveType, controllerType)) {
+                                                hints.add(new Hint(ActionRule.this, "Requires super class " + superClass, fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
+                                            }
+                                        }
                                     }
-                                    if (!modifiers.contains(Modifier.PUBLIC)) {
-                                        hints.add(new Hint(ActionRule.this, "The method is not public", fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
+
+                                    // Check method
+                                    if (Utils.isNotVariable(methodName)) {
+                                        List<? extends Element> members = elements.getAllMembers(classElement);
+                                        Element method = null;
+                                        for (Element member : members) {
+                                            ElementKind kind = member.getKind();
+                                            String name = member.getSimpleName().toString();
+                                            if (kind == ElementKind.METHOD && name.equals(methodName)) {
+                                                method = member;
+                                                break;
+                                            }
+                                        }
+
+                                        if (method != null) {
+                                            Set<Modifier> modifiers = method.getModifiers();
+                                            String currentClass = method.getEnclosingElement().getSimpleName().toString();
+
+                                            if ("Object".equals(currentClass)
+                                                || "WebMotionController".equals(currentClass)
+                                                || "WebMotionFilter".equals(currentClass)) {
+                                                hints.add(new Hint(ActionRule.this, "Invalid method", fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
+                                            }
+                                            if (!modifiers.contains(Modifier.PUBLIC)) {
+                                                hints.add(new Hint(ActionRule.this, "The method is not public", fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
+                                            }
+                                            if (modifiers.contains(Modifier.STATIC)) {
+                                                hints.add(new Hint(ActionRule.this, "The method is static", fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
+                                            }
+
+                                        } else {
+                                            hints.add(new Hint(ActionRule.this, "Invalid method", fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
+                                        }
                                     }
-                                    if (modifiers.contains(Modifier.STATIC)) {
-                                        hints.add(new Hint(ActionRule.this, "The method is static", fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
-                                    }
-                                    
+
                                 } else {
-                                    hints.add(new Hint(ActionRule.this, "Invalid method name", fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
+                                    hints.add(new Hint(ActionRule.this, "Invalid class", fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
                                 }
-                                
-                            } else {
-                                hints.add(new Hint(ActionRule.this, "Invalid class name", fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
                             }
                         } catch (BadLocationException ex) {
                             Exceptions.printStackTrace(ex);

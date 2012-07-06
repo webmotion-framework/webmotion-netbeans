@@ -105,4 +105,15 @@ public class Utils {
         return -1;
     }
     
+    /**
+     * Return true if {@code str} is a pattern (contains * or ?).
+     *
+     * @param str str to test
+     * @return {@code true} if {@code str} is a pattern, {@code false} otherwise
+     * @since 2.2
+     */
+    public static boolean isPattern(String str) {
+        return str.indexOf('*') != -1 || str.indexOf('?') != -1;
+    }
+    
 }
