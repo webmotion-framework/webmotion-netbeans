@@ -14,7 +14,7 @@ public class WebMotionParserFactory extends ParserFactory {
     public static WebMotionParserImpl parser = new WebMotionParserImpl();
 
     @Override
-    public Parser createParser (Collection<Snapshot> snapshots) {
+    public Parser createParser(Collection<Snapshot> snapshots) {
         return parser;
     }
 

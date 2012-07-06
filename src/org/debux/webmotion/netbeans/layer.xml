@@ -141,6 +141,9 @@
                     <file name="org-debux-webmotion-netbeans-hints-PatternRule.instance"/>
                     <file name="org-debux-webmotion-netbeans-hints-ViewRule.instance"/>
                     <file name="org-debux-webmotion-netbeans-hints-ActionRule.instance"/>
+                    <file name="org-debux-webmotion-netbeans-hints-ExtensionRule.instance"/>
+                    <file name="org-debux-webmotion-netbeans-hints-VariableRule.instance"/>
+                    <file name="org-debux-webmotion-netbeans-hints-ExceptionRule.instance"/>
                 </folder>
             </folder>
         </folder>
