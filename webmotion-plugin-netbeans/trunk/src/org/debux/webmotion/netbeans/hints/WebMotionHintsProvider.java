@@ -1,5 +1,6 @@
 package org.debux.webmotion.netbeans.hints;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.debux.webmotion.netbeans.javacc.parser.impl.WebMotionParserImpl.WebMotionParserResult;
@@ -15,6 +16,12 @@ public class WebMotionHintsProvider implements HintsProvider {
 
     public static final List<HintFix> NO_FIXES = Collections.<HintFix>emptyList();
 
+    public static List<HintFix> asList(HintFix fix) {
+        List<HintFix> fixes = new ArrayList<HintFix>();
+        fixes.add(fix);
+        return fixes;
+    }
+    
     public WebMotionHintsProvider() {
     }
     

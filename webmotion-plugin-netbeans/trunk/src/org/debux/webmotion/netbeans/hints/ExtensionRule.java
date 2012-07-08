@@ -46,7 +46,8 @@ public class ExtensionRule extends AbstractRule {
                     GlobalPathRegistry registry = GlobalPathRegistry.getDefault();
                     FileObject fo = registry.findResource(value);
                     if (fo == null) {
-                        hints.add(new Hint(this, "Invalid file", fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
+                        hints.add(new Hint(this, "Invalid file", 
+                                fileObject, range, WebMotionHintsProvider.asList(new FileFix(fileObject, value)), 100));
                     }
                 }
                 
