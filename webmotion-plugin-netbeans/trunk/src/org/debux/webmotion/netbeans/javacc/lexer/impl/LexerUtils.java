@@ -40,13 +40,13 @@ public class LexerUtils {
         TokenSequence<WebMotionTokenId> ts = (TokenSequence<WebMotionTokenId>) hi.tokenSequence();
         while (ts.moveNext()) {
             
-            Token<WebMotionTokenId> tok = ts.token();
-            WebMotionTokenId id = tok.id();
+            Token<WebMotionTokenId> token = ts.token();
+            WebMotionTokenId id = token.id();
             String name = id.name();
             
             if (ArrayUtils.contains(extractName, name)) {
                 int start = ts.offset();
-                int end = start + tok.text().toString().length();
+                int end = start + token.text().toString().length();
                 
                 if (current == null) {
                     current = new OffsetRange(start, end);
@@ -71,40 +71,43 @@ public class LexerUtils {
         if (ts != null) {
             
             ts.move(offset);
-            ts.moveNext();
-            Token<WebMotionTokenId> tok = ts.token();
-            WebMotionTokenId id = tok.id();
-            String name = id.name();
-            
-            int targetEnd = ts.offset();
-            int targetStart = ts.offset();
+            if (ts.moveNext()) {
+                Token<WebMotionTokenId> token = ts.token();
+                WebMotionTokenId id = token.id();
+                String name = id.name();
 
-            while (ArrayUtils.contains(extractName, name)) {
-                ts.moveNext();
-                tok = ts.token();
-                id = tok.id();
-                name = id.name();
-                
-                targetEnd = ts.offset();
-            }
+                int targetEnd = ts.offset();
+                int targetStart = ts.offset();
 
-            ts.move(offset);
-            ts.movePrevious();
-            tok = ts.token();
-            id = tok.id();
-            name = id.name();
+                while (ArrayUtils.contains(extractName, name)) {
+                    ts.moveNext();
+                    token = ts.token();
+                    id = token.id();
+                    name = id.name();
 
-            while (ArrayUtils.contains(extractName, name)) {
-                targetStart = ts.offset();
+                    targetEnd = ts.offset();
+                }
 
-                ts.movePrevious();
-                tok = ts.token();
-                id = tok.id();
-                name = id.name();
-            }
+                ts.move(offset);
+                if (ts.movePrevious()) {
+                    
+                    token = ts.token();
+                    id = token.id();
+                    name = id.name();
 
-            if (targetStart != targetEnd) {
-                return new OffsetRange(targetStart, targetEnd);
+                    while (ArrayUtils.contains(extractName, name)) {
+                        targetStart = ts.offset();
+
+                        ts.movePrevious();
+                        token = ts.token();
+                        id = token.id();
+                        name = id.name();
+                    }
+
+                    if (targetStart != targetEnd) {
+                        return new OffsetRange(targetStart, targetEnd);
+                    }
+                }
             }
         }
         return null;
