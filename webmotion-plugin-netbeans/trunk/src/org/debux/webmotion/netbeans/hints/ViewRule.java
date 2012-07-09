@@ -24,6 +24,7 @@
  */
 package org.debux.webmotion.netbeans.hints;
 
+import java.io.File;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -33,10 +34,12 @@ import org.debux.webmotion.netbeans.javacc.lexer.impl.LexerUtils;
 import org.debux.webmotion.netbeans.javacc.parser.impl.WebMotionParserImpl.WebMotionParserResult;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -85,7 +88,8 @@ public class ViewRule extends AbstractRule {
                             int end = range.getStart() + value.length();
                             int start = end - viewName.length();
                             OffsetRange offsetRange = new OffsetRange(start, end);
-                            hints.add(new Hint(this, "Invalid view", fileObject, offsetRange, WebMotionHintsProvider.NO_FIXES, 100));
+                            hints.add(new Hint(this, "Invalid view", fileObject, offsetRange,
+                                    WebMotionHintsProvider.asList(new ViewFix(packageViews, viewName)), 100));
                         }
                     }
                 }
@@ -93,5 +97,40 @@ public class ViewRule extends AbstractRule {
                 Exceptions.printStackTrace(ex);
             }
         }
+    }
+
+
+    public static class ViewFix implements HintFix {
+
+        protected String packageViews;
+        protected String viewName;
+
+        public ViewFix(String packageViews, String viewName) {
+            this.packageViews = packageViews;
+            this.viewName = viewName;
+        }
+
+        @Override
+        public String getDescription() {
+            return "Create new view file";
+        }
+
+        @Override
+        public void implement() throws Exception {
+            GlobalPathRegistry registry = GlobalPathRegistry.getDefault();
+            FileObject fo = registry.findResource(packageViews);
+            Utils.createFile(fo, viewName);
+        }
+
+        @Override
+        public boolean isSafe() {
+            return false;
+        }
+
+        @Override
+        public boolean isInteractive() {
+            return false;
+        }
+
     }
 }
