@@ -1,3 +1,6 @@
+<!DOCTYPE fontscolors PUBLIC
+    "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN"
+    "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 <!--
   #%L
   WebMotion plugin netbeans
@@ -22,10 +25,6 @@
   <http://www.gnu.org/licenses/lgpl-3.0.html>.
   #L%
 -->
-<!DOCTYPE fontscolors PUBLIC
-    "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN"
-    "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
-
 <fontscolors>
     <fontcolor name="section" foreColor="red"/>
     <fontcolor name="keyword" foreColor="blue"/>
