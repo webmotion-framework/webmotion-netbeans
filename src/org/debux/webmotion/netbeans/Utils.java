@@ -24,6 +24,8 @@
  */
 package org.debux.webmotion.netbeans;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,6 +36,7 @@ import javax.swing.text.StyledDocument;
 import org.apache.commons.lang.StringUtils;
 import org.debux.webmotion.netbeans.javacc.parser.WebMotionParser;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 
 /**
@@ -138,6 +141,15 @@ public class Utils {
      */
     public static boolean isPattern(String str) {
         return str.indexOf('*') != -1 || str.indexOf('?') != -1;
+    }
+    
+    public static void createFile(FileObject fo, String fileName) throws IOException {
+        File base = FileUtil.toFile(fo);
+        File file = new File(base, fileName);
+
+        File parent = file.getParentFile();
+        parent.mkdirs();
+        file.createNewFile();
     }
     
 }

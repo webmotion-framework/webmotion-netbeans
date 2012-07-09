@@ -24,6 +24,7 @@
  */
 package org.debux.webmotion.netbeans.hints;
 
+import java.io.File;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -32,10 +33,12 @@ import org.debux.webmotion.netbeans.javacc.lexer.impl.LexerUtils;
 import org.debux.webmotion.netbeans.javacc.parser.impl.WebMotionParserImpl.WebMotionParserResult;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -71,7 +74,7 @@ public class ExtensionRule extends AbstractRule {
                     FileObject fo = registry.findResource(value);
                     if (fo == null) {
                         hints.add(new Hint(this, "Invalid file", 
-                                fileObject, range, WebMotionHintsProvider.asList(new FileFix(fileObject, value)), 100));
+                                fileObject, range, WebMotionHintsProvider.asList(new ExtensionFix(fileObject, value)), 100));
                     }
                 }
                 
@@ -79,5 +82,38 @@ public class ExtensionRule extends AbstractRule {
                 Exceptions.printStackTrace(ex);
             }
         }
+    }
+
+    public static class ExtensionFix implements HintFix {
+
+        protected FileObject fileObject;
+        protected String name;
+
+        public ExtensionFix(FileObject fileObject, String name) {
+            this.fileObject = fileObject;
+            this.name = name;
+        }
+
+        @Override
+        public String getDescription() {
+            return "Create new extension file";
+        }
+
+        @Override
+        public void implement() throws Exception {
+            FileObject fo = fileObject.getParent();
+            Utils.createFile(fo, name);
+        }
+
+        @Override
+        public boolean isSafe() {
+            return false;
+        }
+
+        @Override
+        public boolean isInteractive() {
+            return false;
+        }
+
     }
 }
