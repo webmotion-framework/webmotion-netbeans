@@ -24,7 +24,6 @@
  */
 package org.debux.webmotion.netbeans.hints;
 
-import java.io.File;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -40,6 +39,8 @@ import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -89,7 +90,7 @@ public class ViewRule extends AbstractRule {
                             int start = end - viewName.length();
                             OffsetRange offsetRange = new OffsetRange(start, end);
                             hints.add(new Hint(this, "Invalid view", fileObject, offsetRange,
-                                    WebMotionHintsProvider.asList(new ViewFix(packageViews, viewName)), 100));
+                                    WebMotionHintsProvider.asList(new CreateFileFix(packageViews, viewName)), 100));
                         }
                     }
                 }
@@ -99,13 +100,12 @@ public class ViewRule extends AbstractRule {
         }
     }
 
-
-    public static class ViewFix implements HintFix {
+    public static class CreateFileFix implements HintFix {
 
         protected String packageViews;
         protected String viewName;
 
-        public ViewFix(String packageViews, String viewName) {
+        public CreateFileFix(String packageViews, String viewName) {
             this.packageViews = packageViews;
             this.viewName = viewName;
         }
@@ -117,9 +117,28 @@ public class ViewRule extends AbstractRule {
 
         @Override
         public void implement() throws Exception {
+            
+            FileObject classTemplate = null;
+            if (viewName.endsWith(".html")) {
+                classTemplate = FileUtil.getConfigFile("Templates/JSP_Servlet/Html.html");
+                viewName = StringUtils.substringBeforeLast(viewName, ".html");
+                
+            } else if (viewName.endsWith(".jsp")) {
+                classTemplate = FileUtil.getConfigFile("Templates/JSP_Servlet/JSP.jsp");
+                viewName = StringUtils.substringBeforeLast(viewName, ".jsp");
+            }
+            
             GlobalPathRegistry registry = GlobalPathRegistry.getDefault();
-            FileObject fo = registry.findResource(packageViews);
-            Utils.createFile(fo, viewName);
+            FileObject pack = registry.findResource(packageViews);
+            FileObject target;
+            if (classTemplate != null) {
+                DataObject classTemplateDO = DataObject.find(classTemplate);
+                DataObject od = classTemplateDO.createFromTemplate(DataFolder.findFolder(pack), viewName);
+
+                target = od.getPrimaryFile();
+            } else {
+                target = FileUtil.createData(pack, viewName);
+            }
         }
 
         @Override
