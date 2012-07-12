@@ -24,10 +24,6 @@
  */
 package org.debux.webmotion.netbeans.hints;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree;
 import java.io.IOException;
 import java.util.List;
 import javax.lang.model.element.ElementKind;
@@ -35,22 +31,17 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.swing.text.Document;
-import org.apache.commons.lang.StringUtils;
 import org.debux.webmotion.netbeans.Utils;
+import org.debux.webmotion.netbeans.hints.ContentClassFix.ExtendsClassFix;
 import org.debux.webmotion.netbeans.javacc.lexer.impl.LexerUtils;
 import org.debux.webmotion.netbeans.javacc.parser.impl.WebMotionParserImpl.WebMotionParserResult;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
-import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -110,12 +101,12 @@ public class ExceptionRule extends AbstractRule {
 
                                 if (kind == ElementKind.CLASS && !typeUtilities.isCastable(resolveType, controllerType)) {
                                     hints.add(new Hint(ExceptionRule.this, "Requires super class java.lang.Exception", fileObject, range, 
-                                            WebMotionHintsProvider.asList(new ExtendsExceptionFix(src, classElement)), 100));
+                                            WebMotionHintsProvider.asList(new ExtendsClassFix(src, classElement, "java.lang.Exception")), 100));
                                 }
                             }
                         } else {
                             hints.add(new Hint(ExceptionRule.this, "Invalid class", fileObject, range, 
-                                    WebMotionHintsProvider.asList(new CreateClassFix(src, value)), 100));
+                                    WebMotionHintsProvider.asList(new CreateClassFix(src, "", "java.lang.Exception", value)), 100));
                         }
                     }
                 }
@@ -123,133 +114,5 @@ public class ExceptionRule extends AbstractRule {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }   
-    }
-
-    public static class CreateClassFix implements HintFix {
-
-        protected JavaSource src;
-        protected String fullClassName;
-
-        public CreateClassFix(JavaSource src, String fullClassName) {
-            this.src = src;
-            this.fullClassName = fullClassName;
-        }
-
-        @Override
-        public String getDescription() {
-            return "Create new exception class";
-        }
-
-        @Override
-        public void implement() throws Exception {
-            ClasspathInfo classpathInfo = src.getClasspathInfo();
-            ClassPath classPath = classpathInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
-            FileObject targetSourceRoot = classPath.findResource("");
-
-            String packageName = StringUtils.substringBeforeLast(fullClassName, ".");
-            String simpleName = StringUtils.substringAfterLast(fullClassName, ".");
-
-            FileObject pack = FileUtil.createFolder(targetSourceRoot, packageName.replace('.', '/')); // NOI18N
-            FileObject classTemplate = FileUtil.getConfigFile("Templates/Classes/Class.java");
-            FileObject target;
-
-            if (classTemplate != null) {
-                DataObject classTemplateDO = DataObject.find(classTemplate);
-                DataObject od = classTemplateDO.createFromTemplate(DataFolder.findFolder(pack), simpleName);
-
-                target = od.getPrimaryFile();
-            } else {
-                target = FileUtil.createData(pack, simpleName + ".java");
-            }
-            
-            JavaSource.forFileObject(target).runModificationTask(new Task<WorkingCopy>() {
-                @Override
-                public void run(WorkingCopy workingCopy) throws Exception {
-                    workingCopy.toPhase(Phase.RESOLVED);
-
-                    TreeMaker make = workingCopy.getTreeMaker();
-                    CompilationUnitTree cut = workingCopy.getCompilationUnit();
-                    
-                    for (Tree type : cut.getTypeDecls()) {
-                        if (Tree.Kind.CLASS == type.getKind()) {
-                            ClassTree clazz = (ClassTree) type;
-                            
-                            TypeElement element = workingCopy.getElements().getTypeElement("java.lang.Exception");
-                            ExpressionTree implementsClause = make.QualIdent(element);
-
-                            ClassTree modifiedClazz = make.setExtends(clazz, implementsClause);
-                            workingCopy.rewrite(clazz, modifiedClazz);
-                        }
-                    }
-                }
-            }).commit();
-        }
-
-        @Override
-        public boolean isSafe() {
-            return false;
-        }
-
-        @Override
-        public boolean isInteractive() {
-            return false;
-        }
-
-    }
-    
-    public static class ExtendsExceptionFix implements HintFix {
-
-        protected JavaSource src;
-        protected TypeElement classElement;
-
-        public ExtendsExceptionFix(JavaSource src, TypeElement classElement) {
-            this.src = src;
-            this.classElement = classElement;
-        }
-
-        @Override
-        public String getDescription() {
-            return "Add extends java.lang.Exception";
-        }
-
-        @Override
-        public void implement() throws Exception {
-            ClasspathInfo classpathInfo = src.getClasspathInfo();
-            ElementHandle<TypeElement> eh = ElementHandle.create(classElement);
-            FileObject file = SourceUtils.getFile(eh, classpathInfo);
-            
-            JavaSource.forFileObject(file).runModificationTask(new Task<WorkingCopy>() {
-                @Override
-                public void run(WorkingCopy workingCopy) throws Exception {
-                    workingCopy.toPhase(Phase.RESOLVED);
-
-                    TreeMaker make = workingCopy.getTreeMaker();
-                    CompilationUnitTree cut = workingCopy.getCompilationUnit();
-                    
-                    for (Tree type : cut.getTypeDecls()) {
-                        if (Tree.Kind.CLASS == type.getKind()) {
-                            ClassTree clazz = (ClassTree) type;
-                            
-                            TypeElement element = workingCopy.getElements().getTypeElement("java.lang.Exception");
-                            ExpressionTree implementsClause = make.QualIdent(element);
-
-                            ClassTree modifiedClazz = make.setExtends(clazz, implementsClause);
-                            workingCopy.rewrite(clazz, modifiedClazz);
-                        }
-                    }
-                }
-            }).commit();
-        }
-
-        @Override
-        public boolean isSafe() {
-            return false;
-        }
-
-        @Override
-        public boolean isInteractive() {
-            return false;
-        }
-
     }
 }
