@@ -37,6 +37,12 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.apache.commons.lang.StringUtils;
 import org.debux.webmotion.netbeans.Utils;
+import org.debux.webmotion.netbeans.hints.ContentClassFix.AbstractModifierClassFix;
+import org.debux.webmotion.netbeans.hints.ContentClassFix.ExtendsClassFix;
+import org.debux.webmotion.netbeans.hints.ContentClassFix.MethodClassFix;
+import org.debux.webmotion.netbeans.hints.ContentClassFix.PublicModifierClassFix;
+import org.debux.webmotion.netbeans.hints.ContentClassFix.PublicModifierMethodFix;
+import org.debux.webmotion.netbeans.hints.ContentClassFix.StaticModifierMethodFix;
 import org.debux.webmotion.netbeans.javacc.lexer.impl.LexerUtils;
 import org.debux.webmotion.netbeans.javacc.parser.impl.WebMotionParserImpl.WebMotionParserResult;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -77,7 +83,7 @@ public class ActionRule extends AbstractRule {
         ClassPath compileCp = ClassPath.getClassPath(fo, ClassPath.COMPILE);
         ClassPath sourcePath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
         ClasspathInfo info = ClasspathInfo.create(bootCp, compileCp, sourcePath);
-        JavaSource src = JavaSource.create(info);
+        final JavaSource src = JavaSource.create(info);
         
         try {
             src.runUserActionTask(new CancellableTask<CompilationController>() {
@@ -134,13 +140,16 @@ public class ActionRule extends AbstractRule {
 
                                         if (kind == ElementKind.CLASS) {
                                             if (!modifiers.contains(Modifier.PUBLIC)) {
-                                                hints.add(new Hint(ActionRule.this, "The class is not public", fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
+                                                hints.add(new Hint(ActionRule.this, "The class is not public", fileObject, range, 
+                                                        WebMotionHintsProvider.asList(new PublicModifierClassFix(src, classElement)), 100));
                                             }
                                             if (modifiers.contains(Modifier.ABSTRACT)) {
-                                                hints.add(new Hint(ActionRule.this, "The class is abstract", fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
+                                                hints.add(new Hint(ActionRule.this, "The class is abstract", fileObject, range, 
+                                                        WebMotionHintsProvider.asList(new AbstractModifierClassFix(src, classElement)), 100));
                                             }
                                             if (!typeUtilities.isCastable(resolveType, controllerType)) {
-                                                hints.add(new Hint(ActionRule.this, "Requires super class " + superClass, fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
+                                                hints.add(new Hint(ActionRule.this, "Requires super class " + superClass, fileObject, range, 
+                                                        WebMotionHintsProvider.asList(new ExtendsClassFix(src, classElement, superClass)), 100));
                                             }
                                         }
                                     }
@@ -168,19 +177,23 @@ public class ActionRule extends AbstractRule {
                                                 hints.add(new Hint(ActionRule.this, "Invalid method", fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
                                             }
                                             if (!modifiers.contains(Modifier.PUBLIC)) {
-                                                hints.add(new Hint(ActionRule.this, "The method is not public", fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
+                                                hints.add(new Hint(ActionRule.this, "The method is not public", fileObject, range, 
+                                                        WebMotionHintsProvider.asList(new PublicModifierMethodFix(src, classElement, methodName)), 100));
                                             }
                                             if (modifiers.contains(Modifier.STATIC)) {
-                                                hints.add(new Hint(ActionRule.this, "The method is static", fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
+                                                hints.add(new Hint(ActionRule.this, "The method is static", fileObject, range, 
+                                                        WebMotionHintsProvider.asList(new StaticModifierMethodFix(src, classElement, methodName)), 100));
                                             }
 
                                         } else {
-                                            hints.add(new Hint(ActionRule.this, "Invalid method", fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
+                                            hints.add(new Hint(ActionRule.this, "Invalid method", fileObject, range,
+                                                    WebMotionHintsProvider.asList(new MethodClassFix(src, classElement, methodName)), 100));
                                         }
                                     }
 
                                 } else {
-                                    hints.add(new Hint(ActionRule.this, "Invalid class", fileObject, range, WebMotionHintsProvider.NO_FIXES, 100));
+                                    hints.add(new Hint(ActionRule.this, "Invalid class", fileObject, range,
+                                            WebMotionHintsProvider.asList(new CreateClassFix(src, packageTarget, superClass, className)), 100));
                                 }
                             }
                         } catch (BadLocationException ex) {
