@@ -25,6 +25,7 @@
 package org.debux.webmotion.netbeans.completion;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,6 +39,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.debux.webmotion.netbeans.Utils;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
@@ -68,6 +70,9 @@ import org.netbeans.api.java.source.*;
 @MimeRegistration(mimeType = MIME_TYPE, service = CompletionProvider.class)
 public class WebMotionCompletion implements CompletionProvider {
 
+    public static final String[] KEYWORDS_EMPTY = {
+    };
+    
     public static final String[] KEYWORDS_SECTIONS = {
         "[config]", "[properties]", "[actions]", "[filters]", "[errors]", "[extensions]"
     };
@@ -79,6 +84,20 @@ public class WebMotionCompletion implements CompletionProvider {
         "server.controller.scope", "server.listener.class", "server.main.handler.class",
         "server.secret", "server.static.autodetect"
     };
+            
+    public static final String[] KEYWORDS_CONFIG_BOOLEAN = {
+        "true", "false"
+    };
+            
+    public static final String[] KEYWORDS_CONFIG_ERROR = {
+        "enabled", "disabled", "forced"
+    };
+            
+    public static final String[] KEYWORDS_CONFIG_SCOPE = {
+        "singleton", "request", "session"
+    };
+            
+    public static final String[] KEYWORDS_CONFIG_ENCODING = Charset.availableCharsets().keySet().toArray(new String[]{});
             
     public static final String[] KEYWORDS_METHODS = {
         "[config]", "[properties]", "[actions]", "[filters]", "[errors]", "[extensions]",
@@ -247,10 +266,70 @@ public class WebMotionCompletion implements CompletionProvider {
                     startOffset += "code:".length();
                     filter = filter.substring("code:".length());
                     packageTarget = null;
+                    
+                } else if (filter.startsWith("javac.debug=") || filter.startsWith("server.async=") || filter.startsWith("server.static.autodetect=")) {
+                    keywords = KEYWORDS_CONFIG_BOOLEAN;
+                    startOffset += StringUtils.substringBefore(filter, "=").length() + 1;
+                    filter = StringUtils.substringAfter(filter, "=");
+                    
+                } else if (filter.startsWith("server.error.page=")) {
+                    keywords = KEYWORDS_CONFIG_ERROR;
+                    startOffset += StringUtils.substringBefore(filter, "=").length() + 1;
+                    filter = StringUtils.substringAfter(filter, "=");
+                    
+                } else if (filter.startsWith("server.controller.scope=")) {
+                    keywords = KEYWORDS_CONFIG_SCOPE;
+                    startOffset += StringUtils.substringBefore(filter, "=").length() + 1;
+                    filter = StringUtils.substringAfter(filter, "=");
+                    
+                } else if (filter.startsWith("package.base=") || filter.startsWith("package.views=")) {
+                    keywords = KEYWORDS_EMPTY;
+                    startOffset += StringUtils.substringBefore(filter, "=").length() + 1;
+                    filter = StringUtils.substringAfter(filter, "=").replaceAll("\\.", "/");
+                    
+                    packageTarget = "";
+                    filterSuperClass = null;
+                    
+                } else if (filter.startsWith("server.listener.class=")) {
+                    keywords = KEYWORDS_EMPTY;
+                    startOffset += StringUtils.substringBefore(filter, "=").length() + 1;
+                    filter = StringUtils.substringAfter(filter, "=");
+                    
+                    packageTarget = "";
+                    filterSuperClass = "org.debux.webmotion.server.WebMotionServerListener";
+                    
+                } else if (filter.startsWith("server.main.handler.class=")) {
+                    keywords = KEYWORDS_EMPTY;
+                    startOffset += StringUtils.substringBefore(filter, "=").length() + 1;
+                    filter = StringUtils.substringAfter(filter, "=");
+                    
+                    packageTarget = "";
+                    filterSuperClass = "org.debux.webmotion.server.WebMotionHandler";
+                    
+                } else if (filter.startsWith("package.actions=") || filter.startsWith("package.filters=") || filter.startsWith("package.errors=")) {
+                    keywords = KEYWORDS_EMPTY;
+                    startOffset += StringUtils.substringBefore(filter, "=").length() + 1;
+                    filter = StringUtils.substringAfter(filter, "=");
+                    
+                    packageTarget = Utils.getPackageValue("package.base", null);
+                    filterSuperClass = null;
+                    
+                } else if (filter.startsWith("server.encoding=")) {
+                    keywords = KEYWORDS_CONFIG_ENCODING;
+                    startOffset += StringUtils.substringBefore(filter, "=").length() + 1;
+                    filter = StringUtils.substringAfter(filter, "=");
+                    
+                } else if (filter.startsWith("server.secret=")) {
+                    keywords = new String[] {RandomStringUtils.random(31, true, true)};
+                    startOffset += StringUtils.substringBefore(filter, "=").length() + 1;
+                    filter = StringUtils.substringAfter(filter, "=");
                 }
                 
                 for (String keyword : keywords) {
-                    if (keyword.startsWith(filter)) {
+                    if (keyword.equals(filter)) {
+                        completionResultSet.addItem(new WebMotionCompletionItem("=", keyword.length() + startOffset, caretOffset));
+                        
+                    } else if (keyword.startsWith(filter)) {
                         completionResultSet.addItem(new WebMotionCompletionItem(keyword, startOffset, caretOffset));
                     }
                 }
