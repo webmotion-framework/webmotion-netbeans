@@ -294,7 +294,6 @@ public class WebMotionCompletion implements CompletionProvider {
                     keywords = KEYWORDS_EMPTY;
                     startOffset += StringUtils.substringBefore(filter, "=").length() + 1;
                     filter = StringUtils.substringAfter(filter, "=");
-                    startOffset += StringUtils.substringBeforeLast(filter, ".").length() + 1;
                     
                     packageTarget = "";
                     filterSuperClass = "org.debux.webmotion.server.WebMotionServerListener";
@@ -303,7 +302,6 @@ public class WebMotionCompletion implements CompletionProvider {
                     keywords = KEYWORDS_EMPTY;
                     startOffset += StringUtils.substringBefore(filter, "=").length() + 1;
                     filter = StringUtils.substringAfter(filter, "=");
-                    startOffset += StringUtils.substringBeforeLast(filter, ".").length() + 1;
                     
                     packageTarget = "";
                     filterSuperClass = "org.debux.webmotion.server.WebMotionHandler";
@@ -351,9 +349,10 @@ public class WebMotionCompletion implements CompletionProvider {
                         }
 
                         if (filterFile.contains("/")) {
-                            path += StringUtils.substringBeforeLast(filterFile, "/");
+                            String current = StringUtils.substringBeforeLast(filterFile, "/");
+                            path += current;
+                            startOffsetFile += current.length() + 1;
                             filterFile = StringUtils.substringAfterLast(filterFile, "/");
-                            startOffsetFile += path.length() + 1;
                         }
 
                         GlobalPathRegistry registry = GlobalPathRegistry.getDefault();
@@ -362,7 +361,7 @@ public class WebMotionCompletion implements CompletionProvider {
                         paths.addAll(registry.getPaths(ClassPath.COMPILE));
                         paths.addAll(registry.getPaths(ClassPath.SOURCE));
 
-                        Set<String> filesNames = new HashSet<String>();
+                        Set<String> names = new HashSet<String>();
                         for (ClassPath classPath : paths) {
                             FileObject resource = classPath.findResource(path);
 
@@ -370,34 +369,47 @@ public class WebMotionCompletion implements CompletionProvider {
                                 FileObject[] children = resource.getChildren();
                                 for (FileObject child : children) {
                                     String fileName = child.getNameExt();
-                                    if (child.isFolder()) {
-//                                        fileName += separator;
-                                    }
 
                                     if ((child.isFolder() || separator.equals("/"))
                                             && fileName.startsWith(filterFile)
                                             && !fileName.startsWith(".")) {
-                                        filesNames.add(fileName);
+                                        
+                                        if (!names.contains(fileName)) {
+                                            if (!fileName.equals(filterFile)) {
+                                                completionResultSet.addItem(new WebMotionCompletionItem(fileName, startOffsetFile, caretOffset));
+                                            } else {
+                                                completionResultSet.addItem(new WebMotionCompletionItem(separator, startOffsetFile + fileName.length(), caretOffset));
+                                            }
+                                            names.add(fileName);
+                                        }
                                     }
                                 }
                             }
-                        }
-                        
-                        for (String fileName : filesNames) {
-                            completionResultSet.addItem(new WebMotionCompletionItem(fileName, startOffsetFile, caretOffset));
                         }
                         completionResultSet.finish();
                         
                     } else {
                         
                         // Class
-                        String filterClass = packageTarget + filter;
-                        int startOffsetClass = startOffset;
-
                         if (filter.contains(":") && !filter.startsWith("code:")) {
-                            filterClass = packageTarget + StringUtils.substringAfter(filter, ":");
-                            startOffsetClass += StringUtils.substringBefore(filter, ":").length() + 1;
+                            startOffset += StringUtils.substringBefore(filter, ":").length() + 1;
+                            filter = StringUtils.substringAfter(filter, ":");
                         }
+                        
+                        int startOffsetClass = startOffset;
+                        if (filter.contains(".")) {
+                            startOffsetClass += StringUtils.substringBeforeLast(filter, ".").length() + 1;
+                        }
+                        
+                        String fullName = packageTarget + filter;
+                        String rootPackage = "";
+                        String filerPackage = fullName;
+                        if (fullName.contains(".")) {
+                            rootPackage = StringUtils.substringBeforeLast(fullName, ".");
+                            filerPackage = StringUtils.substringAfterLast(fullName, ".");
+                        }
+                        
+                        String folderPackage = rootPackage.replaceAll("\\.", "/");
 
                         FileObject fo = Utils.getFO(document);
                         ClassPath bootCp = ClassPath.getClassPath(fo, ClassPath.BOOT);
@@ -412,10 +424,14 @@ public class WebMotionCompletion implements CompletionProvider {
                         final int caretOffsetClass = caretOffset;
                         
                         // Package names
-                        final String rootPackage = StringUtils.substringBeforeLast(filterClass, ".");
-                        final String filerPackage = StringUtils.substringAfterLast(filterClass, ".");
+                        List<FileObject> folders = new ArrayList<FileObject>();
+                        folders.addAll(bootCp.findAllResources(folderPackage));
+                        folders.addAll(compileCp.findAllResources(folderPackage));
+                        folders.addAll(sourcePath.findAllResources(folderPackage));
                         
-                        List<FileObject> folders = sourcePath.findAllResources(rootPackage.replaceAll("\\.", "/"));
+                        final String rootPackageFilter = rootPackage;
+                        final String filterPackageFilter = filerPackage;
+                        final Set<String> names = new HashSet<String>();
                         for (final FileObject folder : folders) {
                             
                             try {
@@ -438,33 +454,41 @@ public class WebMotionCompletion implements CompletionProvider {
                                         FileObject[] children = folder.getChildren();
                                         for (FileObject child : children) {
                                             String name = child.getName();
-                                            if (!name.startsWith(".") && name.startsWith(filerPackage)) {
+                                            if (!name.startsWith(".") && name.startsWith(filterPackageFilter)) {
 
-                                                if (child.isFolder()) {
-                                                    WebMotionCompletionItem item = new WebMotionCompletionItem(name, startOffsetJavaClass, caretOffsetClass);
-                                                    completionResultSetClass.addItem(item);
+                                                if (!names.contains(name)) {
+                                                    names.add(name);
+                                                    
+                                                    if (name.equals(filterPackageFilter)) {
+                                                        WebMotionCompletionItem item = new WebMotionCompletionItem(".", startOffsetJavaClass + name.length(), caretOffsetClass);
+                                                        completionResultSetClass.addItem(item);
+                                                        
+                                                    } else if (child.isFolder()) {
+                                                        WebMotionCompletionItem item = new WebMotionCompletionItem(name, startOffsetJavaClass, caretOffsetClass);
+                                                        completionResultSetClass.addItem(item);
 
-                                                } else {
-
-                                                    TypeElement element;
-                                                    if (rootPackage.isEmpty()) {
-                                                        element = elements.getTypeElement(name);
                                                     } else {
-                                                        element = elements.getTypeElement(rootPackage + "." + name);
-                                                    }
 
-                                                    if (element != null) {
-                                                        Set<Modifier> modifiers = element.getModifiers();
-                                                        ElementKind kind = element.getKind();
-                                                        TypeMirror resolveType = element.asType();
+                                                        TypeElement element;
+                                                        if (rootPackageFilter.isEmpty()) {
+                                                            element = elements.getTypeElement(name);
+                                                        } else {
+                                                            element = elements.getTypeElement(rootPackageFilter + "." + name);
+                                                        }
 
-                                                        if (kind == ElementKind.CLASS
-                                                                && modifiers.contains(Modifier.PUBLIC)
-                                                                && !modifiers.contains(Modifier.ABSTRACT)
-                                                                && superType != null && types.isSubtype(resolveType, superType)) {
+                                                        if (element != null) {
+                                                            Set<Modifier> modifiers = element.getModifiers();
+                                                            ElementKind kind = element.getKind();
+                                                            TypeMirror resolveType = element.asType();
 
-                                                            WebMotionCompletionItem item = new WebMotionCompletionItem(name, cu, element, startOffsetJavaClass, caretOffsetClass);
-                                                            completionResultSetClass.addItem(item);
+                                                            if (kind == ElementKind.CLASS
+                                                                    && modifiers.contains(Modifier.PUBLIC)
+                                                                    && !modifiers.contains(Modifier.ABSTRACT)
+                                                                    && superType != null && types.isSubtype(resolveType, superType)) {
+
+                                                                WebMotionCompletionItem item = new WebMotionCompletionItem(name, cu, element, startOffsetJavaClass, caretOffsetClass);
+                                                                completionResultSetClass.addItem(item);
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -479,55 +503,60 @@ public class WebMotionCompletion implements CompletionProvider {
                         }
                         
                         // Method
-                        final String className = StringUtils.substringBeforeLast(filterClass, ".");
-                        final String filterMethod = StringUtils.substringAfterLast(filter, ".");
+                        if (filter.contains(".")) {
+                            final String className = StringUtils.substringBeforeLast(filter, ".");
+                            final String fullClassName = packageTarget + className;
+                            final String filterMethod = StringUtils.substringAfterLast(filter, ".");
 
-                        final CompletionResultSet completionResultSetJavaSource = completionResultSet;
-                        final int startOffsetJavaSource = startOffsetClass + StringUtils.substringBeforeLast(filter, ".").length() + 1;
-                        final int caretOffesetJavaSource = caretOffset;
+                            final CompletionResultSet completionResultSetJavaSource = completionResultSet;
+                            final int startOffsetJavaSource = startOffset + className.length() + 1;
+                            final int caretOffesetJavaSource = caretOffset;
 
-                        try {
-                            src.runUserActionTask(new CancellableTask<CompilationController>() {
+                            try {
+                                src.runUserActionTask(new CancellableTask<CompilationController>() {
 
-                                @Override
-                                public void cancel() {
-                                }
+                                    @Override
+                                    public void cancel() {
+                                    }
 
-                                @Override
-                                public void run(CompilationController cu) throws Exception {
-                                    cu.toPhase(JavaSource.Phase.PARSED);
+                                    @Override
+                                    public void run(CompilationController cu) throws Exception {
+                                        cu.toPhase(JavaSource.Phase.PARSED);
 
-                                    Elements elements = cu.getElements();
-                                    TypeElement classElement = elements.getTypeElement(className);
-                                    if (classElement != null) {
+                                        Elements elements = cu.getElements();
+                                        TypeElement classElement = elements.getTypeElement(fullClassName);
+                                        if (classElement != null) {
 
-                                        List<? extends javax.lang.model.element.Element> members = elements.getAllMembers(classElement);
-                                        for (javax.lang.model.element.Element member : members) {
-                                            if (member.getKind() == ElementKind.METHOD) {
+                                            List<? extends javax.lang.model.element.Element> members = elements.getAllMembers(classElement);
+                                            for (javax.lang.model.element.Element member : members) {
+                                                if (member.getKind() == ElementKind.METHOD) {
 
-                                                Set<Modifier> modifiers = member.getModifiers();
-                                                String methodName = member.getSimpleName().toString();
-                                                String className = member.getEnclosingElement().getSimpleName().toString();
-                                                
-                                                if (!"Object".equals(className)
-                                                    && !"WebMotionController".equals(className)
-                                                    && !"WebMotionFilter".equals(className)
-                                                    &&  modifiers.contains(Modifier.PUBLIC)
-                                                    && !modifiers.contains(Modifier.STATIC)
-                                                    && methodName.startsWith(filterMethod)) {
-                                                
-                                                    WebMotionCompletionItem item = new WebMotionCompletionItem(methodName, cu, member, startOffsetJavaSource, caretOffesetJavaSource);
-                                                    completionResultSetJavaSource.addItem(item);
+                                                    Set<Modifier> modifiers = member.getModifiers();
+                                                    String methodName = member.getSimpleName().toString();
+                                                    String className = member.getEnclosingElement().getSimpleName().toString();
+
+                                                    if (!"Object".equals(className)
+                                                        && !"WebMotionController".equals(className)
+                                                        && !"WebMotionFilter".equals(className)
+                                                        &&  modifiers.contains(Modifier.PUBLIC)
+                                                        && !modifiers.contains(Modifier.STATIC)
+                                                        && methodName.startsWith(filterMethod)) {
+
+                                                        WebMotionCompletionItem item = new WebMotionCompletionItem(methodName, cu, member, startOffsetJavaSource, caretOffesetJavaSource);
+                                                        completionResultSetJavaSource.addItem(item);
+                                                    }
                                                 }
                                             }
                                         }
-                                    }
 
-                                    completionResultSetJavaSource.finish();
-                                }
-                            }, false);
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
+                                        completionResultSetJavaSource.finish();
+                                    }
+                                }, false);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        } else {
+                            completionResultSet.finish();
                         }
                     }
                     
