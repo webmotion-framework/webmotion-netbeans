@@ -30,6 +30,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.swing.text.Document;
 import org.debux.webmotion.netbeans.Utils;
 import org.debux.webmotion.netbeans.hints.ContentClassFix.ExtendsClassFix;
@@ -84,7 +85,7 @@ public class ExceptionRule extends AbstractRule {
                 @Override
                 public void run(CompilationController cu) throws Exception {
                     Elements elements = cu.getElements();
-                    TypeUtilities typeUtilities = cu.getTypeUtilities();
+                    Types types = cu.getTypes();
                     
                     List<OffsetRange> tokens = LexerUtils.getTokens(document, "EXCEPTION");
                     for (OffsetRange range : tokens) {
@@ -99,7 +100,7 @@ public class ExceptionRule extends AbstractRule {
                                 ElementKind kind = classElement.getKind();
                                 TypeMirror resolveType = classElement.asType();
 
-                                if (kind == ElementKind.CLASS && !typeUtilities.isCastable(resolveType, controllerType)) {
+                                if (kind == ElementKind.CLASS && !types.isSubtype(resolveType, controllerType)) {
                                     hints.add(new Hint(ExceptionRule.this, "Requires super class java.lang.Exception", fileObject, range, 
                                             WebMotionHintsProvider.asList(new ExtendsClassFix(src, classElement, "java.lang.Exception")), 100));
                                 }

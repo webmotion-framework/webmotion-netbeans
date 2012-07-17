@@ -33,6 +33,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.apache.commons.lang.StringUtils;
@@ -118,7 +119,7 @@ public class ActionRule extends AbstractRule {
 
                 protected void runAction(CompilationController cu, List<OffsetRange> tokens, String packageTarget, String superClass) {
                     Elements elements = cu.getElements();
-                    TypeUtilities typeUtilities = cu.getTypeUtilities();
+                    Types types = cu.getTypes();
                     for (OffsetRange range : tokens) {
                         try {
                             String value = LexerUtils.getText(document, range);
@@ -147,7 +148,7 @@ public class ActionRule extends AbstractRule {
                                                 hints.add(new Hint(ActionRule.this, "The class is abstract", fileObject, range, 
                                                         WebMotionHintsProvider.asList(new AbstractModifierClassFix(src, classElement)), 100));
                                             }
-                                            if (!typeUtilities.isCastable(resolveType, controllerType)) {
+                                            if (!types.isSubtype(resolveType, controllerType)) {
                                                 hints.add(new Hint(ActionRule.this, "Requires super class " + superClass, fileObject, range, 
                                                         WebMotionHintsProvider.asList(new ExtendsClassFix(src, classElement, superClass)), 100));
                                             }

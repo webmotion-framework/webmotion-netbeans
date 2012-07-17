@@ -31,10 +31,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
@@ -47,10 +47,8 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -62,9 +60,6 @@ import org.openide.util.Exceptions;
 import static org.debux.webmotion.netbeans.WebMotionLanguage.MIME_TYPE;
 import org.debux.webmotion.netbeans.javacc.lexer.impl.LexerUtils;
 import org.debux.webmotion.netbeans.javacc.lexer.impl.WebMotionTokenId.Section;
-import org.netbeans.api.java.source.*;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
 
 /**
  *
@@ -420,9 +415,8 @@ public class WebMotionCompletion implements CompletionProvider {
                         final String rootPackage = StringUtils.substringBeforeLast(filterClass, ".");
                         final String filerPackage = StringUtils.substringAfterLast(filterClass, ".");
                         
-                        GlobalPathRegistry registry = GlobalPathRegistry.getDefault();
-                        final FileObject folder = registry.findResource(rootPackage.replaceAll("\\.", "/"));
-                        if (folder != null) {
+                        List<FileObject> folders = sourcePath.findAllResources(rootPackage.replaceAll("\\.", "/"));
+                        for (final FileObject folder : folders) {
                             
                             try {
                                 src.runUserActionTask(new CancellableTask<CompilationController>() {
@@ -432,7 +426,7 @@ public class WebMotionCompletion implements CompletionProvider {
 
                                     @Override
                                     public void run(CompilationController cu) throws Exception {
-                                        TypeUtilities typeUtilities = cu.getTypeUtilities();
+                                        Types types = cu.getTypes();
                                         Elements elements = cu.getElements();
 
                                         TypeElement superElement = elements.getTypeElement(filterSuperJavaClass);
@@ -467,7 +461,7 @@ public class WebMotionCompletion implements CompletionProvider {
                                                         if (kind == ElementKind.CLASS
                                                                 && modifiers.contains(Modifier.PUBLIC)
                                                                 && !modifiers.contains(Modifier.ABSTRACT)
-                                                                && superType != null && typeUtilities.isCastable(resolveType, superType)) {
+                                                                && superType != null && types.isSubtype(resolveType, superType)) {
 
                                                             WebMotionCompletionItem item = new WebMotionCompletionItem(name, cu, element, startOffsetJavaClass, caretOffsetClass);
                                                             completionResultSetClass.addItem(item);
