@@ -459,36 +459,42 @@ public class WebMotionCompletion implements CompletionProvider {
                                                 if (!names.contains(name)) {
                                                     names.add(name);
                                                     
+                                                    TypeElement element;
+                                                    if (rootPackageFilter.isEmpty()) {
+                                                        element = elements.getTypeElement(name);
+                                                    } else {
+                                                        element = elements.getTypeElement(rootPackageFilter + "." + name);
+                                                    }
+
                                                     if (name.equals(filterPackageFilter)) {
-                                                        WebMotionCompletionItem item = new WebMotionCompletionItem(".", startOffsetJavaClass + name.length(), caretOffsetClass);
-                                                        completionResultSetClass.addItem(item);
+                                                        
+                                                        if (element == null 
+                                                                || element.getKind() != ElementKind.CLASS 
+                                                                || element.getKind() == ElementKind.CLASS 
+                                                                    && (filterSuperJavaClass.equals("org.debux.webmotion.server.WebMotionFilter")
+                                                                     || filterSuperJavaClass.equals("org.debux.webmotion.server.WebMotionController"))) {
+                                                            
+                                                            WebMotionCompletionItem item = new WebMotionCompletionItem(".", startOffsetJavaClass + name.length(), caretOffsetClass);
+                                                            completionResultSetClass.addItem(item);
+                                                        }
+                                                        
                                                         
                                                     } else if (child.isFolder()) {
                                                         WebMotionCompletionItem item = new WebMotionCompletionItem(name, startOffsetJavaClass, caretOffsetClass);
                                                         completionResultSetClass.addItem(item);
 
-                                                    } else {
+                                                    } else if (element != null) {
+                                                        Set<Modifier> modifiers = element.getModifiers();
+                                                        ElementKind kind = element.getKind();
+                                                        TypeMirror resolveType = element.asType();
 
-                                                        TypeElement element;
-                                                        if (rootPackageFilter.isEmpty()) {
-                                                            element = elements.getTypeElement(name);
-                                                        } else {
-                                                            element = elements.getTypeElement(rootPackageFilter + "." + name);
-                                                        }
+                                                        if (kind == ElementKind.CLASS
+                                                                && modifiers.contains(Modifier.PUBLIC)
+                                                                && !modifiers.contains(Modifier.ABSTRACT)
+                                                                && superType != null && types.isSubtype(resolveType, superType)) {
 
-                                                        if (element != null) {
-                                                            Set<Modifier> modifiers = element.getModifiers();
-                                                            ElementKind kind = element.getKind();
-                                                            TypeMirror resolveType = element.asType();
-
-                                                            if (kind == ElementKind.CLASS
-                                                                    && modifiers.contains(Modifier.PUBLIC)
-                                                                    && !modifiers.contains(Modifier.ABSTRACT)
-                                                                    && superType != null && types.isSubtype(resolveType, superType)) {
-
-                                                                WebMotionCompletionItem item = new WebMotionCompletionItem(name, cu, element, startOffsetJavaClass, caretOffsetClass);
-                                                                completionResultSetClass.addItem(item);
-                                                            }
+                                                            WebMotionCompletionItem item = new WebMotionCompletionItem(name, cu, element, startOffsetJavaClass, caretOffsetClass);
+                                                            completionResultSetClass.addItem(item);
                                                         }
                                                     }
                                                 }
@@ -503,7 +509,10 @@ public class WebMotionCompletion implements CompletionProvider {
                         }
                         
                         // Method
-                        if (filter.contains(".")) {
+                        if (filter.contains(".") && 
+                                (filterSuperJavaClass.equals("org.debux.webmotion.server.WebMotionFilter")
+                                    || filterSuperJavaClass.equals("org.debux.webmotion.server.WebMotionController"))) {
+                            
                             final String className = StringUtils.substringBeforeLast(filter, ".");
                             final String fullClassName = packageTarget + className;
                             final String filterMethod = StringUtils.substringAfterLast(filter, ".");
