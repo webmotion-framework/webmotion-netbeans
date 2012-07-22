@@ -34,7 +34,7 @@
 
     <!-- Zk -->
     <context-param>
-        <param-name>servlet.path.outside</param-name>
+        <param-name>wm.exclude.paths</param-name>
         <param-value>/zkau</param-value>
     </context-param>
     
