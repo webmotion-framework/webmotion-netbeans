@@ -24,10 +24,24 @@
  */
 package org.debux.webmotion.netbeans.refactoring;
 
+import com.sun.source.tree.Tree;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.apache.commons.lang.StringUtils;
+import org.debux.webmotion.netbeans.javacc.lexer.impl.LexerUtils;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -35,11 +49,10 @@ import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.text.PositionBounds;
-import org.openide.text.PositionRef;
+import org.openide.text.*;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -76,36 +89,65 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
 
     @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
-        refactoringElements.add(refactoring, new MappingRenameRefactoringElement());
-        return null;
-    }
-    
-    public class MappingRenameRefactoringElement extends SimpleRefactoringElementImplementation {
-
-        protected FileObject fo;
-        protected DataObject dob;
+        TreePathHandle treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
         
-        public MappingRenameRefactoringElement() {
+        if (treePathHandle != null && TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind())) {
             try {
                 GlobalPathRegistry registry = GlobalPathRegistry.getDefault();
-                fo = registry.findResource("mapping");
-                dob = DataObject.find(fo);
+                FileObject fo = registry.findResource("mapping");
+                DataObject dob = DataObject.find(fo);
+             
+                EditorCookie editor = dob.getLookup().lookup(EditorCookie.class);
+                StyledDocument doc = editor.getDocument();
+                
+                List<OffsetRange> tokens = LexerUtils.getTokens(doc, "FILTER_ACTION", 
+                        "ERROR_ACTION_JAVA", "ACTION_ACTION_IDENTIFIER", "ACTION_ACTION_JAVA_IDENTIFIER",
+                            "ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER", "ACTION_ACTION_JAVA_VARIABLE");
+                
+                FileObject fileObject = treePathHandle.getFileObject();
+                String name = fileObject.getName().toString();
+                
+                for (OffsetRange offsetRange : tokens) {
+                    String text = LexerUtils.getText(doc, offsetRange);
+                    
+                    if (text.contains(name)) {
+                        refactoringElements.add(refactoring, new MappingRenameRefactoringElement(dob, text, offsetRange));
+                    }
+                }
+                
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
                 
             } catch (DataObjectNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
+        return null;
+    }
+    
+    public class MappingRenameRefactoringElement extends SimpleRefactoringElementImplementation {
+
+        protected DataObject dob;
+        protected OffsetRange offsetRange;
+        protected String text;
         
+        protected MappingRenameRefactoringElement(DataObject dob, String text, OffsetRange offsetRange) {
+            this.dob = dob;
+            this.text = text;
+            this.offsetRange = offsetRange;
+        }
+
         @Override
         public void performChange() {
             try {
-                System.out.println(">>>>> performChange");
+                EditorCookie editor = dob.getLookup().lookup(EditorCookie.class);
+                StyledDocument doc = editor.getDocument();
                 
-                EditorCookie lookup = dob.getLookup().lookup(EditorCookie.class);
-                StyledDocument doc = lookup.getDocument();
+                int start = offsetRange.getStart();
+                int end = offsetRange.getEnd();
                 
-                doc.remove(10, 15);
-                doc.insertString(10, refactoring.getNewName(), null);
+                doc.remove(start, end - start);
+                doc.insertString(start, refactoring.getNewName(), null);
                 
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
@@ -129,16 +171,17 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
 
         @Override
         public FileObject getParentFile() {
-            return fo;
+            return dob.getPrimaryFile();
         }
 
         @Override
         public PositionBounds getPosition() {
             CloneableEditorSupport open = (CloneableEditorSupport) dob.getLookup().lookup(EditorCookie.class);
-
-            PositionRef startPosition = open.createPositionRef(10, Position.Bias.Forward);
-            PositionRef endPosition = open.createPositionRef(25, Position.Bias.Backward);
-            return new PositionBounds(startPosition, endPosition);
+            
+            PositionRef startPosition = open.createPositionRef(offsetRange.getStart(), Position.Bias.Forward);
+            PositionRef endPosition = open.createPositionRef(offsetRange.getEnd(), Position.Bias.Backward);
+            PositionBounds positionBounds = new PositionBounds(startPosition, endPosition);
+            return positionBounds;
         }
     }
     
