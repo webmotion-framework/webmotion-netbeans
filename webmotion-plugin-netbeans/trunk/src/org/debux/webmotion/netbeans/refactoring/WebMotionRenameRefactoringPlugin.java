@@ -24,23 +24,21 @@
  */
 package org.debux.webmotion.netbeans.refactoring;
 
-import com.sun.source.tree.Tree;
-import java.util.ArrayList;
-import java.util.HashSet;
+import com.sun.source.tree.Tree.Kind;
+import java.io.IOException;
 import java.util.List;
-import java.util.Set;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
-import org.apache.commons.lang.StringUtils;
+import org.debux.webmotion.netbeans.Utils;
 import org.debux.webmotion.netbeans.javacc.lexer.impl.LexerUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.java.source.*;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -49,7 +47,6 @@ import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.*;
@@ -88,37 +85,65 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
     }
 
     @Override
-    public Problem prepare(RefactoringElementsBag refactoringElements) {
-        TreePathHandle treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
+    public Problem prepare(final RefactoringElementsBag refactoringElements) {
+        final TreePathHandle treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
         
-        if (treePathHandle != null && TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind())) {
+        if (treePathHandle != null && (
+                TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind()))
+                || Kind.METHOD == treePathHandle.getKind()) {
+            
             try {
                 GlobalPathRegistry registry = GlobalPathRegistry.getDefault();
-                FileObject fo = registry.findResource("mapping");
-                DataObject dob = DataObject.find(fo);
-             
-                EditorCookie editor = dob.getLookup().lookup(EditorCookie.class);
-                StyledDocument doc = editor.getDocument();
-                
-                List<OffsetRange> tokens = LexerUtils.getTokens(doc, "FILTER_ACTION", 
-                        "ERROR_ACTION_JAVA", "ACTION_ACTION_IDENTIFIER", "ACTION_ACTION_JAVA_IDENTIFIER",
-                            "ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER", "ACTION_ACTION_JAVA_VARIABLE");
-                
-                FileObject fileObject = treePathHandle.getFileObject();
-                String name = fileObject.getName().toString();
-                
-                for (OffsetRange offsetRange : tokens) {
-                    String text = LexerUtils.getText(doc, offsetRange);
-                    
-                    if (text.contains(name)) {
-                        refactoringElements.add(refactoring, new MappingRenameRefactoringElement(dob, text, offsetRange));
+                final FileObject fo = registry.findResource("mapping");
+                        
+                ClassPath bootCp = ClassPath.getClassPath(fo, ClassPath.BOOT);
+                ClassPath compileCp = ClassPath.getClassPath(fo, ClassPath.COMPILE);
+                ClassPath sourcePath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                ClasspathInfo info = ClasspathInfo.create(bootCp, compileCp, sourcePath);
+                JavaSource src = JavaSource.create(info);
+
+                src.runUserActionTask(new CancellableTask<CompilationController>() {
+                    @Override
+                    public void cancel() {
                     }
-                }
+
+                    @Override
+                    public void run(CompilationController cu) throws Exception {
+                        FileObject fileObject = treePathHandle.getFileObject();
+                        
+                        String className = fileObject.getName().toString();
                 
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
+                        String oldName = className;
+                        String filter = className;
+                        
+                        if (Kind.METHOD == treePathHandle.getKind()) {
+                            Element element = treePathHandle.resolveElement(cu);
+                            oldName = element.getSimpleName().toString();
+                            filter = className + "." + oldName;
+                        }
+                        
+                        DataObject dob = DataObject.find(fo);
+                        EditorCookie editor = dob.getLookup().lookup(EditorCookie.class);
+                        StyledDocument doc = editor.getDocument();
+
+                        List<OffsetRange> tokens = LexerUtils.getTokens(doc, "FILTER_ACTION",
+                                "ERROR_ACTION_JAVA", "ACTION_ACTION_IDENTIFIER", "ACTION_ACTION_JAVA_IDENTIFIER",
+                                "ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER", "ACTION_ACTION_JAVA_VARIABLE");
+
+                        for (OffsetRange offsetRange : tokens) {
+                            String text = LexerUtils.getText(doc, offsetRange);
+
+                            if (text.contains(filter)) {
+                                int start = offsetRange.getStart() + text.indexOf(oldName);
+                                int end = start + oldName.length();
+                                refactoringElements.add(refactoring, new MappingRenameRefactoringElement(dob, start, end));
+                            }
+                        }
+                    }
+                }, false);
                 
-            } catch (DataObjectNotFoundException ex) {
+                
+            } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
@@ -128,13 +153,13 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
     public class MappingRenameRefactoringElement extends SimpleRefactoringElementImplementation {
 
         protected DataObject dob;
-        protected OffsetRange offsetRange;
-        protected String text;
-        
-        protected MappingRenameRefactoringElement(DataObject dob, String text, OffsetRange offsetRange) {
+        protected int start;
+        protected int end;
+
+        public MappingRenameRefactoringElement(DataObject dob, int start, int end) {
             this.dob = dob;
-            this.text = text;
-            this.offsetRange = offsetRange;
+            this.start = start;
+            this.end = end;
         }
 
         @Override
@@ -142,9 +167,6 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
             try {
                 EditorCookie editor = dob.getLookup().lookup(EditorCookie.class);
                 StyledDocument doc = editor.getDocument();
-                
-                int start = offsetRange.getStart();
-                int end = offsetRange.getEnd();
                 
                 doc.remove(start, end - start);
                 doc.insertString(start, refactoring.getNewName(), null);
@@ -178,8 +200,8 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
         public PositionBounds getPosition() {
             CloneableEditorSupport open = (CloneableEditorSupport) dob.getLookup().lookup(EditorCookie.class);
             
-            PositionRef startPosition = open.createPositionRef(offsetRange.getStart(), Position.Bias.Forward);
-            PositionRef endPosition = open.createPositionRef(offsetRange.getEnd(), Position.Bias.Backward);
+            PositionRef startPosition = open.createPositionRef(start, Position.Bias.Forward);
+            PositionRef endPosition = open.createPositionRef(end, Position.Bias.Backward);
             PositionBounds positionBounds = new PositionBounds(startPosition, endPosition);
             return positionBounds;
         }
