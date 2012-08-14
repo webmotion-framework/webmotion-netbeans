@@ -24,7 +24,9 @@
  */
 package org.debux.webmotion.netbeans;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
@@ -33,6 +35,7 @@ import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import org.apache.commons.lang.StringUtils;
 import org.debux.webmotion.netbeans.javacc.parser.WebMotionParser;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
@@ -140,4 +143,25 @@ public class Utils {
         return str.indexOf('*') != -1 || str.indexOf('?') != -1;
     }
     
+    public static Set<FileObject> findAllMappings() {
+        GlobalPathRegistry registry = GlobalPathRegistry.getDefault();
+        Set<FileObject> sourceRoots = registry.getSourceRoots();
+        return findAllMappings(sourceRoots.toArray(new FileObject[0]));
+    }
+    
+    public static Set<FileObject> findAllMappings(FileObject[] fileObjects) {
+        Set<FileObject> result = new HashSet<FileObject>();
+        
+        for (FileObject fileObject : fileObjects) {
+            if (fileObject.isFolder()) {
+                FileObject[] children = fileObject.getChildren();
+                result.addAll(findAllMappings(children));
+                
+            } else if (fileObject.getMIMEType().equals(WebMotionLanguage.MIME_TYPE)) {
+                result.add(fileObject);
+            }
+        }
+        
+        return result;
+    }
 }
