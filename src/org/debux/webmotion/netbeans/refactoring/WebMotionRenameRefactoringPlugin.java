@@ -26,12 +26,19 @@ package org.debux.webmotion.netbeans.refactoring;
 
 import com.sun.source.tree.Tree.Kind;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.debux.webmotion.netbeans.Utils;
+import org.debux.webmotion.netbeans.WebMotionLanguage;
 import org.debux.webmotion.netbeans.javacc.lexer.impl.LexerUtils;
+import org.netbeans.api.actions.Openable;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.source.*;
@@ -81,68 +88,73 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
 
     @Override
     public Problem prepare(final RefactoringElementsBag refactoringElements) {
-        final TreePathHandle treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
+        TreePathHandle treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
         
         if (treePathHandle != null && (
                 TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind()))
                 || Kind.METHOD == treePathHandle.getKind()) {
             
-            try {
-                GlobalPathRegistry registry = GlobalPathRegistry.getDefault();
-                final FileObject fo = registry.findResource("mapping");
-                        
-                ClassPath bootCp = ClassPath.getClassPath(fo, ClassPath.BOOT);
-                ClassPath compileCp = ClassPath.getClassPath(fo, ClassPath.COMPILE);
-                ClassPath sourcePath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-                ClasspathInfo info = ClasspathInfo.create(bootCp, compileCp, sourcePath);
-                JavaSource src = JavaSource.create(info);
-
-                src.runUserActionTask(new CancellableTask<CompilationController>() {
-                    @Override
-                    public void cancel() {
-                    }
-
-                    @Override
-                    public void run(CompilationController cu) throws Exception {
-                        FileObject fileObject = treePathHandle.getFileObject();
-                        
-                        String className = fileObject.getName().toString();
-                
-                        String oldName = className;
-                        String filter = className;
-                        
-                        if (Kind.METHOD == treePathHandle.getKind()) {
-                            Element element = treePathHandle.resolveElement(cu);
-                            oldName = element.getSimpleName().toString();
-                            filter = className + "." + oldName;
-                        }
-                        
-                        DataObject dob = DataObject.find(fo);
-                        EditorCookie editor = dob.getLookup().lookup(EditorCookie.class);
-                        StyledDocument doc = editor.getDocument();
-
-                        List<OffsetRange> tokens = LexerUtils.getTokens(doc, "FILTER_ACTION",
-                                "ERROR_ACTION_JAVA", "ACTION_ACTION_IDENTIFIER", "ACTION_ACTION_JAVA_IDENTIFIER",
-                                "ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER", "ACTION_ACTION_JAVA_VARIABLE");
-
-                        for (OffsetRange offsetRange : tokens) {
-                            String text = LexerUtils.getText(doc, offsetRange);
-
-                            if (text.contains(filter)) {
-                                int start = offsetRange.getStart() + text.indexOf(oldName);
-                                int end = start + oldName.length();
-                                refactoringElements.add(refactoring, new MappingRenameRefactoringElement(dob, start, end));
-                            }
-                        }
-                    }
-                }, false);
-                
-                
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+            Set<FileObject> findAllMappings = Utils.findAllMappings();
+            for (FileObject mapping : findAllMappings) {
+                prepare(refactoringElements, treePathHandle, mapping);
             }
+            
         }
         return null;
+    }
+
+    protected void prepare(final RefactoringElementsBag refactoringElements,
+            final TreePathHandle treePathHandle, final FileObject fo) throws IllegalArgumentException {
+        try {
+            
+            ClassPath bootCp = ClassPath.getClassPath(fo, ClassPath.BOOT);
+            ClassPath compileCp = ClassPath.getClassPath(fo, ClassPath.COMPILE);
+            ClassPath sourcePath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+            ClasspathInfo info = ClasspathInfo.create(bootCp, compileCp, sourcePath);
+            JavaSource src = JavaSource.create(info);
+            
+            src.runUserActionTask(new CancellableTask<CompilationController>() {
+                @Override
+                public void cancel() {
+                }
+
+                @Override
+                public void run(CompilationController cu) throws Exception {
+                    DataObject dob = DataObject.find(fo);
+                    EditorCookie editor = dob.getLookup().lookup(EditorCookie.class);
+                    StyledDocument doc = editor.openDocument();
+
+                    FileObject fileObject = treePathHandle.getFileObject();
+                    String className = fileObject.getName().toString();
+            
+                    String oldName = className;
+                    String filter = className;
+                    
+                    if (Kind.METHOD == treePathHandle.getKind()) {
+                        Element element = treePathHandle.resolveElement(cu);
+                        oldName = element.getSimpleName().toString();
+                        filter = className + "." + oldName;
+                    }
+                    
+                    List<OffsetRange> tokens = LexerUtils.getTokens(doc, "FILTER_ACTION",
+                            "ERROR_ACTION_JAVA", "ACTION_ACTION_IDENTIFIER", "ACTION_ACTION_JAVA_IDENTIFIER",
+                            "ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER", "ACTION_ACTION_JAVA_VARIABLE");
+
+                    for (OffsetRange offsetRange : tokens) {
+                        String text = LexerUtils.getText(doc, offsetRange);
+
+                        if (text.contains(filter)) {
+                            int start = offsetRange.getStart() + text.indexOf(oldName);
+                            int end = start + oldName.length();
+                            refactoringElements.add(refactoring, new MappingRenameRefactoringElement(dob, start, end));
+                        }
+                    }
+                }
+            }, false);
+            
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     public class MappingRenameRefactoringElement extends SimpleRefactoringElementImplementation {
@@ -173,17 +185,17 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
 
         @Override
         public String getText() {
-            return "getText";
+            return "Rename";
         }
 
         @Override
         public String getDisplayText() {
-            return "getDisplayText";
+            return "Rename";
         }
 
         @Override
         public Lookup getLookup() {
-            return Lookup.EMPTY;
+            return dob.getLookup();
         }
 
         @Override
