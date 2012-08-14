@@ -43,6 +43,7 @@ import javax.swing.text.StyledDocument;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.debux.webmotion.netbeans.Utils;
+import org.debux.webmotion.netbeans.WebMotionLanguage;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -370,7 +371,7 @@ public class WebMotionCompletion implements CompletionProvider {
                                 for (FileObject child : children) {
                                     String fileName = child.getNameExt();
 
-                                    if ((child.isFolder() || separator.equals("/"))
+                                    if ((child.isFolder() || separator.equals("/") && child.getMIMEType().equals(WebMotionLanguage.MIME_TYPE))
                                             && fileName.startsWith(filterFile)
                                             && !fileName.startsWith(".")) {
                                         
