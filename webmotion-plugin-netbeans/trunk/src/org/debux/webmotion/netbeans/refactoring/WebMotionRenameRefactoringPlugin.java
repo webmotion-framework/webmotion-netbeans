@@ -26,8 +26,6 @@ package org.debux.webmotion.netbeans.refactoring;
 
 import com.sun.source.tree.Tree.Kind;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
@@ -35,12 +33,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.debux.webmotion.netbeans.Utils;
-import org.debux.webmotion.netbeans.WebMotionLanguage;
 import org.debux.webmotion.netbeans.javacc.lexer.impl.LexerUtils;
-import org.netbeans.api.actions.Openable;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -185,12 +179,12 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
 
         @Override
         public String getText() {
-            return "Rename";
+            return "Rename in mapping file";
         }
 
         @Override
         public String getDisplayText() {
-            return "Rename";
+            return "Rename in mapping file";
         }
 
         @Override
