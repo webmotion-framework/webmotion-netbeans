@@ -25,7 +25,15 @@
 package org.debux.webmotion.netbeans.refactoring;
 
 import java.util.Collection;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.debux.webmotion.netbeans.javacc.lexer.impl.LexerUtils;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
+import org.netbeans.modules.refactoring.spi.ui.UI;
+import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
@@ -40,13 +48,42 @@ public class WebMotionRefactoringActions extends ActionsImplementationProvider {
     @Override
     public boolean canRename(Lookup lookup) {
         Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-        return false;
+        return true;
     }
 
     @Override
     public void doRename(Lookup lookup) {
-        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        JTextComponent textComponent = ec.getOpenedPanes()[0];
+        Document document = textComponent.getDocument();
+        int caretPosition = textComponent.getCaretPosition();
+        
+        final RefactoringContext context = new RefactoringContext(document, caretPosition);
+        
+        new Runnable() {
+            @Override
+            public void run() {
+                UI.openRefactoringUI(new WebMotionRenameRefactoringUI(context));
+            }
+        }.run();
     }
     
+    
+    public static class RefactoringContext {
+        protected int caret;
+        protected Document document;
+
+        public RefactoringContext(Document document, int caret) {
+            this.document = document;
+            this.caret = caret;
+        }
+        
+        public String getValue() {
+            TokenSequence<? extends TokenId> ts = LexerUtils.getMostEmbeddedTokenSequence(document, caret, true);
+            Token<? extends TokenId> token = ts.token();
+            String value = token.text().toString();
+            return value;
+        }
+    }
     
 }
