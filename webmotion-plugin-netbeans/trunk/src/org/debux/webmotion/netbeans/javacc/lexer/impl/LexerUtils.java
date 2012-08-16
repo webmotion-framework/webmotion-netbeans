@@ -26,11 +26,13 @@ package org.debux.webmotion.netbeans.javacc.lexer.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.apache.commons.lang.ArrayUtils;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
 
@@ -56,6 +58,54 @@ public class LexerUtils {
         return WebMotionTokenId.Section.NONE;
     }
     
+    public static List<OffsetRange> getSeparatedTokens(Document document, String ... extractName) {
+        List<OffsetRange> result = new ArrayList<OffsetRange>();
+        
+        TokenHierarchy<Document> hi = TokenHierarchy.get(document);
+        TokenSequence<WebMotionTokenId> ts = (TokenSequence<WebMotionTokenId>) hi.tokenSequence();
+        while (ts.moveNext()) {
+            
+            Token<WebMotionTokenId> token = ts.token();
+            WebMotionTokenId id = token.id();
+            String name = id.name();
+            
+            if (ArrayUtils.contains(extractName, name)) {
+                int start = ts.offset();
+                int end = start + token.text().toString().length();
+                
+                OffsetRange offsetRange = new OffsetRange(start, end);
+                result.add(offsetRange);
+            }
+        }
+        
+        return result;
+    }
+    
+    public static TokenSequence<? extends TokenId> getMostEmbeddedTokenSequence(final Document doc, final int offset, boolean runUnderLock) {
+        final AtomicReference<TokenSequence<? extends TokenId>> ref = new AtomicReference<TokenSequence<? extends TokenId>>();
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                TokenHierarchy th = TokenHierarchy.get(doc);
+                List<TokenSequence<? extends TokenId>> sequences = th.embeddedTokenSequences(offset, false);
+                if(sequences.isEmpty()) {
+                    //no embedding, return top level sequence;
+                    ref.set(th.tokenSequence());
+                } else {
+                    ref.set(sequences.get(sequences.size() - 1)); //return the most embedded one
+                }
+            }
+        };
+
+        if(runUnderLock) {
+            doc.render(r);
+        } else {
+            r.run();
+        }
+
+        return ref.get();
+    }
+        
     public static List<OffsetRange> getTokens(Document document, String ... extractName) {
         List<OffsetRange> result = new ArrayList<OffsetRange>();
         OffsetRange current = null;

@@ -85,8 +85,8 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
         TreePathHandle treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
         
         if (treePathHandle != null && (
-                TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind()))
-                || Kind.METHOD == treePathHandle.getKind()) {
+                TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind())
+                || Kind.METHOD == treePathHandle.getKind())) {
             
             Set<FileObject> findAllMappings = Utils.findAllMappings();
             for (FileObject mapping : findAllMappings) {
