@@ -157,9 +157,9 @@ public class WebMotionCompletion implements CompletionProvider {
                 
                 try {
                     // Get filter
-                    StyledDocument bDoc = (StyledDocument) document;
-                    int lineStartOffset = Utils.getRowFirstNonWhite(bDoc, caretOffset);
-                    char[] line = bDoc.getText(lineStartOffset, caretOffset - lineStartOffset).toCharArray();
+                    StyledDocument doc = (StyledDocument) document;
+                    int lineStartOffset = Utils.getRowFirstNonWhite(doc, caretOffset);
+                    char[] line = doc.getText(lineStartOffset, caretOffset - lineStartOffset).toCharArray();
                     int whiteOffset = Utils.indexOfWhite(line);
                     filter = new String(line, whiteOffset + 1, line.length - whiteOffset - 1);
                     if (whiteOffset > 0) {
@@ -169,8 +169,8 @@ public class WebMotionCompletion implements CompletionProvider {
                     }
                     
                     // Get position
-                    Element lineElement = bDoc.getParagraphElement(caretOffset);
-                    String lineValue = bDoc.getText(lineElement.getStartOffset(), caretOffset - lineElement.getStartOffset());
+                    Element lineElement = doc.getParagraphElement(caretOffset);
+                    String lineValue = doc.getText(lineElement.getStartOffset(), caretOffset - lineElement.getStartOffset());
                     
                     Pattern pattern = Pattern.compile("\\s+");
                     Matcher matcher = pattern.matcher(lineValue);
