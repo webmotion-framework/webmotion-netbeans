@@ -33,6 +33,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.debux.webmotion.netbeans.Utils;
+import org.debux.webmotion.netbeans.refactoring.WebMotionRefactoringActions.RefactoringContext;
 import org.debux.webmotion.netbeans.javacc.lexer.impl.LexerUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
@@ -82,7 +83,8 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
 
     @Override
     public Problem prepare(final RefactoringElementsBag refactoringElements) {
-        TreePathHandle treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
+        Lookup source = refactoring.getRefactoringSource();
+        TreePathHandle treePathHandle = source.lookup(TreePathHandle.class);
         
         if (treePathHandle != null && (
                 TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind())
@@ -92,11 +94,49 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
             for (FileObject mapping : findAllMappings) {
                 prepare(refactoringElements, treePathHandle, mapping);
             }
-            
         }
+        
+        RefactoringContext refactoringContext = source.lookup(RefactoringContext.class);
+        if (refactoringContext != null) {
+            
+            Set<FileObject> findAllMappings = Utils.findAllMappings();
+            for (FileObject mapping : findAllMappings) {
+                prepare(refactoringElements, refactoringContext, mapping);
+            }
+        }
+        
         return null;
     }
 
+    protected void prepare(final RefactoringElementsBag refactoringElements,
+            final RefactoringContext refactoringContext, final FileObject fo) throws IllegalArgumentException {
+        try {
+            String filter = refactoringContext.getValue();
+            
+            DataObject dob = DataObject.find(fo);
+            EditorCookie editor = dob.getLookup().lookup(EditorCookie.class);
+            StyledDocument doc = editor.openDocument();
+            
+            List<OffsetRange> tokens = LexerUtils.getTokens(doc, "FILTER_ACTION",
+                "ERROR_ACTION_JAVA", "ACTION_ACTION_IDENTIFIER", "ACTION_ACTION_JAVA_IDENTIFIER",
+                "ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER", "ACTION_ACTION_JAVA_VARIABLE");
+
+            for (OffsetRange offsetRange : tokens) {
+                String text = LexerUtils.getText(doc, offsetRange);
+
+                if (text.equals(filter)) {
+                    int start = offsetRange.getStart() + text.indexOf(filter);
+                    int end = start + filter.length();
+                    refactoringElements.add(refactoring, new MappingRenameRefactoringElement(dob, start, end));
+                }
+            }
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+        
     protected void prepare(final RefactoringElementsBag refactoringElements,
             final TreePathHandle treePathHandle, final FileObject fo) throws IllegalArgumentException {
         try {

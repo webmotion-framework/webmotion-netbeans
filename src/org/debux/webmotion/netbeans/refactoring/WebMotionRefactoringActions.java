@@ -25,16 +25,16 @@
 package org.debux.webmotion.netbeans.refactoring;
 
 import java.util.Collection;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.debux.webmotion.netbeans.javacc.lexer.impl.LexerUtils;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -68,22 +68,56 @@ public class WebMotionRefactoringActions extends ActionsImplementationProvider {
         }.run();
     }
     
-    
     public static class RefactoringContext {
         protected int caret;
+        protected OffsetRange offset;
         protected Document document;
 
         public RefactoringContext(Document document, int caret) {
             this.document = document;
             this.caret = caret;
+            this.offset = LexerUtils.getTokens(document, caret, getVerifyToken());
         }
         
         public String getValue() {
-            TokenSequence<? extends TokenId> ts = LexerUtils.getMostEmbeddedTokenSequence(document, caret, true);
-            Token<? extends TokenId> token = ts.token();
-            String value = token.text().toString();
-            return value;
+            try {
+                String value = LexerUtils.getText(document, offset);
+                return value;
+                
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
         }
+
+        public String[] getVerifyToken() {
+            return new String[]{
+                        "ACTION_ACTION_IDENTIFIER",
+                        "ACTION_ACTION_JAVA_IDENTIFIER",
+                        "ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER",
+                        "ACTION_ACTION_JAVA_VARIABLE",
+                        "ACTION_ACTION_VIEW_VALUE",
+                        "ACTION_ACTION_VIEW_VARIABLE",
+                        "FILTER_ACTION",
+                        "EXTENSION_FILE",
+                        "ERROR_ACTION_JAVA",
+                        "EXCEPTION",
+                        "ERROR_ACTION_VALUE"
+                    };
+        }
+
+        public OffsetRange getOffset() {
+            return offset;
+        }
+        
+        public int getCaret() {
+            return caret;
+        }
+
+        public Document getDocument() {
+            return document;
+        }
+        
     }
     
 }
