@@ -34,8 +34,12 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import org.apache.commons.lang.StringUtils;
+import org.debux.webmotion.netbeans.javacc.lexer.impl.LexerUtils;
+import org.debux.webmotion.netbeans.javacc.lexer.impl.WebMotionTokenId;
 import org.debux.webmotion.netbeans.javacc.parser.WebMotionParser;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
@@ -102,6 +106,46 @@ public class Utils {
         return packageTarget;
     }
     
+    
+    // Get the package in configuration
+    public static String getPackage(Document document, int offset) {
+        String packageBase = Utils.getPackageValue("package.base", null);
+        String packageTarget = null;
+        
+        TokenSequence<WebMotionTokenId> ts = (TokenSequence<WebMotionTokenId>) LexerUtils.getMostEmbeddedTokenSequence(document, offset, true);
+        Token<WebMotionTokenId> tok = ts.token();
+        WebMotionTokenId id = tok.id();
+        
+        String name = id.name();
+        if ("ACTION_ACTION_IDENTIFIER".equals(name) ||
+            "ACTION_ACTION_JAVA_IDENTIFIER".equals(name) ||
+            "ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER".equals(name) ||
+            "ACTION_ACTION_JAVA_VARIABLE".equals(name)) {
+            
+            packageTarget = Utils.getPackageValue("package.actions", packageBase);
+            
+        } else if ("FILTER_ACTION".equals(name)) {
+            packageTarget = Utils.getPackageValue("package.filters", packageBase);
+            
+        } else if ("ERROR_ACTION_JAVA".equals(name)) {
+            packageTarget = Utils.getPackageValue("package.errors", packageBase);
+            
+        } else if ("EXTENSION_FILE".equals(name)) {
+            packageTarget = "";
+            
+        } else if ("ACTION_ACTION_VIEW_VALUE".equals(name) ||
+                   "ACTION_ACTION_VIEW_VARIABLE".equals(name) ||
+                   "ERROR_ACTION_VALUE".equals(name)) {
+            packageTarget = Utils.getPackageValue("package.views", null);
+            
+            
+        } else if ("EXCEPTION".equals(name)) {
+            packageTarget = "";
+        }
+        
+        return packageTarget;
+    }
+    
     public static int getRowFirstNonWhite(StyledDocument doc, int offset) throws BadLocationException {
         Element lineElement = doc.getParagraphElement(offset);
         int start = lineElement.getStartOffset();
@@ -164,4 +208,21 @@ public class Utils {
         
         return result;
     }
+
+    public static String[] getAccessibleToken() {
+        return new String[]{
+                    "ACTION_ACTION_IDENTIFIER",
+                    "ACTION_ACTION_JAVA_IDENTIFIER",
+                    "ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER",
+                    "ACTION_ACTION_JAVA_VARIABLE",
+                    "ACTION_ACTION_VIEW_VALUE",
+                    "ACTION_ACTION_VIEW_VARIABLE",
+                    "FILTER_ACTION",
+                    "EXTENSION_FILE",
+                    "ERROR_ACTION_JAVA",
+                    "EXCEPTION",
+                    "ERROR_ACTION_VALUE"
+                };
+    }
+
 }
