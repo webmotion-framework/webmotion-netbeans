@@ -29,13 +29,18 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.apache.commons.lang.StringUtils;
 import org.debux.webmotion.netbeans.Utils;
 import org.debux.webmotion.netbeans.refactoring.WebMotionRefactoringActions.RefactoringContext;
 import org.debux.webmotion.netbeans.javacc.lexer.impl.LexerUtils;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -98,6 +103,10 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
         
         RefactoringContext refactoringContext = source.lookup(RefactoringContext.class);
         if (refactoringContext != null) {
+            
+            Document document = refactoringContext.getDocument();
+            int caret = refactoringContext.getCaret();
+            refactoringElements.add(refactoring, new RenameFileRefactoringElement(document, caret));
             
             Set<FileObject> findAllMappings = Utils.findAllMappings();
             for (FileObject mapping : findAllMappings) {
@@ -189,6 +198,114 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+    
+    public class RenameFileRefactoringElement extends SimpleRefactoringElementImplementation {
+        
+        protected FileObject fo;
+        protected String name;
+        
+        public RenameFileRefactoringElement(Document document, int offset) {
+            name = refactoring.getNewName();
+                
+            String packageTarget = Utils.getPackage(document, offset);
+
+            // Open document
+            OffsetRange range = LexerUtils.getTokens(document, offset, Utils.getAccessibleToken());
+            if (range != null) {
+                try {
+                    String target = LexerUtils.getText(document, range);
+
+                    if (LexerUtils.isJavaToken(document, offset)) {
+
+                        FileObject srcFile = Utils.getFO(document);
+                        ClassPath bootCp = ClassPath.getClassPath(srcFile, ClassPath.BOOT);
+                        ClassPath compileCp = ClassPath.getClassPath(srcFile, ClassPath.COMPILE);
+                        ClassPath sourcePath = ClassPath.getClassPath(srcFile, ClassPath.SOURCE);
+
+                        final ClasspathInfo info = ClasspathInfo.create(bootCp, compileCp, sourcePath);
+                        JavaSource src = JavaSource.create(info);
+
+                        final String fullClassName = target.replaceAll("/+", ".");
+                        final String packageClassName = packageTarget.replaceAll("/+", ".");
+                        final String className = StringUtils.substringBeforeLast(target, ".");
+                        final String methodName = StringUtils.substringAfterLast(target, ".");
+
+                        try {
+                            src.runUserActionTask(new CancellableTask<CompilationController>() {
+                                @Override
+                                public void cancel() {
+                                }
+
+                                @Override
+                                public void run(CompilationController cu) throws Exception {
+                                    Elements elements = cu.getElements();
+
+                                    TypeElement classElement = elements.getTypeElement(packageClassName + className);
+                                    if (classElement == null) {
+                                        classElement = elements.getTypeElement(fullClassName);
+                                    }
+
+                                    if (classElement != null) {
+                                        ElementHandle<TypeElement> create = ElementHandle.create(classElement);
+                                        fo = SourceUtils.getFile(create, info);
+                                        name = StringUtils.substringBeforeLast(name, ".");
+                                    }
+                                }
+                            }, false);
+
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+
+                    } else {
+                        packageTarget = packageTarget.replaceAll("\\.+", "/");
+                        GlobalPathRegistry registry = GlobalPathRegistry.getDefault();
+                        fo = registry.findResource(packageTarget + target);
+                    }
+
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+
+        @Override
+        public String getText() {
+            return "Rename file";
+        }
+
+        @Override
+        public String getDisplayText() {
+            return "Rename file";
+        }
+
+        @Override
+        public void performChange() {
+            try {
+                DataObject dob = DataObject.find(fo);
+                dob.rename(name);
+                
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        @Override
+        public Lookup getLookup() {
+            return Lookup.getDefault();
+        }
+
+        @Override
+        public FileObject getParentFile() {
+            return fo;
+        }
+
+        @Override
+        public PositionBounds getPosition() {
+            return null;
+        }
+        
     }
     
     public class MappingRenameRefactoringElement extends SimpleRefactoringElementImplementation {

@@ -24,16 +24,20 @@
  */
 package org.debux.webmotion.netbeans.refactoring;
 
-import java.util.Collection;
+import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.apache.commons.lang.ArrayUtils;
+import org.debux.webmotion.netbeans.Utils;
 import org.debux.webmotion.netbeans.javacc.lexer.impl.LexerUtils;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.cookies.EditorCookie;
-import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
@@ -47,8 +51,24 @@ public class WebMotionRefactoringActions extends ActionsImplementationProvider {
 
     @Override
     public boolean canRename(Lookup lookup) {
-        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-        return true;
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        if (ec != null) {
+            JEditorPane[] openedPanes = ec.getOpenedPanes();
+            if (openedPanes != null && openedPanes.length > 0) {
+                JTextComponent textComponent = openedPanes[0];
+                Document document = textComponent.getDocument();
+                int caretPosition = textComponent.getCaretPosition();
+
+                TokenSequence<? extends TokenId> ts = LexerUtils.getMostEmbeddedTokenSequence(document, caretPosition, true);
+                Token<? extends TokenId> token = ts.token();
+                TokenId id = token.id();
+                String name = id.name();
+
+                return ArrayUtils.contains(Utils.getAccessibleToken(), name);
+            }
+        }
+        
+        return false;
     }
 
     @Override
@@ -76,7 +96,7 @@ public class WebMotionRefactoringActions extends ActionsImplementationProvider {
         public RefactoringContext(Document document, int caret) {
             this.document = document;
             this.caret = caret;
-            this.offset = LexerUtils.getTokens(document, caret, getVerifyToken());
+            this.offset = LexerUtils.getTokens(document, caret, Utils.getAccessibleToken());
         }
         
         public String getValue() {
@@ -88,22 +108,6 @@ public class WebMotionRefactoringActions extends ActionsImplementationProvider {
                 Exceptions.printStackTrace(ex);
                 return null;
             }
-        }
-
-        public String[] getVerifyToken() {
-            return new String[]{
-                        "ACTION_ACTION_IDENTIFIER",
-                        "ACTION_ACTION_JAVA_IDENTIFIER",
-                        "ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER",
-                        "ACTION_ACTION_JAVA_VARIABLE",
-                        "ACTION_ACTION_VIEW_VALUE",
-                        "ACTION_ACTION_VIEW_VARIABLE",
-                        "FILTER_ACTION",
-                        "EXTENSION_FILE",
-                        "ERROR_ACTION_JAVA",
-                        "EXCEPTION",
-                        "ERROR_ACTION_VALUE"
-                    };
         }
 
         public OffsetRange getOffset() {

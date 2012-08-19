@@ -194,4 +194,22 @@ public class LexerUtils {
         return target;
     }
     
+    
+    public static boolean isJavaToken(Document document, int offset) {
+        TokenSequence<WebMotionTokenId> ts = (TokenSequence<WebMotionTokenId>) LexerUtils.getMostEmbeddedTokenSequence(document, offset, true);
+        
+        Token<WebMotionTokenId> tok = ts.token();
+        WebMotionTokenId id = tok.id();
+        
+        String name = id.name();
+        if ("EXTENSION_FILE".equals(name) ||
+                "ACTION_ACTION_VIEW_VALUE".equals(name) ||
+                "ACTION_ACTION_VIEW_VARIABLE".equals(name) ||
+                "ERROR_ACTION_VALUE".equals(name)) {
+            
+            return false;
+        }
+        
+        return true;
+    }
 }
