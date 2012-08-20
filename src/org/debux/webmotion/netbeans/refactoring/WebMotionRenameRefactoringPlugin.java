@@ -126,9 +126,7 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
             EditorCookie editor = dob.getLookup().lookup(EditorCookie.class);
             StyledDocument doc = editor.openDocument();
             
-            List<OffsetRange> tokens = LexerUtils.getTokens(doc, "FILTER_ACTION",
-                "ERROR_ACTION_JAVA", "ACTION_ACTION_IDENTIFIER", "ACTION_ACTION_JAVA_IDENTIFIER",
-                "ACTION_ACTION_JAVA_QUALIFIED_IDENTIFIER", "ACTION_ACTION_JAVA_VARIABLE");
+            List<OffsetRange> tokens = LexerUtils.getTokens(doc, Utils.getAccessibleToken());
 
             for (OffsetRange offsetRange : tokens) {
                 String text = LexerUtils.getText(doc, offsetRange);
@@ -283,8 +281,7 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
         @Override
         public void performChange() {
             try {
-                DataObject dob = DataObject.find(fo);
-                dob.rename(name);
+                Utils.renameFileObject(fo, name);
                 
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -293,7 +290,7 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
 
         @Override
         public Lookup getLookup() {
-            return Lookup.getDefault();
+            return refactoring.getRefactoringSource();
         }
 
         @Override
@@ -346,7 +343,7 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
 
         @Override
         public Lookup getLookup() {
-            return dob.getLookup();
+            return refactoring.getRefactoringSource();
         }
 
         @Override

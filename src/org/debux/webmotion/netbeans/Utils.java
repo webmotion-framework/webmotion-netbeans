@@ -24,6 +24,7 @@
  */
 package org.debux.webmotion.netbeans;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -40,7 +41,10 @@ import org.debux.webmotion.netbeans.javacc.parser.WebMotionParser;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.openide.filesystems.FileAlreadyLockedException;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 
 /**
@@ -223,6 +227,24 @@ public class Utils {
                     "EXCEPTION",
                     "ERROR_ACTION_VALUE"
                 };
+    }
+    
+    public static void renameFileObject(FileObject fo, String newName) throws IOException {
+        FileLock lock = null;
+        try {
+            lock = fo.lock();
+        } catch (FileAlreadyLockedException e) {
+            // Try again later; perhaps display a warning dialog.
+            return;
+        }
+        try {
+            String extension = StringUtils.substringAfterLast(newName, ".");
+            String name = StringUtils.substringBeforeLast(newName, ".");
+            fo.rename(lock, name, extension);
+        } finally {
+            // Always put this in a finally block!
+            lock.releaseLock();
+        }
     }
 
 }
