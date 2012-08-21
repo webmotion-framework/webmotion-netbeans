@@ -26,9 +26,11 @@ package org.debux.webmotion.netbeans.refactoring;
 
 import com.sun.source.tree.Tree.Kind;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.swing.text.BadLocationException;
@@ -44,6 +46,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
@@ -54,6 +57,7 @@ import org.openide.loaders.DataObject;
 import org.openide.text.*;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -106,7 +110,7 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
             
             Document document = refactoringContext.getDocument();
             int caret = refactoringContext.getCaret();
-            refactoringElements.add(refactoring, new RenameFileRefactoringElement(document, caret));
+            prepare(refactoringElements, refactoringContext, document, caret);
             
             Set<FileObject> findAllMappings = Utils.findAllMappings();
             for (FileObject mapping : findAllMappings) {
@@ -118,23 +122,118 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
     }
 
     protected void prepare(final RefactoringElementsBag refactoringElements,
+            final RefactoringContext refactoringContext,
+            Document document, int offset) {
+        
+        final String name = refactoring.getNewName();
+        String packageTarget = Utils.getPackage(document, offset);
+        
+        String target = refactoringContext.getValue();
+        if (target != null) {
+            if (LexerUtils.isJavaToken(document, offset)) {
+
+                FileObject srcFile = Utils.getFO(document);
+                ClassPath bootCp = ClassPath.getClassPath(srcFile, ClassPath.BOOT);
+                ClassPath compileCp = ClassPath.getClassPath(srcFile, ClassPath.COMPILE);
+                ClassPath sourcePath = ClassPath.getClassPath(srcFile, ClassPath.SOURCE);
+
+                final ClasspathInfo info = ClasspathInfo.create(bootCp, compileCp, sourcePath);
+                JavaSource src = JavaSource.create(info);
+
+                final String fullClassName = target.replaceAll("/+", ".");
+                final String packageClassName = packageTarget.replaceAll("/+", ".");
+                final String className = StringUtils.substringBeforeLast(target, ".");
+                final String methodName = StringUtils.substringAfterLast(target, ".");
+
+                try {
+                    src.runUserActionTask(new CancellableTask<CompilationController>() {
+                        @Override
+                        public void cancel() {
+                        }
+
+                        @Override
+                        public void run(CompilationController cu) throws Exception {
+                            Elements elements = cu.getElements();
+
+                            TypeElement classElement = elements.getTypeElement(packageClassName + className);
+                            if (classElement == null) {
+                                classElement = elements.getTypeElement(fullClassName);
+                            }
+                            
+                            if (classElement != null) {
+                                ElementHandle<TypeElement> create = ElementHandle.create(classElement);
+                                FileObject fo = SourceUtils.getFile(create, info);
+
+                                RenameRefactoring delegate = new RenameRefactoring(Lookups.singleton(fo));
+                                delegate.setNewName(StringUtils.substringBeforeLast(name, "."));
+                                RefactoringSession currentSession = refactoringElements.getSession();
+                                delegate.prepare(currentSession);
+                                
+                                List<? extends Element> members = classElement.getEnclosedElements();
+                                for (Element element : members) {
+                                    if (element.getKind() == ElementKind.METHOD &&
+                                            element.getSimpleName().toString().equals(methodName)) {
+                                        
+                                        TreePathHandle treePathHandle = TreePathHandle.create(element, cu);
+                                        
+                                        delegate = new RenameRefactoring(Lookups.singleton(treePathHandle));
+                                        delegate.setNewName(StringUtils.substringAfterLast(name, "."));
+                                        currentSession = refactoringElements.getSession();
+                                        delegate.prepare(currentSession);
+                                        
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }, false);
+
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+            } else {
+                packageTarget = packageTarget.replaceAll("\\.+", "/");
+                GlobalPathRegistry registry = GlobalPathRegistry.getDefault();
+                FileObject fo = registry.findResource(packageTarget + target);
+
+                refactoringElements.add(refactoring, new RenameFileRefactoringElement(fo, name));
+            }
+        }
+    }
+    
+    protected void prepare(final RefactoringElementsBag refactoringElements,
             final RefactoringContext refactoringContext, final FileObject fo) throws IllegalArgumentException {
         try {
-            String filter = refactoringContext.getValue();
+            String name = refactoringContext.getValue();
+            String beginName = StringUtils.substringBeforeLast(name, ".");
+            String endName = StringUtils.substringAfterLast(name, ".");
+                    
+            String target = refactoring.getNewName();
+            String beginTarget = StringUtils.substringBeforeLast(target, ".");
+            String endTarget = StringUtils.substringAfterLast(target, ".");
             
             DataObject dob = DataObject.find(fo);
             EditorCookie editor = dob.getLookup().lookup(EditorCookie.class);
             StyledDocument doc = editor.openDocument();
             
             List<OffsetRange> tokens = LexerUtils.getTokens(doc, Utils.getAccessibleToken());
-
+            Collections.reverse(tokens);
+            
             for (OffsetRange offsetRange : tokens) {
                 String text = LexerUtils.getText(doc, offsetRange);
 
-                if (text.equals(filter)) {
-                    int start = offsetRange.getStart() + text.indexOf(filter);
-                    int end = start + filter.length();
-                    refactoringElements.add(refactoring, new MappingRenameRefactoringElement(dob, start, end));
+                if (text.startsWith(beginName)) {
+                    int start = offsetRange.getStart();
+                    
+                    if (text.endsWith(endName)) {
+                        int end = start + name.length();
+                        refactoringElements.add(refactoring, new MappingRenameRefactoringElement(dob, start, end, target));
+                        
+                    } else if (!beginTarget.equals(beginName)) {
+                        int end = start + beginName.length();
+                        refactoringElements.add(refactoring, new MappingRenameRefactoringElement(dob, start, end, beginTarget));
+                    }
                 }
             }
         } catch (BadLocationException ex) {
@@ -187,7 +286,7 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
                         if (text.contains(filter)) {
                             int start = offsetRange.getStart() + text.indexOf(oldName);
                             int end = start + oldName.length();
-                            refactoringElements.add(refactoring, new MappingRenameRefactoringElement(dob, start, end));
+                            refactoringElements.add(refactoring, new MappingRenameRefactoringElement(dob, start, end, refactoring.getNewName()));
                         }
                     }
                 }
@@ -202,70 +301,10 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
         
         protected FileObject fo;
         protected String name;
-        
-        public RenameFileRefactoringElement(Document document, int offset) {
-            name = refactoring.getNewName();
-                
-            String packageTarget = Utils.getPackage(document, offset);
 
-            // Open document
-            OffsetRange range = LexerUtils.getTokens(document, offset, Utils.getAccessibleToken());
-            if (range != null) {
-                try {
-                    String target = LexerUtils.getText(document, range);
-
-                    if (LexerUtils.isJavaToken(document, offset)) {
-
-                        FileObject srcFile = Utils.getFO(document);
-                        ClassPath bootCp = ClassPath.getClassPath(srcFile, ClassPath.BOOT);
-                        ClassPath compileCp = ClassPath.getClassPath(srcFile, ClassPath.COMPILE);
-                        ClassPath sourcePath = ClassPath.getClassPath(srcFile, ClassPath.SOURCE);
-
-                        final ClasspathInfo info = ClasspathInfo.create(bootCp, compileCp, sourcePath);
-                        JavaSource src = JavaSource.create(info);
-
-                        final String fullClassName = target.replaceAll("/+", ".");
-                        final String packageClassName = packageTarget.replaceAll("/+", ".");
-                        final String className = StringUtils.substringBeforeLast(target, ".");
-                        final String methodName = StringUtils.substringAfterLast(target, ".");
-
-                        try {
-                            src.runUserActionTask(new CancellableTask<CompilationController>() {
-                                @Override
-                                public void cancel() {
-                                }
-
-                                @Override
-                                public void run(CompilationController cu) throws Exception {
-                                    Elements elements = cu.getElements();
-
-                                    TypeElement classElement = elements.getTypeElement(packageClassName + className);
-                                    if (classElement == null) {
-                                        classElement = elements.getTypeElement(fullClassName);
-                                    }
-
-                                    if (classElement != null) {
-                                        ElementHandle<TypeElement> create = ElementHandle.create(classElement);
-                                        fo = SourceUtils.getFile(create, info);
-                                        name = StringUtils.substringBeforeLast(name, ".");
-                                    }
-                                }
-                            }, false);
-
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-
-                    } else {
-                        packageTarget = packageTarget.replaceAll("\\.+", "/");
-                        GlobalPathRegistry registry = GlobalPathRegistry.getDefault();
-                        fo = registry.findResource(packageTarget + target);
-                    }
-
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
+        public RenameFileRefactoringElement(FileObject fo, String name) {
+            this.fo = fo;
+            this.name = name;
         }
 
         @Override
@@ -310,11 +349,13 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
         protected DataObject dob;
         protected int start;
         protected int end;
+        protected String value;
 
-        public MappingRenameRefactoringElement(DataObject dob, int start, int end) {
+        public MappingRenameRefactoringElement(DataObject dob, int start, int end, String value) {
             this.dob = dob;
             this.start = start;
             this.end = end;
+            this.value = value;
         }
 
         @Override
@@ -324,7 +365,7 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
                 StyledDocument doc = editor.getDocument();
                 
                 doc.remove(start, end - start);
-                doc.insertString(start, refactoring.getNewName(), null);
+                doc.insertString(start, value, null);
                 
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
