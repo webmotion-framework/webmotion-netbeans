@@ -25,7 +25,9 @@
 package org.debux.webmotion.netbeans.refactoring;
 
 import com.sun.source.tree.Tree.Kind;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -37,6 +39,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.debux.webmotion.netbeans.Utils;
 import org.debux.webmotion.netbeans.refactoring.WebMotionRefactoringActions.RefactoringContext;
@@ -311,12 +314,12 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
 
         @Override
         public String getText() {
-            return "Rename file";
+            return "Rename file " + name;
         }
 
         @Override
         public String getDisplayText() {
-            return "Rename file";
+            return "Rename file " + name;
         }
 
         @Override
@@ -383,6 +386,30 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
         @Override
         public String getDisplayText() {
             return "Rename in mapping file";
+        }
+
+        @Override
+        protected String getNewFileContent() {
+            InputStream inputStream = null;
+            try {
+                int begin = bounds.getBegin().getOffset();
+                int end = bounds.getEnd().getOffset();
+                inputStream = dob.getPrimaryFile().getInputStream();
+                String content = IOUtils.toString(inputStream);
+                
+                return content.substring(0, begin) + value + content.substring(end);
+                
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                try {
+                    inputStream.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            
+            return null;
         }
 
         @Override
