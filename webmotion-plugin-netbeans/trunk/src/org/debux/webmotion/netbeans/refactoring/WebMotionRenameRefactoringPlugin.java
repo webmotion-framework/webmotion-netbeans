@@ -78,12 +78,16 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
 
     @Override
     public Problem checkParameters() {
+        String newName = refactoring.getNewName();
+        if (newName.length() == 0) {
+            return new Problem(true, "The element name cannot be empty.");
+        }
         return null;
     }
 
     @Override
     public Problem fastCheckParameters() {
-        return null;
+        return checkParameters();
     }
 
     @Override
@@ -218,8 +222,6 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
             StyledDocument doc = editor.openDocument();
             
             List<OffsetRange> tokens = LexerUtils.getTokens(doc, Utils.getAccessibleToken());
-            Collections.reverse(tokens);
-            
             for (OffsetRange offsetRange : tokens) {
                 String text = LexerUtils.getText(doc, offsetRange);
 
@@ -347,27 +349,28 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
     public class MappingRenameRefactoringElement extends SimpleRefactoringElementImplementation {
 
         protected DataObject dob;
-        protected int start;
-        protected int end;
         protected String value;
+        protected PositionBounds bounds;
 
         public MappingRenameRefactoringElement(DataObject dob, int start, int end, String value) {
             this.dob = dob;
-            this.start = start;
-            this.end = end;
             this.value = value;
+            
+            CloneableEditorSupport open = (CloneableEditorSupport) dob.getLookup().lookup(EditorCookie.class);
+            
+            PositionRef startPosition = open.createPositionRef(start, Position.Bias.Forward);
+            PositionRef endPosition = open.createPositionRef(end, Position.Bias.Backward);
+            bounds = new PositionBounds(startPosition, endPosition);
         }
 
         @Override
         public void performChange() {
             try {
-                EditorCookie editor = dob.getLookup().lookup(EditorCookie.class);
-                StyledDocument doc = editor.getDocument();
-                
-                doc.remove(start, end - start);
-                doc.insertString(start, value, null);
+                bounds.setText(value);
                 
             } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
@@ -394,12 +397,7 @@ class WebMotionRenameRefactoringPlugin implements RefactoringPlugin {
 
         @Override
         public PositionBounds getPosition() {
-            CloneableEditorSupport open = (CloneableEditorSupport) dob.getLookup().lookup(EditorCookie.class);
-            
-            PositionRef startPosition = open.createPositionRef(start, Position.Bias.Forward);
-            PositionRef endPosition = open.createPositionRef(end, Position.Bias.Backward);
-            PositionBounds positionBounds = new PositionBounds(startPosition, endPosition);
-            return positionBounds;
+            return bounds;
         }
     }
     
