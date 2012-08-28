@@ -24,104 +24,34 @@
  */
 package org.debux.webmotion.netbeans.refactoring;
 
-import javax.swing.JEditorPane;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import org.apache.commons.lang.ArrayUtils;
-import org.debux.webmotion.netbeans.Utils;
-import org.debux.webmotion.netbeans.javacc.lexer.impl.LexerUtils;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.UI;
-import org.openide.cookies.EditorCookie;
-import org.openide.util.Exceptions;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author julien
  */
-@ServiceProvider(service = ActionsImplementationProvider.class)
+//@ServiceProvider(service = ActionsImplementationProvider.class)
 public class WebMotionRefactoringActions extends ActionsImplementationProvider {
 
     @Override
     public boolean canRename(Lookup lookup) {
-        EditorCookie ec = lookup.lookup(EditorCookie.class);
-        if (ec != null) {
-            JEditorPane[] openedPanes = ec.getOpenedPanes();
-            if (openedPanes != null && openedPanes.length > 0) {
-                JTextComponent textComponent = openedPanes[0];
-                Document document = textComponent.getDocument();
-                int caretPosition = textComponent.getCaretPosition();
-
-                TokenSequence<? extends TokenId> ts = LexerUtils.getMostEmbeddedTokenSequence(document, caretPosition, true);
-                Token<? extends TokenId> token = ts.token();
-                TokenId id = token.id();
-                String name = id.name();
-
-                return ArrayUtils.contains(Utils.getAccessibleToken(), name);
-            }
-        }
-        
-        return false;
+        FileObject fo = lookup.lookup(FileObject.class);
+        return fo != null;
     }
 
     @Override
     public void doRename(Lookup lookup) {
-        EditorCookie ec = lookup.lookup(EditorCookie.class);
-        JTextComponent textComponent = ec.getOpenedPanes()[0];
-        Document document = textComponent.getDocument();
-        int caretPosition = textComponent.getCaretPosition();
-        
-        final RefactoringContext context = new RefactoringContext(document, caretPosition);
+        final FileObject fo = lookup.lookup(FileObject.class);
         
         new Runnable() {
             @Override
             public void run() {
-                UI.openRefactoringUI(new WebMotionRenameRefactoringUI(context));
+                UI.openRefactoringUI(new WebMotionRenameRefactoringUI(fo));
             }
         }.run();
-    }
-    
-    public static class RefactoringContext {
-        protected int caret;
-        protected OffsetRange offset;
-        protected Document document;
-
-        public RefactoringContext(Document document, int caret) {
-            this.document = document;
-            this.caret = caret;
-            this.offset = LexerUtils.getTokens(document, caret, Utils.getAccessibleToken());
-        }
-        
-        public String getValue() {
-            try {
-                String value = LexerUtils.getText(document, offset);
-                return value;
-                
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            }
-        }
-
-        public OffsetRange getOffset() {
-            return offset;
-        }
-        
-        public int getCaret() {
-            return caret;
-        }
-
-        public Document getDocument() {
-            return document;
-        }
-        
     }
     
 }
