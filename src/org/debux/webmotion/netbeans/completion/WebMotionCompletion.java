@@ -84,6 +84,10 @@ public class WebMotionCompletion implements CompletionProvider {
         "server.secret", "server.static.autodetect"
     };
             
+    public static final String[] KEYWORDS_CONFIG_EQUAL = {
+        "="
+    };
+    
     public static final String[] KEYWORDS_CONFIG_BOOLEAN = {
         "true", "false"
     };
@@ -190,6 +194,8 @@ public class WebMotionCompletion implements CompletionProvider {
                 String packageTarget = null;
                 String filterSuperClass = null;
                 String separator = "/";
+                boolean onlyFolder = false;
+                String onlyMimeType = null;
                 
                 String[] keywords = {};
                 if (section != null) {
@@ -218,6 +224,7 @@ public class WebMotionCompletion implements CompletionProvider {
                         
                     } else if (section == Section.EXTENSIONS && column % 2 == 1) {
                         packageTarget = "";
+                        onlyMimeType = WebMotionLanguage.MIME_TYPE;
                         
                     } else if (section == Section.FILTERS && column % 3 == 0) {
                         keywords = KEYWORDS_METHODS;
@@ -282,7 +289,7 @@ public class WebMotionCompletion implements CompletionProvider {
                     startOffset += StringUtils.substringBefore(filter, "=").length() + 1;
                     filter = StringUtils.substringAfter(filter, "=");
                     
-                } else if (filter.startsWith("package.base=") || filter.startsWith("package.views=")) {
+                } else if (filter.startsWith("package.base=")) {
                     keywords = KEYWORDS_EMPTY;
                     startOffset += StringUtils.substringBefore(filter, "=").length() + 1;
                     filter = StringUtils.substringAfter(filter, "=").replaceAll("\\.", "/");
@@ -290,6 +297,17 @@ public class WebMotionCompletion implements CompletionProvider {
                     packageTarget = "";
                     filterSuperClass = null;
                     separator = ".";
+                    onlyFolder = true;
+                    
+                } else if (filter.startsWith("package.views=")) {
+                    keywords = KEYWORDS_EMPTY;
+                    startOffset += StringUtils.substringBefore(filter, "=").length() + 1;
+                    filter = StringUtils.substringAfter(filter, "=").replaceAll("\\.", "/");
+                    
+                    packageTarget = "";
+                    filterSuperClass = null;
+                    separator = "/";
+                    onlyFolder = true;
                     
                 } else if (filter.startsWith("server.listener.class=")) {
                     keywords = KEYWORDS_EMPTY;
@@ -315,6 +333,7 @@ public class WebMotionCompletion implements CompletionProvider {
                     packageTarget = Utils.getPackageValue("package.base", null);
                     filterSuperClass = null;
                     separator = ".";
+                    onlyFolder = true;
                     
                 } else if (filter.startsWith("server.encoding=")) {
                     keywords = KEYWORDS_CONFIG_ENCODING;
@@ -325,13 +344,25 @@ public class WebMotionCompletion implements CompletionProvider {
                     keywords = new String[] {RandomStringUtils.random(31, true, true)};
                     startOffset += StringUtils.substringBefore(filter, "=").length() + 1;
                     filter = StringUtils.substringAfter(filter, "=");
+                    
+                } else if (filter.startsWith("javac.debug") || filter.startsWith("server.async") || filter.startsWith("server.static.autodetect")
+                            || filter.startsWith("server.error.page")
+                            || filter.startsWith("server.controller.scope")
+                            || filter.startsWith("package.base") 
+                            || filter.startsWith("package.views")
+                            || filter.startsWith("server.listener.class")
+                            || filter.startsWith("server.main.handler.class")
+                            || filter.startsWith("package.actions") || filter.startsWith("package.filters") || filter.startsWith("package.errors")
+                            || filter.startsWith("server.encoding")
+                            || filter.startsWith("server.secret")) {
+                    
+                    keywords = KEYWORDS_CONFIG_EQUAL;
+                    startOffset += StringUtils.substringBefore(filter, "=").length();
+                    filter = "";
                 }
                 
                 for (String keyword : keywords) {
-                    if (keyword.equals(filter) && keywords == KEYWORDS_CONFIG) {
-                        completionResultSet.addItem(new WebMotionCompletionItem("=", keyword.length() + startOffset, caretOffset));
-                        
-                    } else if (keyword.startsWith(filter)) {
+                    if (keyword.startsWith(filter)) {
                         completionResultSet.addItem(new WebMotionCompletionItem(keyword, startOffset, caretOffset));
                     }
                 }
@@ -354,6 +385,16 @@ public class WebMotionCompletion implements CompletionProvider {
                             path += current;
                             startOffsetFile += current.length() + 1;
                             filterFile = StringUtils.substringAfterLast(filterFile, "/");
+                            
+                        } else if (packageTarget.isEmpty() && separator.equals("/")) {
+                            String fileName = "WEB-INF";
+                            if (fileName.startsWith(filterFile)) {
+                                if (!fileName.equals(filterFile)) {
+                                    completionResultSet.addItem(new WebMotionCompletionItem(fileName, startOffsetFile, caretOffset));
+                                } else {
+                                    completionResultSet.addItem(new WebMotionCompletionItem(separator, startOffsetFile + fileName.length(), caretOffset));
+                                }
+                            }
                         }
 
                         GlobalPathRegistry registry = GlobalPathRegistry.getDefault();
@@ -371,9 +412,9 @@ public class WebMotionCompletion implements CompletionProvider {
                                 for (FileObject child : children) {
                                     String fileName = child.getNameExt();
 
-                                    if ((child.isFolder() || separator.equals("/") && child.getMIMEType().equals(WebMotionLanguage.MIME_TYPE))
-                                            && fileName.startsWith(filterFile)
-                                            && !fileName.startsWith(".")) {
+                                    if ((!onlyFolder || onlyFolder && child.isFolder())
+                                        && (onlyMimeType == null || child.isFolder() || onlyMimeType != null && child.getMIMEType().equals(onlyMimeType))
+                                        && fileName.startsWith(filterFile) && !fileName.startsWith(".")) {
                                         
                                         if (!names.contains(fileName)) {
                                             if (!fileName.equals(filterFile)) {
