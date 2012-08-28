@@ -94,9 +94,6 @@
                         <attr name="mimeType" stringvalue="text/x-wm"/>
                     </file>
                 </folder>
-                <file name="RefactoringAll.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
-                </file>
             </folder>
         </folder>
     </folder>
@@ -136,11 +133,6 @@
                             </file>
                         </folder>
                     </folder>
-                </folder>
-                <folder name="Popup">
-                    <file name="RefactoringAll.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
-                    </file>
                 </folder>
             </folder>
         </folder>

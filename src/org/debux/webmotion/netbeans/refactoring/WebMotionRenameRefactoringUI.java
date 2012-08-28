@@ -25,8 +25,8 @@ public class WebMotionRenameRefactoringUI implements RefactoringUI, RefactoringU
     private final String name;
     private RenamePanel panel;
 
-    public WebMotionRenameRefactoringUI(WebMotionRefactoringActions.RefactoringContext handle) {
-        this.name = handle.getValue();
+    public WebMotionRenameRefactoringUI(FileObject handle) {
+        this.name = handle.getName().toString();
         this.refactoring = new RenameRefactoring(Lookups.singleton(handle));
 //        this.refactoring.getContext().add(UI.Constants.REQUEST_PREVIEW);
     }
@@ -70,7 +70,7 @@ public class WebMotionRenameRefactoringUI implements RefactoringUI, RefactoringU
         if (refactoring instanceof RenameRefactoring) {
             ((RenameRefactoring) refactoring).setNewName(newName);
         }
-        return refactoring.checkParameters();
+        return null;
     }
 
     @Override
@@ -81,7 +81,7 @@ public class WebMotionRenameRefactoringUI implements RefactoringUI, RefactoringU
         if (refactoring instanceof RenameRefactoring) {
             ((RenameRefactoring) refactoring).setNewName(panel.getNameValue());
         }
-        return refactoring.checkParameters();
+        return null;
     }
 
     @Override
