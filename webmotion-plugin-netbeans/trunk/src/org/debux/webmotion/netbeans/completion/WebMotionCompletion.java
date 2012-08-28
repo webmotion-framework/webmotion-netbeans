@@ -374,6 +374,7 @@ public class WebMotionCompletion implements CompletionProvider {
                         String path = packageTarget.replaceAll("\\.", "/");
                         String filterFile = filter;
                         int startOffsetFile = startOffset;
+                        Set<String> names = new HashSet<String>();
 
                         if (filter.startsWith("view:")) {
                             filterFile = filter.replaceFirst("view:", "");
@@ -388,6 +389,7 @@ public class WebMotionCompletion implements CompletionProvider {
                             
                         } else if (packageTarget.isEmpty() && separator.equals("/")) {
                             String fileName = "WEB-INF";
+                            names.add(fileName);
                             if (fileName.startsWith(filterFile)) {
                                 if (!fileName.equals(filterFile)) {
                                     completionResultSet.addItem(new WebMotionCompletionItem(fileName, startOffsetFile, caretOffset));
@@ -403,7 +405,6 @@ public class WebMotionCompletion implements CompletionProvider {
                         paths.addAll(registry.getPaths(ClassPath.COMPILE));
                         paths.addAll(registry.getPaths(ClassPath.SOURCE));
 
-                        Set<String> names = new HashSet<String>();
                         for (ClassPath classPath : paths) {
                             FileObject resource = classPath.findResource(path);
 
