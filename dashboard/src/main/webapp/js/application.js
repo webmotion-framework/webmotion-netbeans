@@ -72,7 +72,7 @@ angular.module('components', [])
         }
     })
     .factory('TasksManager', function() {
-        var url = "ws://localhost:8080/Dashboard/tasksManager";
+        var url = "ws://localhost:8080/dashboard/tasksManager";
         return {
             init : function() {
                 var self = this;
@@ -106,7 +106,7 @@ angular.module('components', [])
                 this.sendMessage({
                     method : "addTask",
                     params : {
-                        name : "\"" + name + "\""
+                        name : name
                     }
                 });
             },
