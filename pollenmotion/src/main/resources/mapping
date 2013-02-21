@@ -1,0 +1,21 @@
+[config]
+package.views=WEB-INF/org.debux.webmotion.pollenmotion
+package.base=org.debux.webmotion.pollenmotion
+server.listener.class=org.debux.webmotion.sitemesh.SiteMeshListener,org.debux.webmotion.jpa.JpaListener
+
+[filters]
+GET          /page/*                         SiteMesh.decorate       layout=layout.html
+
+[actions]
+GET         /                                redirect:/page/index
+GET         /page/index                      view:index.html
+GET         /page/new                        view:new.html
+GET         /page/view                       view:view.html
+GET         /page/complete                   view:complete.html
+
+[filters]
+*            /service/poll                 Jpa.tx                  persistenceUnitName=pollmotion,entityName=org.debux.webmotion.pollenmotion.entity.Poll
+*            /service/vote                 Jpa.tx                  persistenceUnitName=pollmotion,entityName=org.debux.webmotion.pollenmotion.entity.Vote
+
+[actions]
+POST         /service/poll                  MainController.create
