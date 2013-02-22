@@ -1,21 +1,23 @@
 [config]
-package.views=WEB-INF/org.debux.webmotion.pollenmotion
-package.base=org.debux.webmotion.pollenmotion
+package.views=WEB-INF/org.debux.webmotion.pollmotion
+package.base=org.debux.webmotion.pollmotion
 server.listener.class=org.debux.webmotion.sitemesh.SiteMeshListener,org.debux.webmotion.jpa.JpaListener
 
 [filters]
-GET          /page/*                         SiteMesh.decorate       layout=layout.html
+GET          /page/*                         SiteMesh.decorate       layout=layout.jsp
 
 [actions]
 GET         /                                redirect:/page/index
-GET         /page/index                      view:index.html
-GET         /page/new                        view:new.html
-GET         /page/view                       view:view.html
-GET         /page/complete                   view:complete.html
+GET         /page/index                      view:index.jsp
+GET         /page/view/{poll}                MainController.getPoll   entityName=org.debux.webmotion.pollmotion.entity.Poll
+GET         /page/new                        view:new.jsp
+GET         /page/complete                   view:complete.jsp
 
 [filters]
-*            /service/poll                 Jpa.tx                  persistenceUnitName=pollmotion,entityName=org.debux.webmotion.pollenmotion.entity.Poll
-*            /service/vote                 Jpa.tx                  persistenceUnitName=pollmotion,entityName=org.debux.webmotion.pollenmotion.entity.Vote
+*            /page/*                       Jpa.tx                  persistenceUnitName=pollmotion
+*            /service/poll                 Jpa.tx                  persistenceUnitName=pollmotion,entityName=org.debux.webmotion.pollmotion.entity.Poll
+*            /service/vote                 Jpa.tx                  persistenceUnitName=pollmotion,entityName=org.debux.webmotion.pollmotion.entity.Vote
 
 [actions]
-POST         /service/poll                  MainController.create
+POST         /service/poll                  MainController.createPoll
+POST         /service/vote                  MainController.createVote
