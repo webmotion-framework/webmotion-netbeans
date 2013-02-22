@@ -1,4 +1,4 @@
-package org.debux.webmotion.pollenmotion.entity;
+package org.debux.webmotion.pollmotion.entity;
 
 import java.util.List;
 import javax.persistence.Basic;

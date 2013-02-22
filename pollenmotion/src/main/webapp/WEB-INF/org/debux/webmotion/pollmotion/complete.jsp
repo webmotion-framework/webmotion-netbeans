@@ -10,7 +10,7 @@
             <h1>Your poll is completed create.</h1>
             <p class="lead">Copy the link to share the poll.</p>
             <a class="btn btn-large btn-primary" href="./index">Return to home</a>
-            <a class="btn btn-large btn-success" href="./view">Go to vote</a>
+            <a class="btn btn-large btn-success" href="./view/${param.pollId}">Go to vote</a>
         </div>
     </body>
 </html>
