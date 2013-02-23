@@ -7,8 +7,7 @@
         <hr>
         ${poll.choices}
         
-        <form class="form-horizontal" method="POST" action="../../service/vote">
-            <input type="hidden" name="poll" value="${poll.id}">
+        <form class="form-horizontal" method="POST" action="./vote/${poll.id}">
             
             <div class="row-fluid">
                 <table class="table table-hover">

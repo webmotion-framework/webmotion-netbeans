@@ -7,7 +7,7 @@
         <hr>
             
         <div class="row-fluid">
-            <form class="form-horizontal" method="POST" action="../service/poll">
+            <form class="form-horizontal" method="POST" action="./poll">
 
                 <div class="control-group">
                     <label class="control-label" for="inputEmail">Email :</label>

@@ -12,13 +12,6 @@ public class MainController extends WebMotionController {
 
     private static final Logger log = LoggerFactory.getLogger(MainController.class);
     
-    public Render getPoll(GenericDAO dao,
-            String poll) {
-        
-        IdentifiableEntity entity = dao.find(poll);
-        return renderView("view.jsp", "poll", entity);
-    }
-    
     public Render createPoll(GenericDAO dao,
             String email,
             String question,
@@ -30,7 +23,7 @@ public class MainController extends WebMotionController {
             .add("choices", choices);
         IdentifiableEntity entity = dao.create(parameters);
         
-        return renderRedirect("/page/complete", "pollId", entity.getId());
+        return renderRedirect("/poll/completed", "poll", entity.getId());
     }
 
     public Render createVote(GenericDAO dao,
@@ -44,7 +37,13 @@ public class MainController extends WebMotionController {
             .add("votes", votes);
         IdentifiableEntity entity = dao.create(parameters);
         
-        return renderRedirect("/page/complete", "voteId", entity.getId());
+        return renderRedirect("/vote/" + poll);
     }
     
+    public Render getVotes(GenericDAO dao,
+            String poll) {
+        
+        IdentifiableEntity entity = dao.find(poll);
+        return renderView("poll_vote.jsp", "poll", entity);
+    }
 }

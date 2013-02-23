@@ -4,20 +4,19 @@ package.base=org.debux.webmotion.pollmotion
 server.listener.class=org.debux.webmotion.sitemesh.SiteMeshListener,org.debux.webmotion.jpa.JpaListener
 
 [filters]
-GET          /page/*                         SiteMesh.decorate       layout=layout.jsp
+GET          /*                            SiteMesh.decorate       layout=layout.jsp
+*            /poll                         Jpa.tx                  persistenceUnitName=pollmotion,entityName=org.debux.webmotion.pollmotion.entity.Poll
+*            /poll/*                       Jpa.tx                  persistenceUnitName=pollmotion,entityName=org.debux.webmotion.pollmotion.entity.Poll
+*            /vote                         Jpa.tx                  persistenceUnitName=pollmotion,entityName=org.debux.webmotion.pollmotion.entity.Vote
+*            /vote/*                       Jpa.tx                  persistenceUnitName=pollmotion,entityName=org.debux.webmotion.pollmotion.entity.Vote
 
 [actions]
-GET         /                                redirect:/page/index
-GET         /page/index                      view:index.jsp
-GET         /page/view/{poll}                MainController.getPoll   entityName=org.debux.webmotion.pollmotion.entity.Poll
-GET         /page/new                        view:new.jsp
-GET         /page/complete                   view:complete.jsp
+GET         /                                redirect:/index
+GET         /index                           view:index.jsp
 
-[filters]
-*            /page/*                       Jpa.tx                  persistenceUnitName=pollmotion
-*            /service/poll                 Jpa.tx                  persistenceUnitName=pollmotion,entityName=org.debux.webmotion.pollmotion.entity.Poll
-*            /service/vote                 Jpa.tx                  persistenceUnitName=pollmotion,entityName=org.debux.webmotion.pollmotion.entity.Vote
+GET         /poll                            view:poll_form.jsp
+POST        /poll                            MainController.createPoll
+GET         /poll/completed                  view:poll_complete.jsp
 
-[actions]
-POST         /service/poll                  MainController.createPoll
-POST         /service/vote                  MainController.createVote
+GET         /vote/{poll}                     MainController.getVotes
+POST        /vote/{poll}                     MainController.createVote
