@@ -1,3 +1,4 @@
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
 <html lang="en">
     <head></head>
@@ -5,31 +6,33 @@
     <body>
         <h4>You can vote.</h4>
         <hr>
-        ${poll.choices}
         
-        <form class="form-horizontal" method="POST" action="./vote/${poll.id}">
+        <form class="form-horizontal" method="POST" action="../vote/${poll.id}">
             
             <div class="row-fluid">
                 <table class="table table-hover">
                     <thead>
                         <tr>
                             <th>Email</th>
-                            <th>Choice 1</th>
-                            <th>Choice 2</th>
-                            <th>Choice 3</th>
-                            <th>Choice 4</th>
-                            <th>Choice 5</th>
+                            <c:forEach var="choice" items="${poll.choices}">
+                                <th>${choice}</th>
+                            </c:forEach>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>julien</td>
-                            <td><img src="../../img/glyphicons_ok.png"></td>
-                            <td><img src="../../img/glyphicons_ok.png"></td>
-                            <td><img src="../../img/glyphicons_ko.png"></td>
-                            <td><img src="../../img/glyphicons_ko.png"></td>
-                            <td><img src="../../img/glyphicons_ok.png"></td>
-                        </tr>
+                        <c:forEach var="vote" items="${votes}">
+                            <tr>
+                                <td>${vote.email}</td>
+                                <c:forEach var="value" items="${vote.votes}">
+                                    <c:if test="${value}">
+                                        <td><img src="../img/glyphicons_ok.png"></td>
+                                    </c:if>
+                                    <c:if test="not ${value}">
+                                        <td><img src="../img/glyphicons_ko.png"></td>
+                                    </c:if>
+                                </c:forEach>
+                            </tr>
+                        </c:forEach>
                         <tr>
                             <td>
                                 <div>
@@ -39,11 +42,9 @@
                                     <button type="submit" class="btn">Vote</button>
                                 </div>
                             </td>
-                            <td><input name="votes" type="checkbox" ></td>
-                            <td><input name="votes" type="checkbox" ></td>
-                            <td><input name="votes" type="checkbox" ></td>
-                            <td><input name="votes" type="checkbox" ></td>
-                            <td><input name="votes" type="checkbox" ></td>
+                            <c:forEach var="choice" items="${poll.choices}">
+                                <td><input name="votes" type="checkbox"></td>
+                            </c:forEach>
                         </tr>
                     </tbody>
                     <tfoot>

@@ -1,8 +1,12 @@
 package org.debux.webmotion.pollmotion;
 
+import java.util.List;
+import javax.persistence.EntityManager;
 import org.debux.webmotion.jpa.GenericDAO;
 import org.debux.webmotion.jpa.GenericDAO.Parameters;
 import org.debux.webmotion.jpa.IdentifiableEntity;
+import org.debux.webmotion.pollmotion.entity.Poll;
+import org.debux.webmotion.pollmotion.entity.Vote;
 import org.debux.webmotion.server.WebMotionController;
 import org.debux.webmotion.server.render.Render;
 import org.slf4j.Logger;
@@ -27,23 +31,31 @@ public class MainController extends WebMotionController {
     }
 
     public Render createVote(GenericDAO dao,
-            String poll,
+            String pollId,
             String email,
             String[] votes) {
         
         Parameters parameters = Parameters.create()
-            .add("poll", poll)
+            .add("poll", pollId)
             .add("email", email)
             .add("votes", votes);
         IdentifiableEntity entity = dao.create(parameters);
         
-        return renderRedirect("/vote/" + poll);
+        return renderRedirect("/vote/" + pollId);
     }
     
-    public Render getVotes(GenericDAO dao,
-            String poll) {
+    public Render getVotes(EntityManager em,
+            String pollId) {
         
-        IdentifiableEntity entity = dao.find(poll);
-        return renderView("poll_vote.jsp", "poll", entity);
+        GenericDAO daoPoll = new GenericDAO(em, Poll.class);
+        IdentifiableEntity poll = daoPoll.find(pollId);
+        
+        GenericDAO daoVote = new GenericDAO(em, Vote.class);
+        List votes = daoVote.query("findByPollId", 
+                                         Parameters.create().add("poll_id", pollId));
+        
+        return renderView("poll_vote.jsp",
+                "poll", poll,
+                "votes", votes);
     }
 }

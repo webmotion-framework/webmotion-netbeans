@@ -5,6 +5,8 @@ import javax.persistence.Basic;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import org.debux.webmotion.jpa.IdentifiableEntity;
 
 /**
@@ -12,6 +14,11 @@ import org.debux.webmotion.jpa.IdentifiableEntity;
  * @author julien
  */
 @Entity
+@NamedQueries({
+    @NamedQuery(
+        name = "findByPollId",
+        query = "SELECT v FROM Vote v WHERE v.poll.id=:poll_id")
+})
 public class Vote extends IdentifiableEntity {
     
     @ManyToOne

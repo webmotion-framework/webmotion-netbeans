@@ -18,5 +18,5 @@ GET         /poll                            view:poll_form.jsp
 POST        /poll                            MainController.createPoll
 GET         /poll/completed                  view:poll_complete.jsp
 
-GET         /vote/{poll}                     MainController.getVotes
-POST        /vote/{poll}                     MainController.createVote
+GET         /vote/{pollId}                   MainController.getVotes
+POST        /vote/{pollId}                   MainController.createVote
