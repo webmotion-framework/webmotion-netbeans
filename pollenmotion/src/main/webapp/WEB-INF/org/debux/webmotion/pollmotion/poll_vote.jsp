@@ -1,7 +1,24 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
 <html lang="en">
-    <head></head>
+    <head>
+        <script type="text/javascript">
+            $(function() {
+                $(".checkable").click(function() {
+                    var check = $(this);
+                    var next = check.next();
+
+                    if (next.val() == "false") {
+                        check.attr('src', '../img/glyphicons_ok.png')
+                        next.val("true");
+                    } else {
+                        check.attr('src', '../img/glyphicons_ko.png')
+                        next.val("false");
+                    }
+                });
+            });
+        </script>
+    </head>
 
     <body>
         <h4>You can vote.</h4>
@@ -27,7 +44,7 @@
                                     <c:if test="${value}">
                                         <td><img src="../img/glyphicons_ok.png"></td>
                                     </c:if>
-                                    <c:if test="not ${value}">
+                                    <c:if test="${not value}">
                                         <td><img src="../img/glyphicons_ko.png"></td>
                                     </c:if>
                                 </c:forEach>
@@ -43,18 +60,16 @@
                                 </div>
                             </td>
                             <c:forEach var="choice" items="${poll.choices}">
-                                <td><input name="votes" type="checkbox"></td>
+                                <td><img class="checkable" src="../img/glyphicons_ko.png"><input name="votes" type="hidden" value="false"></td>
                             </c:forEach>
                         </tr>
                     </tbody>
                     <tfoot>
                         <tr>
                             <td>Result :</td>
-                            <td>3</td>
-                            <td>0</td>
-                            <td>3</td>
-                            <td>0</td>
-                            <td>3</td>
+                            <c:forEach var="result" items="${results}">
+                                <td>${result}</td>
+                            </c:forEach>
                         </tr>
                     </tfoot>
                 </table>

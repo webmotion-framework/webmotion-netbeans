@@ -48,14 +48,28 @@ public class MainController extends WebMotionController {
             String pollId) {
         
         GenericDAO daoPoll = new GenericDAO(em, Poll.class);
-        IdentifiableEntity poll = daoPoll.find(pollId);
+        Poll poll = (Poll) daoPoll.find(pollId);
         
         GenericDAO daoVote = new GenericDAO(em, Vote.class);
-        List votes = daoVote.query("findByPollId", 
+        List<Vote> votes = daoVote.query("findByPollId", 
                                          Parameters.create().add("poll_id", pollId));
+        
+        int [] results = new int[poll.getChoices().size()];
+        for (Vote vote : votes) {
+            
+            List<Boolean> values = vote.getVotes();
+            int index = 0;
+            for (Boolean value : values) {
+                if (value) {
+                    results[index]++;
+                }
+                index ++;
+            }
+        }
         
         return renderView("poll_vote.jsp",
                 "poll", poll,
-                "votes", votes);
+                "votes", votes,
+                "results", results);
     }
 }

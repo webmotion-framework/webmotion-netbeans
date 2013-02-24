@@ -27,18 +27,15 @@
                     <label class="control-label" for="inputChoices">Choices :</label>
                     <div id="choices">
                         <div class="controls">
-                            <input type="text" name="choices" placeholder="Choice">
+                            <input type="text" name="choices" placeholder="Choice"><button type="button" class="btn" onclick="$(this).prev().remove();$(this).remove();">Del</button>
                         </div>
                         <div class="controls">
-                            <input type="text" name="choices" placeholder="Choice">
-                        </div>
-                        <div class="controls">
-                            <input type="text" name="choices" placeholder="Choice">
+                            <input type="text" name="choices" placeholder="Choice"><button type="button" class="btn" onclick="$(this).prev().remove();$(this).remove();">Del</button>
                         </div>
                     </div>
 
                     <div class="controls">
-                        <button type="button" class="btn" onclick="$('<div class=\'controls\'><input type=\'text\' name=\'choices\' placeholder=\'Choice\'></div>').appendTo('#choices');">Add</button>
+                        <button type="button" class="btn" onclick="$('<div class=\'controls\'><input type=\'text\' name=\'choices\' placeholder=\'Choice\'><button type=\'button\' class=\'btn\' onclick=\'$(this).prev().remove();$(this).remove();\'>Del</button></div>').appendTo('#choices');">Add</button>
                     </div>
                 </div>
 
