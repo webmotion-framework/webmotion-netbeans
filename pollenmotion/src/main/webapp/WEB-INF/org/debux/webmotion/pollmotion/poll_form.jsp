@@ -1,6 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head></head>
+    <head>
+        <script type="text/javascript">
+            $(function() {
+                var delChoice = function() {
+                    $(this).parent().remove();
+                };
+                                
+                $(".del").click(delChoice);
+
+                var addChoice = function() {
+                    var choice = $("#choices div:first-child").clone();
+                    choice.children(".del").click(delChoice);
+                    choice.appendTo('#choices');
+                };
+                addChoice();
+                addChoice();
+                
+                $("#add").click(function() {
+                    addChoice();
+                });
+            });
+        </script>
+    </head>
 
     <body>
         <h4>Create your vote.</h4>
@@ -27,15 +49,12 @@
                     <label class="control-label" for="inputChoices">Choices :</label>
                     <div id="choices">
                         <div class="controls">
-                            <input type="text" name="choices" placeholder="Choice"><button type="button" class="btn" onclick="$(this).prev().remove();$(this).remove();">Del</button>
-                        </div>
-                        <div class="controls">
-                            <input type="text" name="choices" placeholder="Choice"><button type="button" class="btn" onclick="$(this).prev().remove();$(this).remove();">Del</button>
+                            <input type="text" name="choices" placeholder="Choice"><button type="button" class="btn del">Del</button>
                         </div>
                     </div>
 
                     <div class="controls">
-                        <button type="button" class="btn" onclick="$('<div class=\'controls\'><input type=\'text\' name=\'choices\' placeholder=\'Choice\'><button type=\'button\' class=\'btn\' onclick=\'$(this).prev().remove();$(this).remove();\'>Del</button></div>').appendTo('#choices');">Add</button>
+                        <button id="add" type="button" class="btn">Add</button>
                     </div>
                 </div>
 
