@@ -12,6 +12,7 @@
                 var addChoice = function() {
                     var choice = $("#choices div:first-child").clone();
                     choice.children(".del").click(delChoice);
+                    choice.children("input").val("");
                     choice.appendTo('#choices');
                 };
                 addChoice();

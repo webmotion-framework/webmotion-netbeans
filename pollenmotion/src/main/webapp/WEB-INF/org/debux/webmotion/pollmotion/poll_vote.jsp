@@ -23,6 +23,7 @@
     <body>
         <h4>You can vote.</h4>
         <hr>
+        <h5><span class="label label-info">Question :</span> ${poll.question}</h5>
         
         <form class="form-horizontal" method="POST" action="../vote/${poll.id}">
             
