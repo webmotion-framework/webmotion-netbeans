@@ -30,6 +30,21 @@
             <artifactId>webmotion-extra-jpa</artifactId>
             <version>2.3.4-SNAPSHOT</version>
         </dependency>
+
+        <!-- Test -->        
+        <dependency>
+            <groupId>org.debux.webmotion</groupId>
+            <artifactId>webmotion-unittest</artifactId>
+            <version>2.3.4-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>6.8</version>
+            <scope>test</scope>
+        </dependency>
         
         <!-- DataBase -->
         <dependency>
@@ -87,6 +102,7 @@
             <version>1.0.0</version>
             <scope>runtime</scope>
         </dependency>
+        
     </dependencies>
 
     <build>
