@@ -1,0 +1,12 @@
+[config]
+package.views=WEB-INF/org.debux.webmotion.uploadmotion
+package.base=org.debux.webmotion.uploadmotion
+
+[actions]
+GET          /                      redirect:/index
+GET          /index                 view:upload.html
+POST         /upload                MainController.upload
+GET          /download              MainController.download
+
+[UploadMotion.properties]
+folder=/tmp
