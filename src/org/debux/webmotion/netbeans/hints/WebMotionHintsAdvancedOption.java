@@ -24,7 +24,6 @@
  */
 package org.debux.webmotion.netbeans.hints;
 
-import org.debux.webmotion.netbeans.WebMotionLanguage;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
 import org.netbeans.spi.options.AdvancedOption;

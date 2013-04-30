@@ -81,7 +81,7 @@ public class WebMotionCompletion implements CompletionProvider {
         "package.views", "package.base", "package.filters", "package.actions",
         "package.errors", "javac.debug", "server.async", "server.encoding", "server.error.page",
         "server.controller.scope", "server.listener.class", "server.main.handler.class",
-        "server.secret", "server.static.autodetect"
+        "server.secret", "server.static.autodetect", "default.render"
     };
             
     public static final String[] KEYWORDS_CONFIG_EQUAL = {
@@ -324,6 +324,14 @@ public class WebMotionCompletion implements CompletionProvider {
                     
                     packageTarget = "";
                     filterSuperClass = "org.debux.webmotion.server.WebMotionHandler";
+                    
+                } else if (filter.startsWith("default.render=")) {
+                    keywords = KEYWORDS_EMPTY;
+                    startOffset += StringUtils.substringBefore(filter, "=").length() + 1;
+                    filter = StringUtils.substringAfter(filter, "=");
+                    
+                    packageTarget = "";
+                    filterSuperClass = "org.debux.webmotion.server.render.Render";
                     
                 } else if (filter.startsWith("package.actions=") || filter.startsWith("package.filters=") || filter.startsWith("package.errors=")) {
                     keywords = KEYWORDS_EMPTY;

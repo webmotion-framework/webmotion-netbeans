@@ -118,7 +118,8 @@ TOKEN: {
                   | "server.listener.class"
                   | "server.main.handler.class"
                   | "server.secret"
-                  | "server.static.autodetect">
+                  | "server.static.autodetect"
+                  | "default.render">
 |   <CONFIG_EQUALS: "="> : SECTION_CONFIG_VALUE
 }
 
